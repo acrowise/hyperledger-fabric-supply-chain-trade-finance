@@ -49,7 +49,7 @@ CHAINCODE_COMMON_NAME=reference
 
 CHAINCODE_COMMON_INIT='{"Args":["init","a","100","b","100"]}'
 CHAINCODE_BILATERAL_INIT='{"Args":["init"]}'
-COLLECTION_CONFIG='$GOPATH/src/reference/collections_config.json'
+COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_COMMON_NAME}/collections_config.json"
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
 LITERAL_LEVELDB="leveldb"
@@ -148,22 +148,9 @@ function generateArtifacts() {
 function removeArtifacts() {
   generateArtifacts
   echo "Removing generated and downloaded artifacts from: $GENERATED_DOCKER_COMPOSE_FOLDER, $GENERATED_ARTIFACTS_FOLDER"
-  rm $GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-*.yaml
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/crypto-config
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/channel
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/*block*
+  rm -rf $GENERATED_DOCKER_COMPOSE_FOLDER/*
   rm -rf www/artifacts && mkdir www/artifacts
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/cryptogen-*.yaml
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/fabric-ca-server-config-*.yaml
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/network-config.json
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/*Config.json
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/*.pb
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/updated_config.*
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/update_in_envelope.*
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/update.*
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/config.*
-  rm -rf $GENERATED_ARTIFACTS_FOLDER/hosts
+  rm -rf $GENERATED_ARTIFACTS_FOLDER/*
 }
 
 function removeDockersWithDomain() {
@@ -239,10 +226,12 @@ function generateOrdererArtifacts() {
     fi
     createChannels=("common")
 
+    docker-compose --file ${f} up -d "cli.$DOMAIN"
+
     for channel_name in ${createChannels[@]}
     do
         echo "Generating channel config transaction for $channel_name"
-        docker-compose --file ${f} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$channel_name" -outputCreateChannelTx "./channel/$channel_name.tx" -channelID "$channel_name"
+        docker exec -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$channel_name" -outputCreateChannelTx "./channel/$channel_name.tx" -channelID "$channel_name"
     done
 
     # replace in cryptogen
@@ -250,27 +239,28 @@ function generateOrdererArtifacts() {
 
     echo "Generating crypto material with cryptogen"
 
-    echo "docker-compose --file ${f} run --rm \"cli.$DOMAIN\" bash -c \"sleep 2 && cryptogen generate --config=cryptogen-$DOMAIN.yaml\""
-    docker-compose --file ${f} run --rm "cli.$DOMAIN" bash -c "sleep 2 && cryptogen generate --config=cryptogen-$DOMAIN.yaml"
+    echo "docker exec \"cli.$DOMAIN\" bash -c \"sleep 2 && cryptogen generate --config=cryptogen-$DOMAIN.yaml\""
+    docker exec "cli.$DOMAIN" bash -c "sleep 2 && cryptogen generate --config=cryptogen-$DOMAIN.yaml"
 
     echo "Generating orderer genesis block with configtxgen"
-    docker-compose --file ${f} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
+    docker exec -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile OrdererGenesis -outputBlock ./channel/genesis.block
 
     for channel_name in ${createChannels[@]}
     do
         echo "Generating channel config transaction for $channel_name"
-        docker-compose --file ${f} run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$channel_name" -outputCreateChannelTx "./channel/$channel_name.tx" -channelID "$channel_name"
+        docker exec -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$channel_name" -outputCreateChannelTx "./channel/$channel_name.tx" -channelID "$channel_name"
 
         for myorg in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
         do
             echo "Generating anchor peers update for ${myorg}"
-            docker-compose --file $GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${myorg}.yaml run --rm -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$myorg.$DOMAIN" configtxgen -profile "$channel_name" --outputAnchorPeersUpdate "./channel/${myorg}MSPanchors-$channel_name.tx" -channelID "$channel_name" -asOrg ${myorg}MSP
+            docker-compose --file $GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${myorg}.yaml up -d "cli.$myorg.$DOMAIN"
+            docker exec -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$myorg.$DOMAIN" configtxgen -profile "$channel_name" --outputAnchorPeersUpdate "./channel/${myorg}MSPanchors-$channel_name.tx" -channelID "$channel_name" -asOrg ${myorg}MSP
         done
 
     done
 
     echo "changing ownership of channel block files"
-    docker-compose --file ${f} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
+    docker exec "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
 }
 
 function addHostFiles() {
@@ -386,12 +376,13 @@ function generatePeerArtifacts() {
     setDockerVersions $f
 
     echo "Generating crypto material with cryptogen"
+    docker-compose --file ${f} up -d "cliNoCryptoVolume.$org.$DOMAIN"
 
-    echo "docker-compose --file ${f} run --rm \"cliNoCryptoVolume.$org.$DOMAIN\" bash -c \"cryptogen generate --config=cryptogen-$org.yaml\""
-    docker-compose --file ${f} run --rm "cliNoCryptoVolume.$org.$DOMAIN" bash -c "sleep 2 && cryptogen generate --config=cryptogen-$org.yaml"
+    echo "docker exec \"cliNoCryptoVolume.$org.$DOMAIN\" bash -c \"cryptogen generate --config=cryptogen-$org.yaml\""
+    docker exec "cliNoCryptoVolume.$org.$DOMAIN" bash -c "sleep 2 && cryptogen generate --config=cryptogen-$org.yaml"
 
     echo "Changing artifacts ownership"
-    docker-compose --file ${f} run --rm "cliNoCryptoVolume.$org.$DOMAIN" bash -c "chown -R $UID:$GID ."
+    docker exec "cliNoCryptoVolume.$org.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Adding generated CA private keys filenames to $f"
     ca_private_key=$(basename `ls -t $GENERATED_ARTIFACTS_FOLDER/crypto-config/peerOrganizations/"$org.$DOMAIN"/ca/*_sk`)
@@ -402,8 +393,8 @@ function generatePeerArtifacts() {
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" $TEMPLATES_ARTIFACTS_FOLDER/configtx-orgtemplate.yaml > $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
 
     echo "Generating ${org}Config.json"
-    echo "docker-compose --file ${f} run --rm \"cliNoCryptoVolume.$org.$DOMAIN\" bash -c \"FABRIC_CFG_PATH=./ configtxgen  -printOrg ${org}MSP > ${org}Config.json\""
-    docker-compose --file ${f} run --rm "cliNoCryptoVolume.$org.$DOMAIN" bash -c "FABRIC_CFG_PATH=./ configtxgen  -printOrg ${org}MSP > ${org}Config.json"
+    echo "docker exec \"cliNoCryptoVolume.$org.$DOMAIN\" bash -c \"FABRIC_CFG_PATH=./ configtxgen  -printOrg ${org}MSP > ${org}Config.json\""
+    docker exec "cliNoCryptoVolume.$org.$DOMAIN" bash -c "FABRIC_CFG_PATH=./ configtxgen  -printOrg ${org}MSP > ${org}Config.json"
 }
 
 function createChannel () {
@@ -413,13 +404,13 @@ function createChannel () {
 
     info "creating channel $channel_name by $org using $f"
 
-    echo "docker-compose --file ${f} run --rm \"cli.$org.$DOMAIN\" bash -c \"peer channel create -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt\""
-    docker-compose --file ${f} run --rm "cli.$org.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"peer channel create -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt\""
+    docker exec "cli.$org.$DOMAIN" bash -c "peer channel create -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 
     sleep 2
 
-    echo "docker-compose --file ${f} run --rm \"cli.$org.$DOMAIN\" bash -c \"peer channel update -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/${org}MSPanchors-$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt\""
-    docker-compose --file ${f} run --rm "cli.$org.$DOMAIN" bash -c "peer channel update -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/${org}MSPanchors-$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"peer channel update -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/${org}MSPanchors-$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt\""
+   docker exec "cli.$org.$DOMAIN" bash -c "peer channel update -o orderer.$DOMAIN:7050 -c $channel_name -f /etc/hyperledger/artifacts/channel/${org}MSPanchors-$channel_name.tx --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 
     echo "changing ownership of channel block files"
     docker-compose --file ${f} run --rm "cli.$DOMAIN" bash -c "chown -R $UID:$GID ."
@@ -436,8 +427,8 @@ function joinChannel() {
 
     info "joining channel $channel_name by all peers of $org using $f"
 
-    docker-compose --file ${f} run --rm "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
-    docker-compose --file ${f} run --rm "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
+    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
+    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
 }
 
 function instantiateChaincode () {
@@ -462,7 +453,7 @@ function instantiateChaincode () {
         d="cli.$org.$DOMAIN"
 
         echo "instantiating with $d by $c"
-        docker-compose --file ${f} run --rm ${d} bash -c "${c}"
+        docker exec ${d} bash -c "${c}"
     done
 }
 
@@ -478,10 +469,10 @@ function installChaincode() {
 
     info "installing chaincode $n to peers of $org from ./chaincode/go/$p $v using $f"
 
-    echo "docker-compose --file ${f} run --rm \"cli.$org.$DOMAIN\" bash -c \"CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang "
+    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang "
     echo " && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang\""
 
-    docker-compose --file ${f} run --rm "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang \
+    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang \
     && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang"
 }
 
@@ -655,7 +646,7 @@ while getopts "h?m:o:a:w:c:0:1:2:3:k:v:i:n:M:I:R:P:s:" opt; do
   esac
 done
 
-checkDocker
+#checkDocker
 
 if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
