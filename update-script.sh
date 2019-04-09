@@ -91,15 +91,14 @@ do
 done
 
 # Upgrade chaincodes
-sleep 2
 upgradeChaincode "${ORG1}" "common" "$chaincode_version" "${CHAINCODE_COMMON_NAME}" "${CHAINCODE_COMMON_INIT}" "$COMMON_POLICY" "${COLLECTION_CONFIG}"
 #upgradeChaincode "${ORG1}" "common" "$chaincode_version" "${CHAINCODE_BILATERAL_NAME}" "${CHAINCODE_BILATERAL_INIT}" "$COMMON_POLICY" "${COLLECTION_CONFIG}"
 #upgradeChaincode "${ORG1}" "${ORG1}-${ORG2}" "$chaincode_version" "${CHAINCODE_BILATERAL_NAME}" "${CHAINCODE_BILATERAL_INIT}" "$CH_AB_POLICY" "${COLLECTION_CONFIG}"
 #upgradeChaincode "${ORG1}" "${ORG1}-${ORG3}" "$chaincode_version" "${CHAINCODE_BILATERAL_NAME}" "${CHAINCODE_BILATERAL_INIT}" "$CH_AC_POLICY" "${COLLECTION_CONFIG}"
 
 echo "=== Testing chaincodes"
-
+sleep 3
 #docker exec cli.${ORG1}.${DOMAIN} bash -c "export CORE_PEER_ADDRESS=peer0.a.example.com:7051 && peer chaincode invoke -n reference -c '{\"Args\":[\"invokeChaincode\",\"common\",\"relationship\",\"move\",\"a\",\"b\",\"15\"]}' -o orderer.example.com:7050 -C common --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
-docker exec cli.${ORG1}.${DOMAIN} bash -c "export CORE_PEER_ADDRESS=peer0.a.example.com:7051 && peer chaincode invoke -n reference -c '{\"Args\":[\"put\",\"k\",\"v\"]}' -o orderer.example.com:7050 -C common --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+docker exec cli.${ORG1}.${DOMAIN} bash -c "export CORE_PEER_ADDRESS=peer0.a.example.com:7051 && peer chaincode invoke -n reference -c '{\"Args\":[\"move\",\"a\",\"b\",\"10\"]}' -o orderer.example.com:7050 -C common --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 #docker exec cli.${ORG1}.${DOMAIN} bash -c "export CORE_PEER_ADDRESS=peer0.a.example.com:7051 && peer chaincode invoke -n reference -c '{\"Args\":[\"invokeChaincode\",\"common\",\"relationship\",\"query\",\"a\"]}' -o orderer.example.com:7050 -C common --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
 #docker exec cli.${ORG1}.${DOMAIN} bash -c "export CORE_PEER_ADDRESS=peer0.a.example.com:7051 && peer chaincode query -n reference -c '{\"Args\":[\"getResponse\"]}' -o orderer.example.com:7050 -C common --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
