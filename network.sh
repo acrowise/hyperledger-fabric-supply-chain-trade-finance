@@ -47,7 +47,7 @@ CLI_TIMEOUT=10000
 CHAINCODE_VERSION="1.0"
 CHAINCODE_COMMON_NAME=reference
 
-CHAINCODE_COMMON_INIT='{"Args":["init"]}'
+CHAINCODE_COMMON_INIT='{"Args":["init","a","100","b","100"]}'
 CHAINCODE_BILATERAL_INIT='{"Args":["init"]}'
 COLLECTION_CONFIG='$GOPATH/src/reference/collections_config.json'
 #Set default State Database
@@ -176,7 +176,7 @@ function removeDockersWithDomain() {
     docker rm -f ${docker_ids}
   fi
 
-  docker_ids=$(docker volume ls -q | grep ${search})
+  docker_ids=$(docker volume ls -q)
   if [ -z "$docker_ids" -o "$docker_ids" == " " ]; then
     echo "No docker volumes available for deletion with $search"
   else
@@ -457,7 +457,7 @@ function instantiateChaincode () {
 
     for channel_name in ${channel_names[@]}; do
         info "instantiating chaincode $n on $channel_name by $org using $f with $i"
-
+        #  peer chaincode instantiate -n reference -v 1.0 -c '{"Args":["Init","a","100","b","100"]}' -o orderer.example.com:7050 -C common  --collections-config $GOPATH/src/reference/collections_config.json --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt
         c="CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode instantiate -n $n -v ${CHAINCODE_VERSION} -c '$i' -o orderer.$DOMAIN:7050 -C $channel_name  $cc --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
         d="cli.$org.$DOMAIN"
 
@@ -582,11 +582,7 @@ function checkDocker() {
     return
   fi
 }
-#
-#function launchIPFS() {
-#
-#
-#}
+
 
 # Print the usage message
 function printHelp () {
@@ -673,8 +669,6 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   #Building $JSON_ORG
   #array_orgs_to_json "${ARRAY_ORG[@]}"
-
-  CHAINCODE_COMMON_INIT='{"Args":["init"]}'
 
   for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
