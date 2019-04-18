@@ -6,19 +6,28 @@ import (
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
 
-var logger = shim.NewLogger("TradeFinanceChaincode")
-
 type TradeFinanceChaincode struct {
 }
 
 func (cc *TradeFinanceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debug("Init")
+	Logger.Debug("Init")
+
+	_, args := stub.GetFunctionAndParameters()
+
+	config := Config{}
+	config.FillFromArguments(stub, args)
+
+	if err := UpdateOrInsertIn(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	return shim.Success(nil)
 }
 
 func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debug("Invoke")
+	Logger.Debug("Invoke")
 
 	function, args := stub.GetFunctionAndParameters()
 	if function == "registerInvoice" {
@@ -57,7 +66,7 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	fnList := "{placeInvoice, removeInvoice, placeBid, editBid, cancelBid, acceptBid, " +
 		"listBids, listBidsForInvoice, listInvoices}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
-	logger.Debug(message)
+	Logger.Debug(message)
 
 	return pb.Response{Status: 400, Message: message}
 }
@@ -147,6 +156,6 @@ func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, 
 func main() {
 	err := shim.Start(new(TradeFinanceChaincode))
 	if err != nil {
-		logger.Error(err.Error())
+		Logger.Error(err.Error())
 	}
 }

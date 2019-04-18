@@ -13,13 +13,13 @@ artifactsTemplatesFolder="artifacts-templates"
 
 : ${DOMAIN:="example.com"}
 : ${IP_ORDERER:="127.0.0.1"}
-: ${ORG1:="a"}
-: ${ORG2:="b"}
-: ${ORG3:="c"}
-: ${ORG4:="d"}
-: ${ORG5:="e"}
-: ${ORG6:="f"}
-: ${ORG7:="g"}
+: ${ORG1:="a"} #Buyer
+: ${ORG2:="b"} #First supplier
+: ${ORG3:="c"} #Second supplier
+: ${ORG4:="d"} #First auditor
+: ${ORG5:="e"} #Second auditor
+: ${ORG6:="f"} #First factor
+: ${ORG7:="g"} #Second factor
 : ${PEER0:="peer0"}
 : ${PEER1:="peer1"}
 : ${MAIN_ORG:=${ORG1}}
@@ -45,11 +45,15 @@ echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
 CLI_TIMEOUT=10000
 
 CHAINCODE_VERSION="1.1"
-CHAINCODE_COMMON_NAME=reference
+CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode
+CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode
 
-CHAINCODE_COMMON_INIT='{"Args":["init","a","100","b","100"]}'
+# TODO: pass the contents of the collections_config.json as arg[0]
+CHAINCODE_TRADE_FINANCE_INIT='{"Args":["init","b-f-Deals,b-g-Deals,c-f-Deals,c-g-Deals"]}'
+CHAINCODE_SUPPLY_CHAIN_INIT='{"Args":["init",""]}'
 CHAINCODE_BILATERAL_INIT='{"Args":["init"]}'
-COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_COMMON_NAME}/collections_config.json"
+TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"
+SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
 LITERAL_LEVELDB="leveldb"
@@ -513,7 +517,7 @@ function installAll() {
 
   sleep 2
 
-  for chaincode_name in ${CHAINCODE_COMMON_NAME}
+  for chaincode_name in ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_TRADE_FINANCE_NAME}
   do
     installChaincode "${org}" "${chaincode_name}" "${CHAINCODE_VERSION}"
   done
@@ -688,7 +692,8 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   done
 
-  createJoinInstantiate ${ORG1} common ${CHAINCODE_COMMON_NAME} ${CHAINCODE_COMMON_INIT} ${COLLECTION_CONFIG}
+  createJoinInstantiate ${ORG1} common ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_SUPPLY_CHAIN_INIT} ${SUPPLY_CHAIN_COLLECTION_CONFIG}
+  instantiateChaincode ${ORG1} common ${CHAINCODE_TRADE_FINANCE_NAME} ${CHAINCODE_TRADE_FINANCE_INIT} ${TRADE_FINANCE_COLLECTION_CONFIG}
 
  for org in ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
