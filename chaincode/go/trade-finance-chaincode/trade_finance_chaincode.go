@@ -72,8 +72,8 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0		1		2			3			4			5
-//ID    Debtor	Beneficiary	TotalDue	DueDate		0
+//0		1		2			3			4			5	6
+//ID    Debtor	Beneficiary	TotalDue	DueDate		0	0
 func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice fields
 	// check role == Buyer or Supplier
@@ -88,28 +88,14 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	//TODO: checking debtor by CA
-	debtor := args[1]
-	if debtor == "" {
-		message := fmt.Sprintf("debtor must be not empty")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	invoice.Value.Debtor = debtor
-
-	//TODO: checking beneficiary by CA
-	beneficiary := args[2]
-	if beneficiary == "" {
-		message := fmt.Sprintf("beneficiary must be not empty")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	invoice.Value.Beneficiary = beneficiary
 
 	if ExistsIn(stub, &invoice,  "") {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s already exists", compositeKey))
 	}
+
+	invoice.Value.Owner = invoice.Value.Beneficiary
+	invoice.Value.State = stateOrdinary
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -125,6 +111,8 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	return shim.Success(nil)
 }
 
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
 func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice id
 	// check specified invoice existence
@@ -134,6 +122,49 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	// update invoice trade status
 	// save invoice
 	Notifier(stub, NoticeRuningType)
+
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &invoice,  "") {
+		compositeKey, _ := invoice.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateForSale) {
+		return shim.Error(fmt.Sprintf("invoice state cannot be updated from %d to %d",
+			invoice.Value.State, stateForSale))
+	}
+	invoice.Value.State = stateForSale
+
+	if bytes, err := json.Marshal(invoice); err == nil {
+		Logger.Debug("Invoice: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }

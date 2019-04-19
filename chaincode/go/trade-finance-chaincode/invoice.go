@@ -15,7 +15,7 @@ const (
 
 const (
 	invoiceKeyFieldsNumber      = 1
-	invoiceBasicArgumentsNumber = 3
+	invoiceBasicArgumentsNumber = 6
 )
 
 // Invoice state constants (from 0 to 4)
@@ -51,11 +51,12 @@ type InvoiceKey struct {
 }
 
 type InvocieValue struct {
-	Debtor      string  `json:"consignor"`
-	Beneficiary string  `json:"consignee"`
+	Debtor      string  `json:"debtor"`
+	Beneficiary string  `json:"beneficiary"`
 	TotalDue    float32 `json:"totalDue"`
 	DueDate     int64   `json:"dueDate"`
 	State       int     `json:"state"`
+	Owner       string  `json:"owner"`
 }
 
 type Invoice struct {
@@ -68,12 +69,33 @@ func CreateInvoice() LedgerData {
 }
 
 //argument order
-//0		1		2			3			4			5
-//ID	Debtor	Beneficiary	TotalDue	DueDate		State
+//0		1		2			3			4			5		6
+//ID	Debtor	Beneficiary	TotalDue	DueDate		State	Owner
 func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < invoiceBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", invoiceBasicArgumentsNumber))
 	}
+
+	if err := entity.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		return err
+	}
+
+	//TODO: checking debtor by CA
+	debtor := args[1]
+	if debtor == "" {
+		message := fmt.Sprintf("debtor must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.Debtor = debtor
+
+	//TODO: checking beneficiary by CA
+	beneficiary := args[2]
+	if beneficiary == "" {
+		message := fmt.Sprintf("beneficiary must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.Beneficiary = beneficiary
+
 	// checking totalDue
 	totalDue, err := strconv.ParseFloat(args[3], 32)
 	if err != nil {
