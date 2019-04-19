@@ -38,6 +38,12 @@ func TestRegisterInvoice(t *testing.T) {
 	var args []string;
 	args = []string{
 		fcnName,
+		"123456",
+		"a",
+		"b",
+		"123.65",
+		"1555668443",
+		"0",
 		"",
 	}
 

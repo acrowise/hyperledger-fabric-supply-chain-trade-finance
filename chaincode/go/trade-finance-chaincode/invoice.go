@@ -63,14 +63,14 @@ type Invoice struct {
 	Value InvocieValue `json:"value"`
 }
 
-//func CreateInvoice() LedgerData {
-//	//return new(Invoice)
-//}
+func CreateInvoice() LedgerData {
+	return new(Invoice)
+}
 
 //argument order
 //0		1		2			3			4			5
 //ID	Debtor	Beneficiary	TotalDue	DueDate		State
-func (entity *Invoice) FillFromArguments(args []string) error {
+func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < invoiceBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", invoiceBasicArgumentsNumber))
 	}
