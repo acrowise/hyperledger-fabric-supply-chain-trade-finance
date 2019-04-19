@@ -39,8 +39,8 @@ var invocieStateLegal = map[int][]int{
 
 var invoiceStateMachine = map[int][]int{
 	stateUnknown:    {stateUnknown},
-	stateOrdinary:   {stateForSale},
-	stateForSale:    {stateBidOffered},
+	stateOrdinary:   {stateForSale, stateRemoved},
+	stateForSale:    {stateBidOffered, stateRemoved},
 	stateBidOffered: {stateSold},
 	stateSold:       {stateForSale},
 	stateRemoved:    {stateRemoved},

@@ -149,6 +149,12 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 	Logger.Debug("Creator: " + creator)
 
+	if invoice.Value.Beneficiary != creator {
+		message := fmt.Sprintf("only invoice owner can place an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateForSale) {
 		return shim.Error(fmt.Sprintf("invoice state cannot be updated from %d to %d",
 			invoice.Value.State, stateForSale))
@@ -177,6 +183,55 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	// update invoice trade status
 	// save invoice
 	Notifier(stub, NoticeRuningType)
+
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &invoice,  "") {
+		compositeKey, _ := invoice.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if invoice.Value.Beneficiary != creator {
+		message := fmt.Sprintf("only invoice owner can remove an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateRemoved) {
+		return shim.Error(fmt.Sprintf("invoice state cannot be updated from %d to %d",
+			invoice.Value.State, stateRemoved))
+	}
+	invoice.Value.State = stateRemoved
+
+	if bytes, err := json.Marshal(invoice); err == nil {
+		Logger.Debug("Invoice: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
