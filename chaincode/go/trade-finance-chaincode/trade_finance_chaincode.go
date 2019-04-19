@@ -77,6 +77,8 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	// validate args, including owner/buyer coincidence with caller
 	// fill invoice from args
 	// save invoice
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -88,6 +90,8 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	// check invoice trade status
 	// update invoice trade status
 	// save invoice
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -98,6 +102,8 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	// check invoice trade status
 	// update invoice trade status
 	// save invoice
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -111,6 +117,8 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	// check invoice trade status
 	// compose a bid from args
 	// save bid
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -119,6 +127,8 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 	// check if caller is bid creator
 	// edit bid
 	// save bid
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -126,6 +136,8 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	// check specified bid existence
 	// check if caller is bid creator
 	// delete bid
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -138,18 +150,26 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	// update invoice owner and trade status
 	// save invoice
 	// delete all bids for the invoice
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *TradeFinanceChaincode) listBids(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *TradeFinanceChaincode) listBidsForInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 

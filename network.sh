@@ -44,9 +44,13 @@ echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
 
 CLI_TIMEOUT=10000
 
-CHAINCODE_VERSION="1.1"
+CHAINCODE_VERSION="1.3"
 CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode
 CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode
+
+GOLANG_PACKAGES=(
+github.com/satori/go.uuid
+)
 
 # TODO: pass the contents of the collections_config.json as arg[0]
 CHAINCODE_TRADE_FINANCE_INIT='{"Args":["init","b-f-Deals,b-g-Deals,c-f-Deals,c-g-Deals"]}'
@@ -480,6 +484,19 @@ function installChaincode() {
     && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang"
 }
 
+function installPackage() {
+    org=$1
+    pkg=$2
+
+    f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
+
+    info "installing package $pkg to peers of $org using $f"
+
+    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"go get $pkg"
+
+    docker exec "cli.$org.$DOMAIN" bash -c "go get $pkg"
+}
+
 function dockerComposeUp () {
   compose_file="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-$1.yaml"
 
@@ -520,6 +537,17 @@ function installAll() {
   for chaincode_name in ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_TRADE_FINANCE_NAME}
   do
     installChaincode "${org}" "${chaincode_name}" "${CHAINCODE_VERSION}"
+  done
+}
+
+function installPackages() {
+  org=$1
+
+  sleep 2
+
+  for pkg in ${GOLANG_PACKAGES[@]}
+  do
+    installPackage "${org}" "${pkg}"
   done
 }
 
@@ -677,6 +705,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
+    installPackages ${org}
     installAll ${org} # install chaincode
 
     # configure ipfs

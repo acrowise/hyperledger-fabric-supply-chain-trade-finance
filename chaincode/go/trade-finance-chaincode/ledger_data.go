@@ -5,9 +5,17 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"strings"
+	"encoding/pem"
+	"crypto/x509"
 )
 
 var ledgerDataLogger = shim.NewLogger("LedgerData")
+
+const(
+	NoticeRuningType    = iota
+	NoticeSuccessType
+)
 
 type LedgerData interface {
 	FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error
@@ -19,28 +27,6 @@ type LedgerData interface {
 	ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error)
 
 	ToLedgerValue() ([]byte, error)
-}
-
-func Contains(m map[int][]int, key int) bool {
-	_, ok := m[key]
-	if !ok {
-		return false
-	}
-
-	return true
-}
-
-func CheckStateValidity(statesAutomaton map[int][]int, oldState, newState int) bool {
-	possibleStates, ok := statesAutomaton[oldState]
-	if ok {
-		for _, state := range possibleStates {
-			if state == newState {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string) bool {
@@ -216,4 +202,61 @@ func queryImpl(it shim.StateQueryIteratorInterface, createEntry FactoryMethod, s
 	}
 
 	return entries, nil
+}
+
+func getOrganization(certificate []byte) (string, error) {
+	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
+	block, _ := pem.Decode([]byte(data))
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+	organization := cert.Issuer.Organization[0]
+	return strings.Split(organization, ".")[0], nil
+}
+
+func GetCreatorOrganization(stub shim.ChaincodeStubInterface) (string, error) {
+	certificate, err := stub.GetCreator()
+	if err != nil {
+		return "", err
+	}
+	return getOrganization(certificate)
+}
+
+func Contains(m map[int][]int, key int) bool {
+	_, ok := m[key]
+	if !ok {
+		return false
+	}
+
+	return true
+}
+
+func CheckStateValidity(statesAutomaton map[int][]int, oldState, newState int) bool {
+	possibleStates, ok := statesAutomaton[oldState]
+	if ok {
+		for _, state := range possibleStates {
+			if state == newState {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func Notifier(stub shim.ChaincodeStubInterface, typeNotice int){
+
+	fnc, _ := stub.GetFunctionAndParameters()
+
+	switch typeNotice {
+	case NoticeRuningType:
+		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s is running", fnc))
+		Logger.Debug(fmt.Sprintf("TradeFinanceChaincode.%s",fnc))
+	case NoticeSuccessType:
+		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s exited without errors", fnc))
+		Logger.Debug(fmt.Sprintf("Success: TradeFinanceChaincode.%s", fnc))
+	default:
+		Logger.Debug("Unknown typeNotice: %d", typeNotice)
+	}
 }
