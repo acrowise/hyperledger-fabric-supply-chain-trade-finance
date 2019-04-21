@@ -215,12 +215,31 @@ func getOrganization(certificate []byte) (string, error) {
 	return strings.Split(organization, ".")[0], nil
 }
 
+func getOrganizationlUnit(certificate []byte) (string, error) {
+	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
+	block, _ := pem.Decode([]byte(data))
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return "", err
+	}
+	organizationalUnit := cert.Issuer.OrganizationalUnit[0]
+	return strings.Split(organizationalUnit, ".")[0], nil
+}
+
 func GetCreatorOrganization(stub shim.ChaincodeStubInterface) (string, error) {
 	certificate, err := stub.GetCreator()
 	if err != nil {
 		return "", err
 	}
 	return getOrganization(certificate)
+}
+
+func GetCreatorOrganizationalUnit(stub shim.ChaincodeStubInterface) (string, error) {
+	certificate, err := stub.GetCreator()
+	if err != nil {
+		return "", err
+	}
+	return getOrganizationlUnit(certificate)
 }
 
 func Contains(m map[int][]int, key int) bool {

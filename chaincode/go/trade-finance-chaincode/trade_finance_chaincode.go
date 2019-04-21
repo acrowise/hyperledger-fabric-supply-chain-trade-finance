@@ -82,6 +82,25 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	// save invoice
 	Notifier(stub, NoticeRuningType)
 
+	allowedUnits := map[string] bool{
+		Supplier: true,
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this unit is not allowed to register an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	invoice := Invoice{}
 	if err := invoice.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill a invoice from arguments: %s", err.Error())
@@ -122,6 +141,25 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	// update invoice trade status
 	// save invoice
 	Notifier(stub, NoticeRuningType)
+
+	allowedUnits := map[string] bool{
+		Supplier: true,
+		Factor: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this unit is not allowed to register an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	invoice := Invoice{}
 	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {

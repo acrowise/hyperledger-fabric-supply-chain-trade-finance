@@ -14,6 +14,14 @@ const (
 	ConfigIndex = "ConfigTF"
 )
 
+// OrganizationalUnit constants
+const (
+	Buyer    = "buyer"
+	Supplier = "supplier"
+	Auditor  = "auditor"
+	Factor   = "factor"
+)
+
 // Numerical constants
 const (
 	configKeyFieldsNumber      = 0
@@ -29,7 +37,7 @@ type ConfigKey struct {
 }
 
 type ConfigValue struct {
-	Collections          []string `json:"collections"`
+	Collections []string `json:"collections"`
 }
 
 func CreateConfig() LedgerData {

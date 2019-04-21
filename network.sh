@@ -20,6 +20,12 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${ORG5:="e"} #Second auditor
 : ${ORG6:="f"} #First factor
 : ${ORG7:="g"} #Second factor
+
+: ${BUYER:="buyer"}
+: ${SUPPLIER:="supplier"}
+: ${AUDITOR:="auditor"}
+: ${FACTOR:="factor"}
+
 : ${PEER0:="peer0"}
 : ${PEER1:="peer1"}
 : ${MAIN_ORG:=${ORG1}}
@@ -281,6 +287,7 @@ function addHostFiles() {
 
 function generatePeerArtifacts() {
     org=$1
+    orgu=${10}
 
     [[ ${#} == 0 ]] && echo "missing required argument -o ORG" && exit 1
 
@@ -325,7 +332,7 @@ function generatePeerArtifacts() {
     f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-$org.yaml"
 
     # cryptogen yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" $TEMPLATES_ARTIFACTS_FOLDER/cryptogentemplate-peer.yaml > $GENERATED_ARTIFACTS_FOLDER/"cryptogen-$org.yaml"
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" -e "s/OU/$orgu/g" $TEMPLATES_ARTIFACTS_FOLDER/cryptogentemplate-peer.yaml > $GENERATED_ARTIFACTS_FOLDER/"cryptogen-$org.yaml"
 
     # swarm.key for ipfs
     mkdir "$GENERATED_ARTIFACTS_FOLDER/ipfs.$org.$DOMAIN"
@@ -758,14 +765,14 @@ elif [ "${MODE}" == "generate" ]; then
   setDockerVersions $file_base
   setDockerVersions $file_base_intercept
 
-  #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port
-  generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984
-  generatePeerArtifacts ${ORG2} 4002     8054    8051       8053             8056       8058            8001       8984
-  generatePeerArtifacts ${ORG3} 4003     9054    9051       9053             9056       9058            9001       9984
-  generatePeerArtifacts ${ORG4} 4004     10054   10051      1053             10056      10058           10001      10984
-  generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984
-  generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984
-  generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984
+  #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
+  generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984         ${BUYER}
+  generatePeerArtifacts ${ORG2} 4002     8054    8051       8053             8056       8058            8001       8984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG3} 4003     9054    9051       9053             9056       9058            9001       9984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG4} 4004     10054   10051      1053             10056      10058           10001      10984        ${AUDITOR}
+  generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984        ${AUDITOR}
+  generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984        ${FACTOR}
+  generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984        ${FACTOR}
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts
 
