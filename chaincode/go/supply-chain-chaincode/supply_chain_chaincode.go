@@ -24,34 +24,49 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	if function == "placeOrder" {
 		// Buyer places order
 		return cc.placeOrder(stub, args)
+	} else if function == "editOrder" {
+		return cc.editOrder(stub, args)
+	} else if function == "cancelOrder" {
+		return cc.cancelOrder(stub, args)
 	} else if function == "acceptOrder" {
 		// Supplier accepts order, a new contract is stored in a Buyer-Supplier collection
 		return cc.acceptOrder(stub, args)
+	} else if function == "requestShipment" {
+		return cc.requestShipment(stub, args)
+	} else if function == "confirmShipment" {
+		return cc.confirmShipment(stub, args)
+	} else if function == "uploadDocument" {
+		return cc.uploadDocument(stub, args)
 	} else if function == "generateProof" {
 		// Supplier generates a proof for an Auditor
 		return cc.generateProof(stub, args)
-	} else if function == "acceptContract" {
-		// Buyer or Auditor accepts the contract, acceptance details are stored in the Buyer-Supplier collection
-		return cc.acceptContract(stub, args)
-	} else if function == "rejectContract" {
-		// Buyer or Auditor rejects the contract, acceptance details are stored in the Buyer-Supplier collection
-		return cc.rejectContract(stub, args)
+	} else if function == "verifyProof" {
+		return cc.verifyProof(stub, args)
+	} else if function == "submitReport" {
+		return cc.submitReport(stub, args)
+	} else if function == "acceptInvoice" {
+		return cc.acceptInvoice(stub, args)
+	} else if function == "rejectInvoice" {
+		return cc.rejectInvoice(stub, args)
 	} else if function == "listOrders" {
 		// List all orders
 		return cc.listOrders(stub, args)
 	} else if function == "listContracts" {
 		// List contracts for the party from every collection
 		return cc.listContracts(stub, args)
-	} else if function == "getProofForContract" {
-		// Returns a proof for the Auditor for the specified contract
-		return cc.getProofForContract(stub, args)
-	} else if function == "listAcceptances" {
+	} else if function == "listProofs" {
+		return cc.listProofs(stub, args)
+	} else if function == "listReports" {
 		// List all acceptance details for the contract
-		return cc.listAcceptances(stub, args)
+		return cc.listReports(stub, args)
 	}
 	// (optional) add other query functions
 
-	fnList := "{placeOrder, acceptOrder, generateProof, acceptContract, listOrders, listContracts, getProofForContract, listAcceptances}"
+	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
+		"requestShipment, confirmShipment, uploadDocument, " +
+		"generateProof, verifyProof, submitReport, " +
+		"acceptInvoice, rejectInvoice, " +
+		"listOrders, listContracts, listProofs, listReports}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	logger.Debug(message)
 
@@ -67,6 +82,14 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(nil)
 }
 
+func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
 func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: order id
 	// check role == Supplier
@@ -76,6 +99,18 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	// update order status
 	// save order to common ledger
 	// save contract to Buyer-Supplier collection
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success(nil)
 }
 
@@ -89,27 +124,35 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-func (cc *SupplyChainChaincode) acceptContract(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id, (optional) Auditor's or Buyer's docs
-	// check role == Auditor or Buyer
-	// if Buyer:
-	//   set contract status to "waiting for payment"
-	//   update contract (with acceptance details as well)
-	// if Auditor:
-	//   compose an acceptance details struct (docs, accepted/rejected, reason...)
-	//   store info in the Buyer-Supplier collection
+func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	return shim.Success(nil)
 }
 
-func (cc *SupplyChainChaincode) rejectContract(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id, (optional) Auditor's or Buyer's docs
-	// check role == Auditor or Buyer
-	// if Buyer:
-	//   set contract status to "rejected"
-	//   update contract (with acceptance details as well)
-	// if Auditor:
-	//   compose an acceptance details struct (docs, accepted/rejected, reason...)
-	//   store info in the Buyer-Supplier collection
+func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// args: contract id, (optional) description, docs
+	// check role == Buyer
+	// check contract existence
+	// check contract status (to avoid logical conflict, e.g. accept contract rejected previously)
+	// add docs to Shipment (with description optionally)
+	// set contract status to "waiting for payment" (or some other final one)
+	// generate Invoice from contract field
+	// save Shipment, Contract to collection
+	// save Invoice to Trade Finance chaincode ledger
+	return shim.Success(nil)
+}
+
+func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// args: contract id, docs, (optional) description
+	// check role == Buyer
+	// check contract existence
+	// check contract status (to avoid logical conflict, e.g. reject contract accepted previously)
+	// add docs to Shipment (with description optionally)
+	// set contract status to "rejected" (or some other final one)
+	// save Shipment, Contract to collection
 	return shim.Success(nil)
 }
 
@@ -125,18 +168,15 @@ func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-func (cc *SupplyChainChaincode) getProofForContract(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id
+func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check role == Auditor
-	// check proof for contract id and Auditor's name/id/etc existence
-	// validate proof
-	// return proof
+	// list all proofs for Auditor's name/id/etc
 	return shim.Success(nil)
 }
 
-func (cc *SupplyChainChaincode) listAcceptances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: contract id
-	// list all acceptance details structs bound to the contract
+	// list all Auditors' reports related to the contract
 	return shim.Success(nil)
 }
 
