@@ -50,7 +50,7 @@ echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
 
 CLI_TIMEOUT=10000
 
-CHAINCODE_VERSION="1.3"
+CHAINCODE_VERSION="1.0"
 CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode
 CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode
 
@@ -183,6 +183,18 @@ function removeDockersWithDomain() {
   else
     echo "Removing docker volumes found with $search: $docker_ids"
     docker volume rm -f ${docker_ids}
+  fi
+
+}
+
+function removeDockersImageWithDomain() {
+  search="$DOMAIN"
+  docker_ids=$(docker image ls | grep ${search} | awk '{print $1};')
+  if [ -z "$docker_ids" -o "$docker_ids" == " " ]; then
+    echo "No docker images available for deletion with $search"
+  else
+    echo "Removing docker images found with $search: $docker_ids"
+    docker image rm ${docker_ids}
   fi
 
 }
@@ -593,7 +605,7 @@ function logs () {
 
 function clean() {
   removeDockersWithDomain
-  #removeUnwantedImages
+  removeDockersImageWithDomain
 }
 
 function printArgs() {

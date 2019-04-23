@@ -72,10 +72,6 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", bidBasicArgumentsNumber))
 	}
 
-	if err := entity.FillFromCompositeKeyParts(args[:bidKeyFieldsNumber]); err != nil {
-		return err
-	}
-
 	// checking rate
 	rate, err := strconv.ParseFloat(args[1], 32)
 	if err != nil {
@@ -105,6 +101,18 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 	if !ExistsIn(stub, &invoice, "") {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return errors.New(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	if invoice.Value.State != stateInvoiceForSale{
+		message := fmt.Sprintf("invalid state of invoice")
+		Logger.Error(message)
+		return errors.New(message)
 	}
 	entity.Value.InvoiceID = invoice.Key.ID
 
