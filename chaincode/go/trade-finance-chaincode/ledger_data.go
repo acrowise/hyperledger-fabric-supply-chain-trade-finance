@@ -12,8 +12,8 @@ import (
 
 var ledgerDataLogger = shim.NewLogger("LedgerData")
 
-const(
-	NoticeRuningType    = iota
+const (
+	NoticeRuningType  = iota
 	NoticeSuccessType
 )
 
@@ -264,14 +264,14 @@ func CheckStateValidity(statesAutomaton map[int][]int, oldState, newState int) b
 	return false
 }
 
-func Notifier(stub shim.ChaincodeStubInterface, typeNotice int){
+func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 
 	fnc, _ := stub.GetFunctionAndParameters()
 
 	switch typeNotice {
 	case NoticeRuningType:
 		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s is running", fnc))
-		Logger.Debug(fmt.Sprintf("TradeFinanceChaincode.%s",fnc))
+		Logger.Debug(fmt.Sprintf("TradeFinanceChaincode.%s", fnc))
 	case NoticeSuccessType:
 		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s exited without errors", fnc))
 		Logger.Debug(fmt.Sprintf("Success: TradeFinanceChaincode.%s", fnc))

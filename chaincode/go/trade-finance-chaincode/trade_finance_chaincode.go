@@ -5,6 +5,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"encoding/json"
+	"time"
 )
 
 type TradeFinanceChaincode struct {
@@ -72,19 +73,19 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0		1		2			3			4			5	6
-//ID    Debtor	Beneficiary	TotalDue	DueDate		0	0
+//0				1		2			3			4			5		6
+//ContractID    Debtor	Beneficiary	TotalDue	DueDate		State	Owner
 func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice fields
-	// check role == Buyer or Supplier
+	// check role == Supplier
 	// validate args, including owner/buyer coincidence with caller
 	// fill invoice from args
 	// save invoice
+	//TODO: add checking for contract exist
 	Notifier(stub, NoticeRuningType)
 
-	allowedUnits := map[string] bool{
+	allowedUnits := map[string]bool{
 		Supplier: true,
-		Buyer: true,
 	}
 
 	orgUnit, err := GetCreatorOrganizationalUnit(stub)
@@ -96,7 +97,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this unit is not allowed to register an invoice")
+		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -108,13 +109,33 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &invoice,  "") {
+	if ExistsIn(stub, &invoice, "") {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s already exists", compositeKey))
 	}
 
-	invoice.Value.Owner = invoice.Value.Beneficiary
-	invoice.Value.State = stateOrdinary
+	invoice.Value.Owner = args[6]
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's Organization from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Organization: " + creator)
+	if invoice.Value.Owner != creator {
+		message := fmt.Sprintf("only invoice owner can register invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if invoice.Value.State != stateInvoiceIssued {
+		message := fmt.Sprintf("impossible to register invoice with this state: %d", invoice.Value.State)
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	invoice.Value.Timestamp = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -142,9 +163,9 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	// save invoice
 	Notifier(stub, NoticeRuningType)
 
-	allowedUnits := map[string] bool{
+	allowedUnits := map[string]bool{
 		Supplier: true,
-		Factor: true,
+		Factor:   true,
 	}
 
 	orgUnit, err := GetCreatorOrganizationalUnit(stub)
@@ -156,7 +177,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this unit is not allowed to register an invoice")
+		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -168,7 +189,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice,  "") {
+	if !ExistsIn(stub, &invoice, "") {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
@@ -193,11 +214,11 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateForSale) {
+	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateInvoiceForSale) {
 		return shim.Error(fmt.Sprintf("invoice state cannot be updated from %d to %d",
-			invoice.Value.State, stateForSale))
+			invoice.Value.State, stateInvoiceForSale))
 	}
-	invoice.Value.State = stateForSale
+	invoice.Value.State = stateInvoiceForSale
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -213,6 +234,8 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
 func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice id
 	// check specified invoice existence
@@ -229,7 +252,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice,  "") {
+	if !ExistsIn(stub, &invoice, "") {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
@@ -254,11 +277,11 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
-	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateRemoved) {
+	if !CheckStateValidity(invoiceStateMachine, invoice.Value.State, stateInvoiceRemoved) {
 		return shim.Error(fmt.Sprintf("invoice state cannot be updated from %d to %d",
-			invoice.Value.State, stateRemoved))
+			invoice.Value.State, stateInvoiceRemoved))
 	}
-	invoice.Value.State = stateRemoved
+	invoice.Value.State = stateInvoiceRemoved
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -277,6 +300,8 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 // TODO: decide whether we need to have a possibility to query all bids after acceptance or not
 // related changes: state machine for bids
 
+//0		1		2			3
+//ID	Rate	FactorID	InvoiceID
 func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check if caller is Factor
 	// check specified invoice existence
@@ -285,29 +310,233 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	// compose a bid from args
 	// save bid
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Factor: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking bid exist
+	bid := Bid{}
+	if err := bid.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a bid from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &bid, "") {
+		compositeKey, _ := bid.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("bid with the key %s already exist", compositeKey))
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if bid.Value.FactorID != creator {
+		message := fmt.Sprintf("each factor can place bid only from itself")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting automatic values
+	bid.Value.State = stateBidIssued
+	bid.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(bid); err == nil {
+		Logger.Debug("Bid: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1		2			3
+//ID	Rate	FactorID	InvoiceID
 func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check specified bid existence
 	// check if caller is bid creator
 	// edit bid
 	// save bid
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Factor: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking bid exist
+	bid := Bid{}
+	if err := bid.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a bid from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &bid, "") {
+		compositeKey, _ := bid.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	bidToUpdate := Bid{}
+	bidToUpdate.Key = bid.Key
+	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if bidToUpdate.Value.FactorID != creator {
+		message := fmt.Sprintf("each factor can edit only his bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	bidToUpdate.Value.Rate = bid.Value.Rate
+	bidToUpdate.Value.InvoiceID = bid.Value.InvoiceID
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(bid); err == nil {
+		Logger.Debug("Bid: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0			1	2	3
+//BidID		0	0	0
 func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check specified bid existence
 	// check if caller is bid creator
 	// delete bid
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking bid exist
+	bid := Bid{}
+	if err := bid.FillFromCompositeKeyParts(args[:bidKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &bid, "") {
+		compositeKey, _ := bid.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	bidToUpdate := Bid{}
+	bidToUpdate.Key = bid.Key
+	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if bidToUpdate.Value.State != stateBidIssued {
+		message := fmt.Sprintf("unable cancel bid with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	bidToUpdate.Value.State = stateBidCanceled
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(bid); err == nil {
+		Logger.Debug("Bid: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0			1	2	3
+//BidID		0	0	0
 func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check specified bid existence
 	// check specified invoice existence
@@ -318,26 +547,199 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	// save invoice
 	// delete all bids for the invoice
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking bid exist
+	bid := Bid{}
+	if err := bid.FillFromCompositeKeyParts(args[:bidKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &bid, "") {
+		compositeKey, _ := bid.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	bidToUpdate := Bid{}
+	bidToUpdate.Key = bid.Key
+	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if bidToUpdate.Value.State != stateBidIssued {
+		message := fmt.Sprintf("unable cancel bid with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	bidToUpdate.Value.State = stateBidAccepted
+
+	//changing invoice state
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	invoice.Value.State = stateInvoiceSold
+	invoice.Value.Owner = bid.Value.FactorID
+	invoice.Value.Beneficiary = bid.Value.FactorID
+
+	if bytes, err := json.Marshal(invoice); err == nil {
+		Logger.Debug("Invoice: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(bid); err == nil {
+		Logger.Debug("Bid: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1	2	3
+//0		0	0	0
 func (cc *TradeFinanceChaincode) listBids(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	bids := []Bid{}
+	bidsBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(bidsBytes, &bids); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(bids)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
+//0		1	2	3
+//0		0	0	InvoiceID
 func (cc *TradeFinanceChaincode) listBidsForInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	// checking invoice exist
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[3:4]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &invoice, "") {
+		compositeKey, _ := invoice.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	filterByInvoice := func(data LedgerData) bool {
+		bid, ok := data.(*Bid)
+		if ok && bid.Value.InvoiceID == invoice.Key.ID {
+			return true
+		}
+
+		return false
+	}
+
+	bids := []Bid{}
+	bidsBytes, err := Query(stub, bidIndex, []string{}, Createbid, filterByInvoice, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(bidsBytes, &bids); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(bids)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
+//0		1	2	3	4	5	6
+//0    0	0	0	0	0	0
 func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	invoices := []Invoice{}
+	invoicesBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(invoicesBytes, &invoices); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(invoices)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
 func main() {

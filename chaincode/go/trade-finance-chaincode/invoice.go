@@ -18,50 +18,51 @@ const (
 	invoiceBasicArgumentsNumber = 6
 )
 
-// Invoice state constants (from 0 to 4)
+// Invoice state constants (from 0 to 5)
 const (
-	stateUnknown    = iota
-	stateOrdinary
-	stateForSale
-	stateBidOffered
-	stateSold
-	stateRemoved
+	stateInvoiceUnknown = iota
+	stateInvoiceIssued
+	stateInvoiceSigned
+	stateInvoiceForSale
+	stateInvoiceSold
+	stateInvoiceRemoved
 )
 
-var invocieStateLegal = map[int][]int{
-	stateUnknown:    {},
-	stateOrdinary:   {},
-	stateForSale:    {},
-	stateBidOffered: {},
-	stateSold:       {},
-	stateRemoved:    {},
+var invoiceStateLegal = map[int][]int{
+	stateInvoiceUnknown: {},
+	stateInvoiceIssued:  {},
+	stateInvoiceSigned:  {},
+	stateInvoiceForSale: {},
+	stateInvoiceSold:    {},
+	stateInvoiceRemoved: {},
 }
 
 var invoiceStateMachine = map[int][]int{
-	stateUnknown:    {stateUnknown},
-	stateOrdinary:   {stateForSale, stateRemoved},
-	stateForSale:    {stateBidOffered, stateRemoved},
-	stateBidOffered: {stateSold},
-	stateSold:       {stateForSale},
-	stateRemoved:    {stateRemoved},
+	stateInvoiceUnknown: {stateInvoiceUnknown},
+	stateInvoiceIssued:  {stateInvoiceSigned, stateInvoiceRemoved},
+	stateInvoiceSigned:  {stateInvoiceForSale},
+	stateInvoiceForSale: {stateInvoiceSold, stateInvoiceForSale},
+	stateInvoiceSold:    {stateInvoiceForSale},
+	stateInvoiceRemoved: {stateInvoiceRemoved},
 }
 
 type InvoiceKey struct {
 	ID string `json:"id"`
 }
 
-type InvocieValue struct {
+type InvoiceValue struct {
 	Debtor      string  `json:"debtor"`
 	Beneficiary string  `json:"beneficiary"`
 	TotalDue    float32 `json:"totalDue"`
 	DueDate     int64   `json:"dueDate"`
 	State       int     `json:"state"`
 	Owner       string  `json:"owner"`
+	Timestamp   int64   `json:"timestamp"`
 }
 
 type Invoice struct {
 	Key   InvoiceKey   `json:"key"`
-	Value InvocieValue `json:"value"`
+	Value InvoiceValue `json:"value"`
 }
 
 func CreateInvoice() LedgerData {
@@ -120,11 +121,12 @@ func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args 
 	//checking state
 	state, err := strconv.Atoi(args[5])
 	if err != nil {
-		return errors.New(fmt.Sprintf("invoice state is invalid: %s (must be int", args[5]))
+		return errors.New(fmt.Sprintf("invoice state is invalid: %s (must be int)", args[5]))
 	}
-	if !Contains(invocieStateLegal, state) {
-		return errors.New(fmt.Sprintf("invoice state is invalid: %d (must be from 0 to %d)", state, len(invocieStateLegal)))
+	if !Contains(invoiceStateLegal, state) {
+		return errors.New(fmt.Sprintf("invoice state is invalid: %d (must be from 0 to %d)", state, len(invoiceStateLegal)))
 	}
+	entity.Value.State = state
 
 	return nil
 }
