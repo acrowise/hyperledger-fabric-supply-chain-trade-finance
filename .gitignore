@@ -17,3 +17,6 @@ fabric-rest-api.iws
 /logs
 
 .tmp
+
+.cache
+dist
