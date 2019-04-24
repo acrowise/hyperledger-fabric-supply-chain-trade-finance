@@ -2,22 +2,19 @@ import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
-import { useFetch, useAsyncEndpoint } from '../hooks';
+import { useFetch } from '../hooks';
 
 import OrderForm from './OrderForm';
 
 import { AppToaster } from '../toaster';
 
-const updateOrders = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/updateOrder',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
+console.log(post);
 const Orders = ({ role, filter, search }) => {
   const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('orders');
-  const [updatedOrder, updateOrder] = updateOrders();
+  const [updatedOrder, updateOrder] = post('updateOrder')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -79,7 +76,7 @@ const Orders = ({ role, filter, search }) => {
       ) : (
         <></>
       )}
-      <table className="bp3-html-table .modifier">
+      <table className="bp3-html-table">
         <thead>
           <tr>
             <th>Order ID</th>

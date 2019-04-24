@@ -4,7 +4,7 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, Spinner
 } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
+import { post } from '../helper/api';
 
 const defaultFormState = {
   productName: '',
@@ -14,15 +14,9 @@ const defaultFormState = {
   dueDate: ''
 };
 
-const postNewOrder = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/placeOrder',
-  method: 'POST',
-  data
-}));
-
 const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, setFormState] = useState(defaultFormState);
-  const [newOrder, placeOrder, r] = postNewOrder();
+  const [newOrder, placeOrder, r] = post('placeOrder')();
 
   if (!newOrder.pending && (newOrder.complete || newOrder.error)) {
     setDialogOpenState(false);

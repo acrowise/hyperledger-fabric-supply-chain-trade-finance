@@ -3,28 +3,16 @@ import PropTypes from 'prop-types';
 
 import { Button, Overlay, Card } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
-
 import FileUploader from '../components/FileUploader';
 
-const confirmShipmentRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/confirmShipment',
-  method: 'POST',
-  data
-}));
-
-const postUploadDocumentsRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/uploadDocuments',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
 const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, confirmShipment] = confirmShipmentRequest();
-  const [documentsRequest, uploadDocs] = postUploadDocumentsRequest();
+  const [shipmentRes, confirmShipment] = post('confirmShipment')();
+  const [documentsRes, uploadDocs] = post('uploadDocument')();
 
-  console.log('contractId', shipment.contractId)
+  console.log('contractId', shipment.contractId);
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div

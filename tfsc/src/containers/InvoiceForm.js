@@ -4,13 +4,7 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card
 } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
-
-const postNewInvoice = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/placeInvoice',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
 const defaultFormState = {
   consignor: '',
@@ -22,7 +16,7 @@ const defaultFormState = {
 
 const InvoiceForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, setFormState] = useState(defaultFormState);
-  const [newInvoice, placeInvoice] = postNewInvoice();
+  const [newInvoice, placeInvoice] = post('placeInvoice')();
 
   const FORM_FIELDS = [
     {

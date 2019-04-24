@@ -4,20 +4,14 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, Spinner
 } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
-
-const placeBidRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/placeBid',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
 const PlaceBidForm = ({
   dialogIsOpen, setDialogOpenState, invoiceId, role
 }) => {
   const defaultFormState = { value: 0, invoiceId, role };
   const [formState, setFormState] = useState(defaultFormState);
-  const [newBid, placeBid] = placeBidRequest();
+  const [newBid, placeBid] = post('placeBid')();
 
   const FORM_FIELDS = [
     {

@@ -5,7 +5,7 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, TextArea, Label
 } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
+import { post } from '../helper/api';
 
 import FileUploader from '../components/FileUploader';
 
@@ -17,23 +17,11 @@ const defaultFormState = {
   file: 'Choose file...'
 };
 
-const postShipmentRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/requestShipment',
-  method: 'POST',
-  data
-}));
-
-const postUploadDocumentsRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/uploadDocuments',
-  method: 'POST',
-  data
-}));
-
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, setFormState] = useState(defaultFormState);
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, requestShipment] = postShipmentRequest();
-  const [documentsRequest, uploadDocs] = postUploadDocumentsRequest();
+  const [shipmentRequest, requestShipment] = post('requestShipment')();
+  const [documentsRequest, uploadDocs] = post('uploadDocuments')();
 
   const FORM_FIELDS = [
     {

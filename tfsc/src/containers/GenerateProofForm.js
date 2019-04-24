@@ -4,13 +4,7 @@ import {
   Button, Overlay, Checkbox, Card
 } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
-
-const generateProofRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/generateProof',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
 const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const defaultFormState = {
@@ -26,7 +20,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
     uscts: false
   };
   const [formState, setFormState] = useState(defaultFormState);
-  const [newProof, generateProof] = generateProofRequest();
+  const [proofRes, generateProof] = post('generateProof')();
 
   const FORM_FIELDS = [
     {

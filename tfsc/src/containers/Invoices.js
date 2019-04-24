@@ -3,37 +3,21 @@ import PropTypes from 'prop-types';
 import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch, useAsyncEndpoint } from '../hooks';
+import { useFetch } from '../hooks';
 import InvoiceForm from './InvoiceForm';
 import PlaceBidForm from './PlaceBidForm';
 import { AppToaster } from '../toaster';
 
-const acceptInvoiceRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/acceptInvoice',
-  method: 'POST',
-  data
-}));
-
-const placeInvoiceForTradeRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/placeInvoiceForTrade',
-  method: 'POST',
-  data
-}));
-
-const acceptBidRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/acceptBid',
-  method: 'POST',
-  data
-}));
+import { post } from '../helper/api';
 
 const Invoices = ({ role }) => {
   const [invoiceDialogIsOpen, setInvoiceDialogOpenState] = useState(false);
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('invoices');
   // const [notifications, setNotifications] = useState([]);
-  const [acceptedInvoice, acceptInvoice] = acceptInvoiceRequest();
-  const [forSaleInvoice, placeForTradeInvoice] = placeInvoiceForTradeRequest();
-  const [acceptedBid, acceptBid] = acceptBidRequest();
+  const [acceptedInvoice, acceptInvoice] = post('acceptInvoice')();
+  const [forSaleInvoice, placeForTradeInvoice] = post('placeInvoiceForTrade')();
+  const [acceptedBid, acceptBid] = post('acceptBid')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch, useAsyncEndpoint } from '../hooks';
+import { useFetch } from '../hooks';
 
 import GenerateProofForm from './GenerateProofForm';
 import ConfirmShipmentForm from './ConfirmShipmentForm';

@@ -3,26 +3,15 @@ import PropTypes from 'prop-types';
 
 import { Button, Overlay, Card } from '@blueprintjs/core';
 
-import { useAsyncEndpoint } from '../hooks';
+import { post } from '../helper/api';
+
 
 import FileUploader from '../components/FileUploader';
 
-const validateProofRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/validateProof',
-  method: 'POST',
-  data
-}));
-
-const postUploadDocumentsRequest = () => useAsyncEndpoint(data => ({
-  url: 'http://localhost:3000/uploadDocuments',
-  method: 'POST',
-  data
-}));
-
 const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, validateProof] = validateProofRequest();
-  const [documentsRequest, uploadDocs] = postUploadDocumentsRequest();
+  const [shipmentRequest, validateProof] = post('validateProof')();
+  const [documentsRequest, uploadDocs] = post('uploadDocuments')();
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
