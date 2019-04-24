@@ -26,6 +26,13 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${AUDITOR:="auditor"}
 : ${FACTOR:="factor"}
 
+: ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
+: ${PEERS_PEER_TMPL:="peers_peer"}
+: ${EM_PEER_TMPL:="em_peer"}
+: ${EM_CA_TMPL:="em_ca"}
+: ${CHANNELS_PEERS_TMPL:="channels_peers"}
+: ${NETWORK_TMPL:="network"}
+
 : ${PEER0:="peer0"}
 : ${PEER1:="peer1"}
 : ${MAIN_ORG:=${ORG1}}
@@ -625,6 +632,43 @@ function checkDocker() {
   fi
 }
 
+function render_template() {
+  eval "echo \"$(cat $1)\""
+}
+
+function clear_temp_files() {
+for TMPL in ${ORGANIZATIONS_ORG_TMPL} ${PEERS_PEER_TMPL} ${EM_PEER_TMPL} ${EM_CA_TMPL} ${CHANNELS_PEERS_TMPL}
+do
+    if [ -f "$TEMPLATES_ARTIFACTS_FOLDER/api-configs/${TMPL}.yaml" ]
+    then
+        rm $TEMPLATES_ARTIFACTS_FOLDER/api-configs/${TMPL}.yaml
+    fi
+done
+}
+
+function make_network_template(){
+: ${ORGS:=$@}
+: ${TEMPLATES_PATH:=$TEMPLATES_ARTIFACTS_FOLDER/api-configs}
+
+clear_temp_files
+for TMPL in ${ORGANIZATIONS_ORG_TMPL} ${PEERS_PEER_TMPL} ${EM_PEER_TMPL} ${EM_CA_TMPL} ${CHANNELS_PEERS_TMPL}
+do
+    for ORG in ${ORGS}
+    do
+        render_template ${TEMPLATES_PATH}/${TMPL}.tmpl >> ${TEMPLATES_PATH}/${TMPL}.yaml
+    done
+done
+
+: ${ORGANIZATIONS_ORG:="$(cat ${TEMPLATES_PATH}/${ORGANIZATIONS_ORG_TMPL}.yaml)"}
+: ${PEERS_PEER:="$(cat ${TEMPLATES_PATH}/${PEERS_PEER_TMPL}.yaml)"}
+: ${EM_PEER:="$(cat ${TEMPLATES_PATH}/${EM_PEER_TMPL}.yaml)"}
+: ${EM_CA:="$(cat ${TEMPLATES_PATH}/${EM_CA_TMPL}.yaml)"}
+: ${CHANNELS_PEERS:="$(cat ${TEMPLATES_PATH}/${CHANNELS_PEERS_TMPL}.yaml)"}
+
+render_template ${TEMPLATES_PATH}/${NETWORK_TMPL}.tmpl > ${TEMPLATES_PATH}/${NETWORK_TMPL}.yaml
+clear_temp_files
+}
+
 
 # Print the usage message
 function printHelp () {
@@ -776,6 +820,9 @@ elif [ "${MODE}" == "generate" ]; then
 
   setDockerVersions $file_base
   setDockerVersions $file_base_intercept
+
+  echo "===Generating api-network-config"
+  make_network_template ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
 
   #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
   generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984         ${BUYER}
