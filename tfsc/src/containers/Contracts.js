@@ -7,6 +7,7 @@ import { AppToaster } from '../toaster';
 import { useFetch } from '../hooks';
 
 import TransportRequestForm from './TransportRequestForm';
+import Table from '../components/Table';
 
 const Contracts = ({ role }) => {
   const [data, loading, setData] = useFetch('contracts');
@@ -33,46 +34,29 @@ const Contracts = ({ role }) => {
         dialogIsOpen={tsrDialogIsOpen}
         setDialogOpenState={setTsrDialogOpenState}
       />
-      <table className="bp3-html-table .modifier">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Contract ID</th>
-            <th>Sate</th>
-            <th>Date Created</th>
-            <th>Last Updated</th>
-            {role === 'supplier' ? <th>Action</th> : <></>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map(contract => (
-            <tr key={contract.orderId}>
-              <td>{contract.orderId}</td>
-              <td>{contract.contractId}</td>
-              <td>{contract.state}</td>
-              <td>{contract.dateCreated}</td>
-              <td>{contract.lastUpdated}</td>
-              {role === 'supplier' ? (
-                <td>
-                  <div>
-                    <Button
-                      onClick={() => {
-                        setTsrDialogOpenState(true);
-                      }}
-                      style={{ marginRight: '5px' }}
-                      intent="primary"
-                    >
-                      New Shipment
-                    </Button>
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Table
+        fields={{
+          orderId: 'Order ID',
+          contractId: 'Contract ID',
+          state: 'Satus',
+          dateCreated: 'Date Created',
+          lastUpdated: 'Last Updated'
+        }}
+        data={data}
+        actions={() => (
+          <div>
+            <Button
+              onClick={() => {
+                setTsrDialogOpenState(true);
+              }}
+              style={{ marginRight: '5px' }}
+              intent="primary"
+            >
+              New Shipment
+            </Button>
+          </div>
+        )}
+      />
     </div>
   );
 };

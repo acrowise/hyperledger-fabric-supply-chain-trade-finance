@@ -14,7 +14,7 @@ const Invoices = ({ role }) => {
   const [invoiceDialogIsOpen, setInvoiceDialogOpenState] = useState(false);
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('invoices');
-  // const [notifications, setNotifications] = useState([]);
+
   const [acceptedInvoice, acceptInvoice] = post('acceptInvoice')();
   const [forSaleInvoice, placeForTradeInvoice] = post('placeInvoiceForTrade')();
   const [acceptedBid, acceptBid] = post('acceptBid')();

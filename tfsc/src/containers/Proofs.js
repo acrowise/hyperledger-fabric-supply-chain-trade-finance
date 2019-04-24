@@ -6,6 +6,7 @@ import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
 import VerifyProofForm from './VerifyProofForm';
+import Table from '../components/Table';
 
 const Proofs = ({ role }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
@@ -39,37 +40,31 @@ const Proofs = ({ role }) => {
         setDialogOpenState={setVpDialogOpenState}
         proof={selectedProof}
       />
-      <table className="bp3-html-table .modifier">
-        <thead>
-          <tr>
-            <th>Contarct ID</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Transport</th>
-            <th>Status</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {proofs.map(proof => (
-            <tr key={proof.contractId}>
-              <td>{proof.contractId}</td>
-              <td>{proof.shipFrom}</td>
-              <td>{proof.shipTo}</td>
-              <td>{proof.transport}</td>
-              <td>{proof.state}</td>
-              <Button
-                onClick={() => {
-                  setSelectedProof(proof);
-                  setVpDialogOpenState(true);
-                }}
-              >
-                Verify Proof
-              </Button>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Table
+        fields={{
+          contractId: 'Contract ID',
+          shipFrom: 'From',
+          shipTo: 'To',
+          tarnsport: 'Transport',
+          state: 'Status'
+        }}
+        data={proofs}
+        actions={item => (
+          <div>
+            <Button
+              onClick={() => {
+                setSelectedProof(item);
+                setVpDialogOpenState(true);
+              }}
+              style={{ marginRight: '5px' }}
+              intent="primary"
+            >
+              Accept
+            </Button>
+            <Button intent="danger">Decline</Button>
+          </div>
+        )}
+      />
     </div>
   );
 };

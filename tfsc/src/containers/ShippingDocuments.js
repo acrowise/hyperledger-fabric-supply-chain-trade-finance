@@ -9,6 +9,8 @@ import GenerateProofForm from './GenerateProofForm';
 import ConfirmShipmentForm from './ConfirmShipmentForm';
 import ShipmentDetailPage from './ShipmentDetailPage';
 
+import Table from '../components/Table';
+
 const ShippingDocuments = ({ role, content, setContent }) => {
   const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
@@ -49,87 +51,50 @@ const ShippingDocuments = ({ role, content, setContent }) => {
         setDialogOpenState={setConfirmDialogOpenState}
         shipment={selectedShipment}
       />
-      {/* {role === 'supplier' ? (
-        <Button
-          icon="add"
-          onClick={() => {
-            setTsrDialogOpenState(true);
-          }}
-        >
-          New Shipment
-        </Button>
-      ) : (
-        <></>
-      )} */}
-      <table className="bp3-html-table .modifier">
-        <thead>
-          <tr>
-            <th>Contarct ID</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Transport</th>
-            <th>Status</th>
-            {role === 'transporter' || role === 'supplier' ? <th>Action</th> : <></>}
-          </tr>
-        </thead>
-        <tbody>
-          {shipments.map(s => (
-            <tr
-              onClick={() => {
-                showShipmentDetail(s);
-                setContent(s);
-              }}
-              key={s.contractId}
-            >
-              <td>{s.contractId}</td>
-              <td>{s.shipFrom}</td>
-              <td>{s.shipTo}</td>
-              <td>{s.transport}</td>
-              <td>{s.state}</td>
-              {role === 'transporter' && s.state === 'Requested' ? (
-                <td>
-                  <div>
-                    <Button
-                      onClick={(e) => {
-                        setSelectedShipment(s);
-                        setConfirmDialogOpenState(true);
-                        e.stopPropagation();
-                      }}
-                      style={{ marginRight: '5px' }}
-                      intent="primary"
-                    >
-                      Confirm
-                    </Button>
-                    {/* <Button intent="danger">Decline</Button> */}
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-              {role === 'supplier' && s.state === 'Confirmed' ? (
-                <td>
-                  <div>
-                    <Button
-                      onClick={(e) => {
-                        setSelectedShipment(s);
-                        setGpDialogOpenState(true);
-                        e.stopPropagation();
-                      }}
-                      style={{ marginRight: '5px' }}
-                      intent="primary"
-                    >
-                      Generate Proof
-                    </Button>
-                    {/* <Button intent="danger">Decline</Button> */}
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Table
+        fields={{
+          contractId: 'Contract ID',
+          shipFrom: 'From',
+          shipTo: 'To',
+          tarnsport: 'Transport',
+          state: 'Status'
+        }}
+        data={shipments}
+        actions={item => (
+          <div>
+            {role === 'transporter' && item.state === 'Requested' ? (
+              <Button
+                onClick={(e) => {
+                  setSelectedShipment(item);
+                  setConfirmDialogOpenState(true);
+                  e.stopPropagation();
+                }}
+                style={{ marginRight: '5px' }}
+                intent="primary"
+              >
+                Confirm
+              </Button>
+            ) : (
+              <></>
+            )}
+            {role === 'supplier' && item.state === 'Confirmed' ? (
+              <Button
+                onClick={(e) => {
+                  setSelectedShipment(item);
+                  setGpDialogOpenState(true);
+                  e.stopPropagation();
+                }}
+                style={{ marginRight: '5px' }}
+                intent="primary"
+              >
+                Generate Proof
+              </Button>
+            ) : (
+              <></>
+            )}
+          </div>
+        )}
+      />
     </div>
   );
 };

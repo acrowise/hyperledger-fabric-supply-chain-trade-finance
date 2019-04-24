@@ -5,7 +5,6 @@ import { Button, Overlay, Card } from '@blueprintjs/core';
 
 import { post } from '../helper/api';
 
-
 import FileUploader from '../components/FileUploader';
 
 const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {

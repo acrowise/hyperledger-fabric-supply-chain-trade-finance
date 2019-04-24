@@ -10,7 +10,8 @@ import { AppToaster } from '../toaster';
 
 import { post } from '../helper/api';
 
-console.log(post);
+import Table from '../components/Table';
+
 const Orders = ({ role, filter, search }) => {
   const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('orders');
@@ -76,57 +77,33 @@ const Orders = ({ role, filter, search }) => {
       ) : (
         <></>
       )}
-      <table className="bp3-html-table">
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Name</th>
-            <th>Quantity</th>
-            <th>Price</th>
-            <th>Destination Port</th>
-            <th>Due Date</th>
-            <th>Date Created</th>
-            <th>State</th>
-            {role === 'supplier' ? <th>Action</th> : <></>}
-          </tr>
-        </thead>
-        <tbody>
-          {data.length === 0 ? (
-            <>No Data</>
-          ) : (
-            filteredData.map(order => (
-              <tr key={order.orderId}>
-                <td>{order.orderId}</td>
-                <td>{order.productName}</td>
-                <td>{order.quantity}</td>
-                <td>{order.price}</td>
-                <td>{order.destinationPort}</td>
-                <td>{order.dueDate}</td>
-                <td>{order.dateCreated}</td>
-                <td>{order.state}</td>
-                {role === 'supplier' && order.state === 'New' ? (
-                  <td>
-                    <div>
-                      <Button
-                        onClick={() => {
-                          updateOrder({ orderId: order.orderId });
-                        }}
-                        style={{ marginRight: '5px' }}
-                        intent="primary"
-                      >
-                        Accept
-                      </Button>
-                      <Button intent="danger">Decline</Button>
-                    </div>
-                  </td>
-                ) : (
-                  <></>
-                )}
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
+      <Table
+        fields={{
+          orderId: 'Order ID',
+          productName: 'Name',
+          quantity: 'Quantity',
+          price: 'Price',
+          destinationPort: 'Destination Port',
+          dueDate: 'Due Date',
+          dateCreated: 'Date Created',
+          state: 'State'
+        }}
+        data={data}
+        actions={item => (
+          <div>
+            <Button
+              onClick={() => {
+                updateOrder({ orderId: item.orderId });
+              }}
+              style={{ marginRight: '5px' }}
+              intent="primary"
+            >
+              Accept
+            </Button>
+            <Button intent="danger">Decline</Button>
+          </div>
+        )}
+      />
     </div>
   );
 };
