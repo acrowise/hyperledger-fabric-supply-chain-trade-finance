@@ -72,7 +72,7 @@ const Orders = ({ role, filter, search }) => {
           dateCreated: 'Date Created',
           state: 'State'
         }}
-        data={data}
+        data={filteredData}
         actions={item => (role === 'supplier' && item.state === 'New' ? (
             <div>
               <Button
