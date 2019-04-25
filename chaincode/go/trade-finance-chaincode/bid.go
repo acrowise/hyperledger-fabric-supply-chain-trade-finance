@@ -60,7 +60,7 @@ type Bid struct {
 	Value BidValue `json:"value"`
 }
 
-func Createbid() LedgerData {
+func CreateBid() LedgerData {
 	return new(Bid)
 }
 

@@ -688,7 +688,7 @@ func (cc *TradeFinanceChaincode) listBids(stub shim.ChaincodeStubInterface, args
 	Notifier(stub, NoticeRuningType)
 
 	bids := []Bid{}
-	bidsBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, EmptyFilter, []string{})
+	bidsBytes, err := Query(stub, bidIndex, []string{}, CreateBid, EmptyFilter, []string{})
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -736,7 +736,7 @@ func (cc *TradeFinanceChaincode) listBidsForInvoice(stub shim.ChaincodeStubInter
 	}
 
 	bids := []Bid{}
-	bidsBytes, err := Query(stub, bidIndex, []string{}, Createbid, filterByInvoice, []string{})
+	bidsBytes, err := Query(stub, bidIndex, []string{}, CreateBid, filterByInvoice, []string{})
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
