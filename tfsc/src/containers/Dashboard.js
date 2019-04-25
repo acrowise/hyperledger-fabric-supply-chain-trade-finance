@@ -11,6 +11,8 @@ import ShippingDocuments from './ShippingDocuments';
 import Proofs from './Proofs';
 import Filter from '../components/Filter';
 
+import { notifications } from '../mocks';
+
 const tabs = props => [
   {
     name: 'Orders',
@@ -23,7 +25,7 @@ const tabs = props => [
   },
   {
     name: 'Contracts',
-    actors: ['buyer', 'supplier', 'ggcb', 'uscts', 'transporter'],
+    actors: ['buyer', 'supplier', 'ggcb', 'uscts'],
     panel: (
       <Filter statuses={['Signed', 'Completed']} {...props}>
         <Contracts {...props} />
@@ -32,7 +34,7 @@ const tabs = props => [
   },
   {
     name: 'Invoices',
-    actors: ['buyer', 'supplier', 'ggcb', 'uscts', 'factor-1', 'factor-2'],
+    actors: ['buyer', 'supplier', 'factor-1', 'factor-2'],
     panel: (
       <Filter statuses={['Created', 'Signed', 'For Sale', 'Sold']} {...props}>
         <Invoices {...props} />
@@ -68,7 +70,7 @@ const Title = ({ title, notification }) => (
       alignItems: 'center'
     }}
   >
-    {notification === title ? (
+    {notifications[notification] === title.toLowerCase() ? (
       <Icon style={{ marginBottom: '9px' }} icon="symbol-circle" intent={'danger'} />
     ) : (
       <></>
@@ -81,7 +83,7 @@ const Dashboard = ({ location: { state } }) => {
   const [test, setTest] = useState('');
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
-    setTest('Orders');
+    setTest(notification.type);
   });
 
   const userTabs = tabs(state)

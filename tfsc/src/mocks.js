@@ -22,3 +22,18 @@ export const actors = [
   { role: 'Factor-1', description: 'a bank to acquire a debt of buyer' },
   { role: 'Factor-2', description: 'a bank to acquire a debt of buyer' }
 ];
+
+export const notifications = {
+  generateProof: 'proofs',
+  place: 'orders',
+  updateOrder: 'orders',
+  shipmentRequested: 'shipping documents',
+  shipmentConfirmed: 'shipping documents',
+  validateProof: 'proofs',
+  contractCreated: 'contracts',
+  placeInvoice: 'invoices',
+  placeInvoiceForTrade: 'invoices',
+  placeBid: 'invoices',
+  acceptBid: 'invoices',
+  acceptInvoice: 'invoices'
+};
