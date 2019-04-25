@@ -6,8 +6,6 @@ import { useFetch } from '../hooks';
 
 import OrderForm from './OrderForm';
 
-import { AppToaster } from '../toaster';
-
 import { post } from '../helper/api';
 
 import Table from '../components/Table';
@@ -21,25 +19,11 @@ const Orders = ({ role, filter, search }) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'place') {
-      if (role === 'supplier') {
-        AppToaster.show({
-          icon: 'tick',
-          intent: 'success',
-          message: `New Order: ${notification.orderId}`
-        });
-      }
       const newState = data.concat(notification);
       setData(newState);
     }
 
     if (notification.type === 'updateOrder') {
-      if (role === 'buyer') {
-        AppToaster.show({
-          icon: 'tick',
-          intent: 'success',
-          message: `Order Updated: ${notification.orderId}`
-        });
-      }
       const newState = data.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.orderId === notification.orderId);
       newState[itemToUpdateIndex] = notification;

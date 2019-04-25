@@ -6,6 +6,8 @@ import {
 
 import { post } from '../helper/api';
 
+import ActionCompleted from '../components/ActionCompleted';
+
 const defaultFormState = {
   productName: '',
   quantity: 0,
@@ -18,9 +20,22 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, setFormState] = useState(defaultFormState);
   const [newOrder, placeOrder, r] = post('placeOrder')();
 
-  if (!newOrder.pending && (newOrder.complete || newOrder.error)) {
-    setDialogOpenState(false);
-    r();
+  if (!newOrder.pending) {
+    if (newOrder.complete) {
+      setTimeout(() => {
+        setDialogOpenState(false);
+        r();
+      }, 1500);
+      // r();
+    }
+    if (newOrder.error) {
+      // TODO:
+    }
+    // setTimeout(() => {
+    //   setDialogOpenState(false);
+    // }, 1500);
+
+    // r();
   }
 
   const FORM_FIELDS = [
@@ -67,9 +82,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
         }}
       >
         <Card style={{ width: '20vw' }}>
-          {newOrder.pending && !newOrder.complete ? (
-            <Spinner large intent='primary' />
+          {newOrder.complete && newOrder.data ? (
+            <ActionCompleted action="New Order Purchased" result="Accepted" />
           ) : (
+            <></>
+          )}
+          {newOrder.pending && !newOrder.complete ? <Spinner large intent="primary" /> : <></>}
+          {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
             <>
               {FORM_FIELDS.map(({
                 label, type, placeholder, field
@@ -111,6 +130,8 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 </Button>
               </div>
             </>
+          ) : (
+            <></>
           )}
         </Card>
       </div>
