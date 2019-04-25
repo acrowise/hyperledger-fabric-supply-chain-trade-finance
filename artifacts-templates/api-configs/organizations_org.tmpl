@@ -1,0 +1,14 @@
+  $ORG:
+    mspid: ${ORG}MSP
+    cryptoPath: peerOrganizations/$ORG.DOMAIN/users/{userName}@$ORG.DOMAIN/msp
+    peers:
+      - peer0.$ORG.DOMAIN
+      - peer1.$ORG.DOMAIN
+
+    # [Optional]. Certificate Authorities issue certificates for identification purposes in a Fabric based
+    # network. Typically certificates provisioning is done in a separate process outside of the
+    # runtime network. Fabric-CA is a special certificate authority that provides a REST APIs for
+    # dynamic certificate management (enroll, revoke, re-enroll). The following section is only for
+    # Fabric-CA servers.
+    certificateAuthorities:
+      - ca.$ORG.DOMAIN

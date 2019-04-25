@@ -40,7 +40,7 @@
 port: 7054
 
 # Enables debug logging (default: false)
-debug: false
+debug: true
 
 #############################################################################
 #  TLS section for the server's listening port
@@ -56,8 +56,8 @@ tls:
   # Enable TLS (default: false)
   enabled: false
   # TLS for the server's listening port
-  certfile: ca-cert.pem
-  keyfile: ca-key.pem
+  certfile:
+  keyfile:
   clientauth:
     type: noclientcert
     certfiles:
@@ -76,11 +76,11 @@ ca:
   # Name of this CA
   name:
   # Key file (default: ca-key.pem)
-  keyfile: ca-key.pem
+  keyfile:
   # Certificate file (default: ca-cert.pem)
-  certfile: ca-cert.pem
+  certfile:
   # Chain file (default: chain-cert.pem)
-  chainfile: ca-chain.pem
+  chainfile:
 
 #############################################################################
 #  The registry section controls how the fabric-ca-server does two things:
@@ -133,10 +133,10 @@ db:
   tls:
       enabled: false
       certfiles:
-        - db-server-cert.pem
+
       client:
-        certfile: db-client-cert.pem
-        keyfile: db-client-key.pem
+        certfile:
+        keyfile:
 
 #############################################################################
 #  LDAP section
@@ -153,10 +153,10 @@ ldap:
    url: ldap://<adminDN>:<adminPassword>@<host>:<port>/<base>
    tls:
       certfiles:
-        - ldap-server-cert.pem
+
       client:
-         certfile: ldap-client-cert.pem
-         keyfile: ldap-client-key.pem
+         certfile:
+         keyfile:
 
 #############################################################################
 #  Affiliation section

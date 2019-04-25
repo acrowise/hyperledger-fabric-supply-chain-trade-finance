@@ -13,13 +13,26 @@ artifactsTemplatesFolder="artifacts-templates"
 
 : ${DOMAIN:="example.com"}
 : ${IP_ORDERER:="127.0.0.1"}
-: ${ORG1:="a"}
-: ${ORG2:="b"}
-: ${ORG3:="c"}
-: ${ORG4:="d"}
-: ${ORG5:="e"}
-: ${ORG6:="f"}
-: ${ORG7:="g"}
+: ${ORG1:="a"} #Buyer
+: ${ORG2:="b"} #First supplier
+: ${ORG3:="c"} #Second supplier
+: ${ORG4:="d"} #First auditor
+: ${ORG5:="e"} #Second auditor
+: ${ORG6:="f"} #First factor
+: ${ORG7:="g"} #Second factor
+
+: ${BUYER:="buyer"}
+: ${SUPPLIER:="supplier"}
+: ${AUDITOR:="auditor"}
+: ${FACTOR:="factor"}
+
+: ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
+: ${PEERS_PEER_TMPL:="peers_peer"}
+: ${EM_PEER_TMPL:="em_peer"}
+: ${EM_CA_TMPL:="em_ca"}
+: ${CHANNELS_PEERS_TMPL:="channels_peers"}
+: ${NETWORK_TMPL:="network"}
+
 : ${PEER0:="peer0"}
 : ${PEER1:="peer1"}
 : ${MAIN_ORG:=${ORG1}}
@@ -44,12 +57,20 @@ echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
 
 CLI_TIMEOUT=10000
 
-CHAINCODE_VERSION="1.1"
-CHAINCODE_COMMON_NAME=reference
+CHAINCODE_VERSION="1.0"
+CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode
+CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode
 
-CHAINCODE_COMMON_INIT='{"Args":["init","a","100","b","100"]}'
+GOLANG_PACKAGES=(
+github.com/satori/go.uuid
+)
+
+# TODO: pass the contents of the collections_config.json as arg[0]
+CHAINCODE_TRADE_FINANCE_INIT='{"Args":["init","b-f-Deals,b-g-Deals,c-f-Deals,c-g-Deals"]}'
+CHAINCODE_SUPPLY_CHAIN_INIT='{"Args":["init",""]}'
 CHAINCODE_BILATERAL_INIT='{"Args":["init"]}'
-COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_COMMON_NAME}/collections_config.json"
+TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"
+SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
 LITERAL_LEVELDB="leveldb"
@@ -173,6 +194,18 @@ function removeDockersWithDomain() {
 
 }
 
+function removeDockersImageWithDomain() {
+  search="$DOMAIN"
+  docker_ids=$(docker image ls | grep ${search} | awk '{print $1};')
+  if [ -z "$docker_ids" -o "$docker_ids" == " " ]; then
+    echo "No docker images available for deletion with $search"
+  else
+    echo "Removing docker images found with $search: $docker_ids"
+    docker image rm ${docker_ids}
+  fi
+
+}
+
 function generateOrdererDockerCompose() {
     mainOrg=$1
     echo "Creating orderer docker compose yaml file with $DOMAIN, $ORG1, $ORG2, $ORG3, $DEFAULT_ORDERER_PORT, $DEFAULT_WWW_PORT"
@@ -273,6 +306,7 @@ function addHostFiles() {
 
 function generatePeerArtifacts() {
     org=$1
+    orgu=${10}
 
     [[ ${#} == 0 ]] && echo "missing required argument -o ORG" && exit 1
 
@@ -317,7 +351,7 @@ function generatePeerArtifacts() {
     f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-$org.yaml"
 
     # cryptogen yaml
-    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" $TEMPLATES_ARTIFACTS_FOLDER/cryptogentemplate-peer.yaml > $GENERATED_ARTIFACTS_FOLDER/"cryptogen-$org.yaml"
+    sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" -e "s/OU/$orgu/g" $TEMPLATES_ARTIFACTS_FOLDER/cryptogentemplate-peer.yaml > $GENERATED_ARTIFACTS_FOLDER/"cryptogen-$org.yaml"
 
     # swarm.key for ipfs
     mkdir "$GENERATED_ARTIFACTS_FOLDER/ipfs.$org.$DOMAIN"
@@ -476,6 +510,19 @@ function installChaincode() {
     && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang"
 }
 
+function installPackage() {
+    org=$1
+    pkg=$2
+
+    f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
+
+    info "installing package $pkg to peers of $org using $f"
+
+    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"go get $pkg"
+
+    docker exec "cli.$org.$DOMAIN" bash -c "go get $pkg"
+}
+
 function dockerComposeUp () {
   compose_file="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-$1.yaml"
 
@@ -513,9 +560,20 @@ function installAll() {
 
   sleep 2
 
-  for chaincode_name in ${CHAINCODE_COMMON_NAME}
+  for chaincode_name in ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_TRADE_FINANCE_NAME}
   do
     installChaincode "${org}" "${chaincode_name}" "${CHAINCODE_VERSION}"
+  done
+}
+
+function installPackages() {
+  org=$1
+
+  sleep 2
+
+  for pkg in ${GOLANG_PACKAGES[@]}
+  do
+    installPackage "${org}" "${pkg}"
   done
 }
 
@@ -554,7 +612,7 @@ function logs () {
 
 function clean() {
   removeDockersWithDomain
-  #removeUnwantedImages
+  removeDockersImageWithDomain
 }
 
 function printArgs() {
@@ -572,6 +630,43 @@ function checkDocker() {
     fi
     return
   fi
+}
+
+function render_template() {
+  eval "echo \"$(cat $1)\""
+}
+
+function clear_temp_files() {
+for TMPL in ${ORGANIZATIONS_ORG_TMPL} ${PEERS_PEER_TMPL} ${EM_PEER_TMPL} ${EM_CA_TMPL} ${CHANNELS_PEERS_TMPL}
+do
+    if [ -f "$TEMPLATES_ARTIFACTS_FOLDER/api-configs/${TMPL}.yaml" ]
+    then
+        rm $TEMPLATES_ARTIFACTS_FOLDER/api-configs/${TMPL}.yaml
+    fi
+done
+}
+
+function make_network_template(){
+: ${ORGS:=$@}
+: ${TEMPLATES_PATH:=$TEMPLATES_ARTIFACTS_FOLDER/api-configs}
+
+clear_temp_files
+for TMPL in ${ORGANIZATIONS_ORG_TMPL} ${PEERS_PEER_TMPL} ${EM_PEER_TMPL} ${EM_CA_TMPL} ${CHANNELS_PEERS_TMPL}
+do
+    for ORG in ${ORGS}
+    do
+        render_template ${TEMPLATES_PATH}/${TMPL}.tmpl >> ${TEMPLATES_PATH}/${TMPL}.yaml
+    done
+done
+
+: ${ORGANIZATIONS_ORG:="$(cat ${TEMPLATES_PATH}/${ORGANIZATIONS_ORG_TMPL}.yaml)"}
+: ${PEERS_PEER:="$(cat ${TEMPLATES_PATH}/${PEERS_PEER_TMPL}.yaml)"}
+: ${EM_PEER:="$(cat ${TEMPLATES_PATH}/${EM_PEER_TMPL}.yaml)"}
+: ${EM_CA:="$(cat ${TEMPLATES_PATH}/${EM_CA_TMPL}.yaml)"}
+: ${CHANNELS_PEERS:="$(cat ${TEMPLATES_PATH}/${CHANNELS_PEERS_TMPL}.yaml)"}
+
+render_template ${TEMPLATES_PATH}/${NETWORK_TMPL}.tmpl > ${TEMPLATES_PATH}/${NETWORK_TMPL}.yaml
+clear_temp_files
 }
 
 
@@ -673,6 +768,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
+    installPackages ${org}
     installAll ${org} # install chaincode
 
     # configure ipfs
@@ -688,7 +784,8 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   done
 
-  createJoinInstantiate ${ORG1} common ${CHAINCODE_COMMON_NAME} ${CHAINCODE_COMMON_INIT} ${COLLECTION_CONFIG}
+  createJoinInstantiate ${ORG1} common ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_SUPPLY_CHAIN_INIT} ${SUPPLY_CHAIN_COLLECTION_CONFIG}
+  instantiateChaincode ${ORG1} common ${CHAINCODE_TRADE_FINANCE_NAME} ${CHAINCODE_TRADE_FINANCE_INIT} ${TRADE_FINANCE_COLLECTION_CONFIG}
 
  for org in ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
@@ -724,14 +821,17 @@ elif [ "${MODE}" == "generate" ]; then
   setDockerVersions $file_base
   setDockerVersions $file_base_intercept
 
-  #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port
-  generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984
-  generatePeerArtifacts ${ORG2} 4002     8054    8051       8053             8056       8058            8001       8984
-  generatePeerArtifacts ${ORG3} 4003     9054    9051       9053             9056       9058            9001       9984
-  generatePeerArtifacts ${ORG4} 4004     10054   10051      1053             10056      10058           10001      10984
-  generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984
-  generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984
-  generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984
+  echo "===Generating api-network-config"
+  make_network_template ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+
+  #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
+  generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984         ${BUYER}
+  generatePeerArtifacts ${ORG2} 4002     8054    8051       8053             8056       8058            8001       8984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG3} 4003     9054    9051       9053             9056       9058            9001       9984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG4} 4004     10054   10051      1053             10056      10058           10001      10984        ${AUDITOR}
+  generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984        ${AUDITOR}
+  generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984        ${FACTOR}
+  generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984        ${FACTOR}
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts
 
