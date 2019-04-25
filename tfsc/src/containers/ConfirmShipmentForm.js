@@ -24,6 +24,12 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card style={{ width: '20vw' }}>
+          <p>ShipmentId: {shipment.shipmentId}</p>
+          <p>ContractId: {shipment.contractId}</p>
+          <p>From: {shipment.shipFrom}</p>
+          <p>To: {shipment.shipTo}</p>
+          <p>Transport: {shipment.transport}</p>
+          <p>Description: {shipment.description}</p>
           <p>Upload Bill of Lading</p>
           <FileUploader files={files} setFiles={setFiles} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -41,7 +47,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               intent="primary"
               onClick={() => {
                 setDialogOpenState(false);
-                confirmShipment({ contractId: shipment.contractId });
+                confirmShipment({ shipmentId: shipment.shipmentId });
 
                 const form = new FormData();
                 files.forEach((f) => {

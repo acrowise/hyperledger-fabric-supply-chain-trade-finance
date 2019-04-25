@@ -13,8 +13,7 @@ const defaultFormState = {
   shipFrom: '',
   shipTo: '',
   transport: '',
-  description: '',
-  file: 'Choose file...'
+  description: ''
 };
 
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
@@ -51,7 +50,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   ];
 
   return (
-    <Overlay usePortal isOpen={dialogIsOpen}>
+    <Overlay usePortal isOpen={dialogIsOpen.state}>
       <div
         style={{
           display: 'flex',
@@ -61,6 +60,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
         }}
       >
         <Card style={{ width: '20vw' }}>
+          <Label>ContractId: {dialogIsOpen.item.contractId}</Label>
           {FORM_FIELDS.map(({
             label, type, placeholder, field
           }) => (
@@ -110,7 +110,10 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
               large
               intent="danger"
               onClick={() => {
-                setDialogOpenState(false);
+                setDialogOpenState({
+                  state: false,
+                  item: {}
+                });
                 setFormState(defaultFormState);
               }}
             >
@@ -120,8 +123,13 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
               large
               intent="primary"
               onClick={() => {
-                setDialogOpenState(false);
-                requestShipment(formState);
+                setDialogOpenState({
+                  state: false,
+                  item: {}
+                });
+                requestShipment(
+                  Object.assign({ contractId: dialogIsOpen.item.contractId }, formState)
+                );
                 setFormState(defaultFormState);
 
                 const form = new FormData();

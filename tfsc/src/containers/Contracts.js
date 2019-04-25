@@ -11,7 +11,9 @@ import Table from '../components/Table';
 
 const Contracts = ({ role }) => {
   const [data, loading, setData] = useFetch('contracts');
-  const [tsrDialogIsOpen, setTsrDialogOpenState] = useState(false);
+  const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
+    state: false, item: {}
+  });
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -36,26 +38,35 @@ const Contracts = ({ role }) => {
       />
       <Table
         fields={{
-          orderId: 'Order ID',
           contractId: 'Contract ID',
-          state: 'Satus',
+          consignorName: 'Consignor',
+          consigneeName: 'Consignee',
+          totalDue: 'Total Due',
           dateCreated: 'Date Created',
-          lastUpdated: 'Last Updated'
+          lastUpdated: 'Last Updated',
+          dueDate: 'Due Date',
+          destinationPort: 'Destination',
+          quantity: 'Quantity',
+          state: 'Satus'
         }}
         data={data}
-        actions={() => (
-          <div>
-            <Button
-              onClick={() => {
-                setTsrDialogOpenState(true);
-              }}
-              style={{ marginRight: '5px' }}
-              intent="primary"
-            >
-              New Shipment
-            </Button>
-          </div>
-        )}
+        actions={item => (role === 'supplier' ? (
+            <div>
+              <Button
+                onClick={() => {
+                  console.log('item', item);
+                  setTsrDialogOpenState({ state: true, item });
+                }}
+                style={{ marginRight: '5px' }}
+                intent="primary"
+              >
+                New Shipment
+              </Button>
+            </div>
+        ) : (
+            <></>
+        ))
+        }
       />
     </div>
   );

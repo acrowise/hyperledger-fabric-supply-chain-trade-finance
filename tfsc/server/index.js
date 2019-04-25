@@ -87,7 +87,8 @@ router.post('/requestShipment', (req, res) => {
   res.send('ok');
 
   const shipment = Object.assign(req.body, {
-    contractId: id,
+    shipmentId: id,
+    contractId: req.body.contractId,
     state: 'Requested',
     documents: [
       'Packing list',
@@ -105,7 +106,7 @@ router.post('/requestShipment', (req, res) => {
 
 router.post('/confirmShipment', (req, res) => {
   res.send('ok');
-  const shipment = SHIPMENTS.find(i => i.contractId === req.body.contractId);
+  const shipment = SHIPMENTS.find(i => i.shipmentId === req.body.shipmentId);
 
   shipment.state = 'Confirmed';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentConfirmed' }))));
@@ -120,21 +121,20 @@ router.post('/validateProof', (req, res) => {
 });
 
 router.post('/updateOrder', (req, res) => {
-  const id = nanoid();
   res.send('ok');
   const order = ORDERS.find(i => i.orderId === req.body.orderId);
 
   order.state = 'Accepted';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'updateOrder' }))));
   const contract = {
-    contractId: id,
-    orderId: order.orderId,
-    consignorName: 'consignor name',
-    consigneeName: 'consignee name',
+    contractId: order.orderId,
+    consignorName: 'Buyer',
+    consigneeName: 'Supplier',
     totalDue: 'total_due',
-    quantity: 5,
+    quantity: order.quantity,
     dueDate: 'due_date',
     state: 'New',
+    destinationPort: order.destinationPort,
     dateCreated: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
     documents: 'documents hashes'

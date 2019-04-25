@@ -89,20 +89,23 @@ const Orders = ({ role, filter, search }) => {
           state: 'State'
         }}
         data={data}
-        actions={item => (
-          <div>
-            <Button
-              onClick={() => {
-                updateOrder({ orderId: item.orderId });
-              }}
-              style={{ marginRight: '5px' }}
-              intent="primary"
-            >
-              Accept
-            </Button>
-            <Button intent="danger">Decline</Button>
-          </div>
-        )}
+        actions={item => (role === 'supplier' && item.state === 'New' ? (
+            <div>
+              <Button
+                onClick={() => {
+                  updateOrder({ orderId: item.orderId });
+                }}
+                style={{ marginRight: '5px' }}
+                intent="primary"
+              >
+                Accept
+              </Button>
+              <Button intent="danger">Decline</Button>
+            </div>
+        ) : (
+            <></>
+        ))
+        }
       />
     </div>
   );

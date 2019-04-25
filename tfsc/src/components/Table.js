@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const Table = ({
-  fields, data, actions
+  fields, data, actions, onSelect
 }) => (
   <table className="bp3-html-table">
     <thead>
@@ -20,7 +20,16 @@ const Table = ({
         data.map(i => (
           <tr key={i.toString()}>
             {Object.keys(fields).map(j => (
-              <td key={j.toString()}>{i[j]}</td>
+              <td
+                onClick={() => {
+                  if (onSelect) {
+                    onSelect(i);
+                  }
+                }}
+                key={j.toString()}
+              >
+                {i[j]}
+              </td>
             ))}
 
             <td>{actions(i)}</td>
@@ -34,7 +43,8 @@ const Table = ({
 Table.propTypes = {
   fields: PropTypes.object,
   data: PropTypes.array,
-  actions: PropTypes.func
+  actions: PropTypes.func,
+  onSelect: PropTypes.func
 };
 
 export default Table;

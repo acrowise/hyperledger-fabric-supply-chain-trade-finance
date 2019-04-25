@@ -53,13 +53,17 @@ const ShippingDocuments = ({ role, content, setContent }) => {
       />
       <Table
         fields={{
+          shipmentId: 'Shipment Id',
           contractId: 'Contract ID',
           shipFrom: 'From',
           shipTo: 'To',
-          tarnsport: 'Transport',
+          transport: 'Transport',
           state: 'Status'
         }}
         data={shipments}
+        onSelect={(item) => {
+          setContent(item);
+        }}
         actions={item => (
           <div>
             {role === 'transporter' && item.state === 'Requested' ? (
