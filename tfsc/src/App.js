@@ -3,6 +3,7 @@ import { hot } from 'react-hot-loader';
 
 import '@blueprintjs/core/lib/css/blueprint.css';
 import '@blueprintjs/icons/lib/css/blueprint-icons.css';
+import './styles/styles.scss';
 
 import Login from './Login';
 

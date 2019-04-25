@@ -33,9 +33,18 @@ const Filter = (props) => {
                   setFilter(target.value);
                 }}
               >
-                <Radio label="All" value={''} />
+                <Radio
+                  label="All"
+                  value={''}
+                  className="radio-button"
+                />
                 {props.statuses.map(s => (
-                  <Radio key={s} label={s} value={s} />
+                  <Radio
+                    key={s}
+                    label={s}
+                    value={s}
+                    className="radio-button"
+                  />
                 ))}
               </RadioGroup>
             </div>

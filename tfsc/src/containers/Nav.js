@@ -5,6 +5,8 @@ import {
   Navbar, Alignment, Button, Popover, Icon
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
+import { AppToaster } from '../toaster';
+import logo from '../logo.svg';
 
 const Nav = ({ location: { state } }) => {
   const [notifications, setNotifications] = useState([]);
@@ -27,47 +29,55 @@ const Nav = ({ location: { state } }) => {
   );
 
   return (
-    <Navbar fixedToTop>
-      <Navbar.Group align={Alignment.LEFT}>
-        <Link to="/" style={{ textDecoration: 'none' }}>
-          <Navbar.Heading>Trade Finance & Supply Chain Demo</Navbar.Heading>
-        </Link>
-        <Navbar.Divider />
-      </Navbar.Group>
-      <Navbar.Group align={Alignment.RIGHT}>
-        <Popover
-          onClose={() => {
-            setNewNotification(false);
-            setShowNotifications(false);
-          }}
-          isOpen={showNotifications}
-          content={<Notifications />}
-          target={
-            <div>
-              <Icon
-                icon="symbol-circle"
-                intent={hasNewNotifications ? 'danger' : 'none'}
-                onClick={() => {
-                  setShowNotifications(true);
-                }}
+    <Navbar fixedToTop className="header">
+      <div className="container">
+        <Navbar.Group align={Alignment.LEFT}>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Navbar.Heading>
+              <img
+                src={logo}
+                alt="Altoros"
+                className="header-logo"
               />
-              <Button
-                className="bp3-minimal"
-                style={{ textTransform: 'capitalize' }}
-                onClick={() => {
-                  setShowNotifications(true);
-                }}
-              >
-                Notifications
-              </Button>
-            </div>
-          }
-        />
+            </Navbar.Heading>
+          </Link>
+        </Navbar.Group>
+        <Navbar.Group align={Alignment.RIGHT}>
+          <Popover
+            onClose={() => {
+              setNewNotification(false);
+              setShowNotifications(false);
+            }}
+            isOpen={showNotifications}
+            content={<Notifications />}
+            target={
+              <div>
+                <Icon
+                  icon="symbol-circle"
+                  intent={hasNewNotifications ? 'danger' : 'none'}
+                  className="notification-circle"
+                  onClick={() => {
+                    setShowNotifications(true);
+                  }}
+                />
+                <Button
+                  className="bp3-minimal"
+                  style={{ textTransform: 'capitalize' }}
+                  onClick={() => {
+                    setShowNotifications(true);
+                  }}
+                >
+                  Notifications
+                </Button>
+              </div>
+            }
+          />
 
-        <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
-          {state.role}
-        </Button>
-      </Navbar.Group>
+          <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
+            {state.role}
+          </Button>
+        </Navbar.Group>
+      </div>
     </Navbar>
   );
 };

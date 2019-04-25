@@ -1,0 +1,88 @@
+@import "./font";
+@import "./variables";
+
+// General
+body {
+  margin: 0;
+  color: $color-txt;
+  background-color: $color-bg-gray;
+  font: $fw-normal $fs-normal 'Proxima Nova', serif;
+  line-height: 1.2;
+}
+
+//Layout
+.container {
+  padding: 0 50px;
+}
+
+//Header
+$header-height: 65px;
+.header {
+  padding: 8px 0;
+  box-shadow: none;
+  height: $header-height;
+}
+.header-logo {
+  margin-top: 6px;
+}
+
+//Dashboard
+.dashboard {
+  padding-top: $header-height;
+}
+
+.dashboard-tabs {
+  .bp3-tab-list {
+    justify-content: space-between;
+    padding: 0 50px;
+    background-color: $color-primary;
+  }
+
+  .bp3-tab {
+    color: $color-txt-light;
+    font-size: $fs-normal;
+  }
+
+  .bp3-tab:hover,
+  .bp3-tab:active,
+  .bp3-tab:focus,
+  .bp3-tab[aria-selected="true"] {
+    outline: none;
+    color: $color-secondary;
+  }
+  .bp3-tab-indicator-wrapper {
+    display: none;
+  }
+
+  .bp3-tab {
+    margin-right: 0;
+    flex: 1;
+    text-align: center;
+    line-height: 52px;
+  }
+}
+
+.dashboard-tabs-tab p {
+  margin-bottom: 0;
+}
+
+
+//Radio buttons
+
+.radio-button {
+  font-size: $fs-normal;
+}
+.radio-button input:focus ~ .bp3-control-indicator {
+  outline: none;
+}
+.radio-button:hover input:checked ~ .bp3-control-indicator,
+.radio-button:hover input:checked ~ .bp3-control-indicator,
+.radio-button input:checked ~ .bp3-control-indicator {
+  background-color: $color-secondary!important;
+  box-shadow: none!important;
+  &:focus {
+    outline: none;
+  }
+}
+
+

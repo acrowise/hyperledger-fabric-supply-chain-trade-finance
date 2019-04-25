@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import PropTypes from 'prop-types';
-import { Tab, Tabs, Icon } from '@blueprintjs/core';
-import { useSocket } from 'use-socketio';
+import {Tab, Tabs, Icon} from '@blueprintjs/core';
+import {useSocket} from 'use-socketio';
 import Nav from './Nav';
 
 import Orders from './Orders';
@@ -61,14 +61,9 @@ const tabs = props => [
   }
 ];
 
-const Title = ({ title, notification }) => (
+const Title = ({title, notification}) => (
   <div
-    style={{
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}
+    className="dashboard-tabs-tab"
   >
     {notifications[notification] === title.toLowerCase() ? (
       <Icon style={{ marginBottom: '9px' }} icon="symbol-circle" intent={'danger'} />
@@ -79,7 +74,15 @@ const Title = ({ title, notification }) => (
   </div>
 );
 
-const Dashboard = ({ location: { state } }) => {
+const Panel = ({panel}) => (
+  <div className="container">
+    <div className="dashboard-tabs-panel">
+      {panel}
+    </div>
+  </div>
+);
+
+const Dashboard = ({location: {state}}) => {
   const [test, setTest] = useState('');
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
@@ -88,19 +91,25 @@ const Dashboard = ({ location: { state } }) => {
 
   const userTabs = tabs(state)
     .filter(i => i.actors.includes(state.role))
-    .map(({ name, panel }) => (
-      <Tab id={name} key={name} title={Title({ title: name, notification: test })} panel={panel} />
+    .map(({name, panel}) => (
+      <Tab
+        id={name}
+        key={name}
+        title={Title({title: name, notification: test})}
+        panel={Panel({panel})}
+      />
     ));
 
   const [activeTab, changeTab] = useState(userTabs[0].id);
 
   return (
-    <div style={{ marginTop: '60px' }}>
+    <div className="dashboard">
       <Tabs
         renderActiveTabPanelOnly
         large
         animate
         id="TabsExample"
+        className="dashboard-tabs"
         selectedTabId={activeTab}
         onChange={(id) => {
           changeTab(id);
@@ -124,8 +133,8 @@ Dashboard.propTypes = {
 function Wrapper(props) {
   return (
     <>
-      <Nav {...props} />
-      <Dashboard {...props} />
+    <Nav {...props} />
+    <Dashboard {...props} />
     </>
   );
 }
