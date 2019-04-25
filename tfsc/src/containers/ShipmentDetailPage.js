@@ -4,10 +4,13 @@ import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 import DocumentViewer from '../components/DocumentViewer';
 
+import GenerateProofForm from './GenerateProofForm';
+
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
   const [proofs, loadingProofs, setData] = useFetch('proofs');
   const [docViewerDialogIsOpen, setDocViewerDialogOpenState] = useState(false);
+  const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -41,6 +44,7 @@ const ShipmentDetailPage = (props) => {
   };
   return (
     <>
+      <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
       <DocumentViewer
         dialogIsOpen={docViewerDialogIsOpen}
         setDialogOpenState={setDocViewerDialogOpenState}
@@ -57,6 +61,20 @@ const ShipmentDetailPage = (props) => {
       </div>
       <Button>Confirm Delivery</Button>
       <Button>Add Document</Button>
+      {props.state === 'Confirmed' ? (
+        <Button
+          onClick={(e) => {
+            setGpDialogOpenState(true);
+            e.stopPropagation();
+          }}
+          style={{ marginRight: '5px' }}
+          intent="primary"
+        >
+          Generate Proof
+        </Button>
+      ) : (
+        <></>
+      )}
       <div
         style={{
           marginLeft: '5%',

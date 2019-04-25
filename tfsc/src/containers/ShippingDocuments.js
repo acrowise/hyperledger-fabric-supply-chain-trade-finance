@@ -5,7 +5,6 @@ import { Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
-import GenerateProofForm from './GenerateProofForm';
 import ConfirmShipmentForm from './ConfirmShipmentForm';
 import ShipmentDetailPage from './ShipmentDetailPage';
 
@@ -17,7 +16,6 @@ const ShippingDocuments = ({ role, content, setContent }) => {
   const [confirmDialogIsOpen, setConfirmDialogOpenState] = useState(false);
 
   const [shipments, loading, setData] = useFetch('shipments');
-  const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -45,7 +43,6 @@ const ShippingDocuments = ({ role, content, setContent }) => {
     />
   ) : (
     <div>
-      <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
       <ConfirmShipmentForm
         dialogIsOpen={confirmDialogIsOpen}
         setDialogOpenState={setConfirmDialogOpenState}
@@ -81,21 +78,7 @@ const ShippingDocuments = ({ role, content, setContent }) => {
             ) : (
               <></>
             )}
-            {role === 'supplier' && item.state === 'Confirmed' ? (
-              <Button
-                onClick={(e) => {
-                  setSelectedShipment(item);
-                  setGpDialogOpenState(true);
-                  e.stopPropagation();
-                }}
-                style={{ marginRight: '5px' }}
-                intent="primary"
-              >
-                Generate Proof
-              </Button>
-            ) : (
-              <></>
-            )}
+
           </div>
         )}
       />

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 
-import { AppToaster } from '../toaster';
 import { useFetch } from '../hooks';
 
 import TransportRequestForm from './TransportRequestForm';
@@ -18,11 +17,6 @@ const Contracts = ({ role }) => {
   const onMessage = (message) => {
     const notification = JSON.parse(message);
     if (notification.type === 'contractCreated') {
-      AppToaster.show({
-        icon: 'tick',
-        intent: 'success',
-        message: `New Order: ${notification.orderId}`
-      });
       const newState = data.concat(notification);
       setData(newState);
     }

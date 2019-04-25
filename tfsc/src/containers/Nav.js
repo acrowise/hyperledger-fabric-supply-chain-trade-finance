@@ -5,7 +5,6 @@ import {
   Navbar, Alignment, Button, Popover, Icon
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
-import { AppToaster } from '../toaster';
 
 const Nav = ({ location: { state } }) => {
   const [notifications, setNotifications] = useState([]);
@@ -13,11 +12,6 @@ const Nav = ({ location: { state } }) => {
   const [hasNewNotifications, setNewNotification] = useState(false);
 
   useSocket('notification', (message) => {
-    AppToaster.show({
-      icon: 'tick',
-      intent: 'success',
-      message
-    });
     setNotifications(notifications.concat(JSON.parse(message)));
     setNewNotification(true);
   });
@@ -43,6 +37,7 @@ const Nav = ({ location: { state } }) => {
       <Navbar.Group align={Alignment.RIGHT}>
         <Popover
           onClose={() => {
+            setNewNotification(false);
             setShowNotifications(false);
           }}
           isOpen={showNotifications}
