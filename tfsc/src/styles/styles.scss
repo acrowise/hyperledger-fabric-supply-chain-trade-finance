@@ -6,13 +6,28 @@ body {
   margin: 0;
   color: $color-txt;
   background-color: $color-bg-gray;
-  font: $fw-normal $fs-normal 'Proxima Nova', serif;
+  font: $fw-normal $fs-normal 'Proxima Nova', sans-serif;
   line-height: 1.2;
 }
 
 //Layout
 .container {
   padding: 0 50px;
+}
+.layout-container {
+  display: flex;
+  margin: 0 -10px;
+}
+.layout-aside {
+  flex: 1 0 300px;
+  max-width: 300px;
+  padding: 0 10px;
+}
+
+.layout-main {
+  flex: 1 0 auto;
+  padding: 0 10px;
+  width: 1px;
 }
 
 //Header
@@ -61,14 +76,15 @@ $header-height: 65px;
     line-height: 52px;
   }
 }
-
+.dashboard-tabs-tab {
+  display: inline-block;
+}
 .dashboard-tabs-tab p {
   margin-bottom: 0;
 }
 
 
 //Radio buttons
-
 .radio-button {
   font-size: $fs-normal;
 }
@@ -85,4 +101,14 @@ $header-height: 65px;
   }
 }
 
+//Search input
+.search-input {
+  .bp3-input {
+    border-radius: 20px;
+    padding: 0 25px;
+    border: 1px solid #D3DAE0;
+    box-shadow: none;
+    font: $fw-normal $fs-normal 'Proxima Nova', sans-serif;
+  }
+}
 

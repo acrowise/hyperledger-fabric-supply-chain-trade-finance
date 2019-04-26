@@ -6,7 +6,7 @@ import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
 import VerifyProofForm from './VerifyProofForm';
-import Table from '../components/Table';
+import Table from '../components/Table/Table';
 
 const Proofs = ({ role }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);

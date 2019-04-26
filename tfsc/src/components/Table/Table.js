@@ -1,19 +1,21 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import './table.scss';
 
 const Table = ({
   fields, data, actions, onSelect
 }) => (
-  <table className="bp3-html-table">
-    <thead>
+  <div className="table-wrap">
+    <table className="table">
+      <thead>
       <tr>
         {Object.keys(fields).map(i => (
           <th key={i.toString()}>{fields[i]}</th>
         ))}
         <th>Action</th>
       </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
       {data.length === 0 ? (
         <>No Data</>
       ) : (
@@ -36,8 +38,9 @@ const Table = ({
           </tr>
         ))
       )}
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  </div>
 );
 
 Table.propTypes = {

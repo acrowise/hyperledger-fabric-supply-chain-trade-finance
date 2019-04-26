@@ -11,7 +11,7 @@ import ShippingDocuments from './ShippingDocuments';
 import Proofs from './Proofs';
 import Filter from '../components/Filter';
 
-import { notifications } from '../mocks';
+import {notifications} from '../mocks';
 
 const tabs = props => [
   {
@@ -66,7 +66,7 @@ const Title = ({title, notification}) => (
     className="dashboard-tabs-tab"
   >
     {notifications[notification] === title.toLowerCase() ? (
-      <Icon style={{ marginBottom: '9px' }} icon="symbol-circle" intent={'danger'} />
+      <Icon style={{marginBottom: '9px'}} icon="symbol-circle" intent={'danger'}/>
     ) : (
       <></>
     )}
@@ -75,8 +75,8 @@ const Title = ({title, notification}) => (
 );
 
 const Panel = ({panel}) => (
-  <div className="container">
-    <div className="dashboard-tabs-panel">
+  <div className="dashboard-tabs-panel">
+    <div className="container">
       {panel}
     </div>
   </div>

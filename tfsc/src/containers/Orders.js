@@ -8,7 +8,7 @@ import OrderForm from './OrderForm';
 
 import { post } from '../helper/api';
 
-import Table from '../components/Table';
+import Table from '../components/Table/Table';
 
 const Orders = ({ role, filter, search }) => {
   const [dialogIsOpen, setDialogOpenState] = useState(false);
