@@ -10,14 +10,27 @@ import { AppToaster } from '../toaster';
 
 import { post } from '../helper/api';
 
+const statuses = {
+  0: 'Unknown',
+  1: 'Issued',
+  2: 'Signed',
+  3: 'For Sale',
+  5: 'Sold',
+  6: 'Removed'
+};
+
 const Invoices = ({ role }) => {
   const [invoiceDialogIsOpen, setInvoiceDialogOpenState] = useState(false);
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
-  const [data, loading, setData] = useFetch('invoices');
+
+  const [data, loading, setData] = useFetch('listInvoices', true);
+  const [bids, bidsLoading, setBidsData] = useFetch('listBids', true);
+
+  const [dataToDisplay, setDataToDisplay] = useState([]);
 
   const [acceptedInvoice, acceptInvoice] = post('acceptInvoice')();
   const [forSaleInvoice, placeForTradeInvoice] = post('placeInvoiceForTrade')();
-  const [acceptedBid, acceptBid] = post('acceptBid')();
+  const [acceptedBid, acceptBid] = post('acceptBid', true)();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -50,7 +63,23 @@ const Invoices = ({ role }) => {
 
   useSocket('notification', onMessage);
 
-  return loading ? (
+  if (data.result && bids.result) {
+    console.log(bids.result);
+    console.log('HERE');
+    const a = data.result.concat([]);
+    bids.result.forEach((bid) => {
+      const invoice = a.find(i => i.key.id === bid.value.invoiceID);
+      if (!invoice.bids) {
+        invoice.bids = [];
+      }
+      invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
+    });
+    setDataToDisplay(a);
+    console.log(a);
+    setData({});
+  }
+
+  return loading && bidsLoading ? (
     <>Loading...</>
   ) : (
     <div>
@@ -58,7 +87,7 @@ const Invoices = ({ role }) => {
         dialogIsOpen={invoiceDialogIsOpen}
         setDialogOpenState={setInvoiceDialogOpenState}
       />
-      {role === 'supplier' ? (
+      {/* {role === 'supplier' ? (
         <Button
           icon="add"
           onClick={() => {
@@ -69,7 +98,7 @@ const Invoices = ({ role }) => {
         </Button>
       ) : (
         <></>
-      )}
+      )} */}
       <table className="bp3-html-table .modifier">
         <thead>
           <tr>
@@ -93,28 +122,28 @@ const Invoices = ({ role }) => {
           </tr>
         </thead>
         <tbody>
-          {data.map(invoice => (
-            <tr key={invoice.invoiceId}>
-              <td>{invoice.invoiceId}</td>
-              <td>{invoice.debtor}</td>
-              <td>{invoice.beneficiary}</td>
-              <td>{invoice.totalDue}</td>
-              <td>{invoice.dueDate}</td>
-              <td>{invoice.invoiceOwner}</td>
-              <td>{invoice.state}</td>
-              {role === 'supplier' && invoice.state === 'For Sale' && invoice.bids ? (
+          {dataToDisplay.map(({ key, value, bids }) => (
+            <tr key={key.id}>
+              <td>{key.id}</td>
+              <td>{value.debtor}</td>
+              <td>{value.beneficiary}</td>
+              <td>{value.totalDue}</td>
+              <td>{value.dueDate}</td>
+              <td>{value.owner}</td>
+              <td>{statuses[value.state]}</td>
+              {role === 'supplier' && value.state === 3 && bids ? (
                 <>
                   <td style={{ paddingTop: '10px' }}>
-                    {Object.keys(invoice.bids).map(i => (
-                      <div style={{ paddingTop: '5px' }} key={i.toString()}>
-                        {invoice.bids[i].value}
+                    {bids.map(i => (
+                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                        {i.rate}
                       </div>
                     ))}
                   </td>
                   <td style={{ paddingTop: '10px' }}>
-                    {Object.keys(invoice.bids).map(i => (
-                      <div style={{ paddingTop: '5px' }} key={i.toString()}>
-                        {invoice.bids[i].factor}
+                    {bids.map(i => (
+                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                        {i.factor}
                       </div>
                     ))}
                   </td>
@@ -123,33 +152,31 @@ const Invoices = ({ role }) => {
                 <></>
               )}
 
-              {role === 'supplier' && invoice.state === 'Closed' && invoice.bids ? (
+              {role === 'supplier' && value.state === 4 && bids ? (
                 <>
-                  <td style={{ paddingTop: '10px' }}>
-                    {invoice.value}
-                  </td>
-                  <td style={{ paddingTop: '10px' }}>
-                    {invoice.factor}
-                  </td>
+                  <td style={{ paddingTop: '10px' }}>{value.value}</td>
+                  <td style={{ paddingTop: '10px' }}>{value.factor}</td>
                 </>
               ) : (
                 <></>
               )}
 
-              {role === 'supplier' && invoice.state === 'For Sale' && invoice.bids ? (
+              {role === 'supplier' && value.state === 3 && bids ? (
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {Object.keys(invoice.bids).map(i => (
+                    {bids.map(i => (
                       <Button
-                        key={i}
+                        key={i.bidId}
                         // style={{ marginRight: '5px' }}
                         intent="primary"
                         onClick={() => {
+                          console.log({
+                            fcn: 'acceptBid',
+                            args: [i.bidId, '0', '0', '0']
+                          })
                           acceptBid({
-                            invoiceId: invoice.invoiceId,
-                            bidId: i,
-                            factor: invoice.bids[i].factor,
-                            value: invoice.bids[i].value
+                            fcn: 'acceptBid',
+                            args: [i.bidId, '0', '0', '0']
                           });
                         }}
                       >
@@ -161,14 +188,14 @@ const Invoices = ({ role }) => {
               ) : (
                 <></>
               )}
-              {role === 'buyer' && invoice.state === 'Awaiting' ? (
+              {role === 'buyer' && value.state === 1 ? (
                 <td>
                   <div>
                     <Button
                       style={{ marginRight: '5px' }}
                       intent="primary"
                       onClick={() => {
-                        acceptInvoice({ invoiceId: invoice.invoiceId });
+                        acceptInvoice({ invoiceId: key.id });
                       }}
                     >
                       Sign
@@ -179,14 +206,14 @@ const Invoices = ({ role }) => {
               ) : (
                 <></>
               )}
-              {role === 'supplier' && invoice.state === 'Accepted' ? (
+              {role === 'supplier' && value.state === 2 ? (
                 <td>
                   <div>
                     <Button
                       style={{ marginRight: '5px' }}
                       intent="primary"
                       onClick={() => {
-                        placeForTradeInvoice({ invoiceId: invoice.invoiceId });
+                        placeForTradeInvoice({ invoiceId: key.id });
                       }}
                     >
                       Place for Trade
@@ -196,13 +223,13 @@ const Invoices = ({ role }) => {
               ) : (
                 <></>
               )}
-              {(role === 'factor-1' || role === 'factor-2') && invoice.state === 'For Sale' ? (
+              {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
                 <td>
                   <div>
                     <PlaceBidForm
                       dialogIsOpen={invoiceBidDialogIsOpen}
                       setDialogOpenState={setInvoiceBidDialogOpenState}
-                      invoiceId={invoice.invoiceId}
+                      invoiceId={key.id}
                       role={role}
                     />
                     <Button

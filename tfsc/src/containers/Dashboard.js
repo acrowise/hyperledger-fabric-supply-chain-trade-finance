@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {Tab, Tabs, Icon} from '@blueprintjs/core';
-import {useSocket} from 'use-socketio';
+import { Tab, Tabs, Icon } from '@blueprintjs/core';
+import { useSocket } from 'use-socketio';
 import Nav from './Nav';
 
 import Orders from './Orders';
@@ -36,7 +36,7 @@ const tabs = props => [
     name: 'Invoices',
     actors: ['buyer', 'supplier', 'factor-1', 'factor-2'],
     panel: (
-      <Filter statuses={['Created', 'Signed', 'For Sale', 'Sold']} {...props}>
+      <Filter statuses={['Issued', 'Signed', 'For Sale', 'Sold']} {...props}>
         <Invoices {...props} />
       </Filter>
     )
@@ -61,10 +61,8 @@ const tabs = props => [
   }
 ];
 
-const Title = ({title, notification}) => (
-  <div
-    className="dashboard-tabs-tab"
-  >
+const Title = ({ title, notification }) => (
+  <div className="dashboard-tabs-tab">
     {notifications[notification] === title.toLowerCase() ? (
       <Icon style={{ marginBottom: '9px' }} icon="symbol-circle" intent={'danger'} />
     ) : (
@@ -74,15 +72,13 @@ const Title = ({title, notification}) => (
   </div>
 );
 
-const Panel = ({panel}) => (
+const Panel = ({ panel }) => (
   <div className="container">
-    <div className="dashboard-tabs-panel">
-      {panel}
-    </div>
+    <div className="dashboard-tabs-panel">{panel}</div>
   </div>
 );
 
-const Dashboard = ({location: {state}}) => {
+const Dashboard = ({ location: { state } }) => {
   const [test, setTest] = useState('');
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
@@ -91,12 +87,12 @@ const Dashboard = ({location: {state}}) => {
 
   const userTabs = tabs(state)
     .filter(i => i.actors.includes(state.role))
-    .map(({name, panel}) => (
+    .map(({ name, panel }) => (
       <Tab
         id={name}
         key={name}
-        title={Title({title: name, notification: test})}
-        panel={Panel({panel})}
+        title={Title({ title: name, notification: test })}
+        panel={Panel({ panel })}
       />
     ));
 
@@ -133,8 +129,8 @@ Dashboard.propTypes = {
 function Wrapper(props) {
   return (
     <>
-    <Nav {...props} />
-    <Dashboard {...props} />
+      <Nav {...props} />
+      <Dashboard {...props} />
     </>
   );
 }

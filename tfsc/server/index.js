@@ -3,6 +3,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const nanoid = require('nanoid');
 const multer = require('multer');
+const proxy = require('http-proxy-middleware');
 
 const upload = multer();
 
@@ -19,8 +20,20 @@ const clients = [];
 const app = express();
 const router = express.Router();
 
-router.use(bodyParser.json());
 router.use(cors());
+
+router.use(
+  '/api',
+  proxy({
+    target: 'http://localhost:4002',
+    changeOrigin: true,
+    logLevel: 'debug'
+    // headers: { Connection: 'keep-alive' }
+    // onProxyReq
+  })
+);
+
+router.use(bodyParser.json());
 
 router.get('/proofs', (_, res) => {
   res.json(PROOFS);
@@ -139,6 +152,7 @@ router.post('/updateOrder', (req, res) => {
     lastUpdated: new Date().toISOString(),
     documents: 'documents hashes'
   };
+
   CONTRACTS.push(contract);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));

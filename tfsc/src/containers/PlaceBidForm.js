@@ -9,16 +9,16 @@ import { post } from '../helper/api';
 const PlaceBidForm = ({
   dialogIsOpen, setDialogOpenState, invoiceId, role
 }) => {
-  const defaultFormState = { value: 0, invoiceId, role };
+  const defaultFormState = { rate: 0, invoiceId, role };
   const [formState, setFormState] = useState(defaultFormState);
-  const [newBid, placeBid] = post('placeBid')();
+  const [newBid, placeBid] = post('placeBid', true)();
 
   const FORM_FIELDS = [
     {
       label: 'Bid Value',
       placeholder: 'Placeholder text',
       type: 'number',
-      field: 'value'
+      field: 'rate'
     }
   ];
 
@@ -66,12 +66,12 @@ const PlaceBidForm = ({
               large
               intent="primary"
               onClick={() => {
+                placeBid({ fcn: 'placeBid', args: ['0', formState.rate.toString(), 'f', invoiceId] }); // FIXME:  f- factor-id
                 setDialogOpenState(false);
                 setFormState(defaultFormState);
-                placeBid(formState);
               }}
             >
-              Order
+              Place
             </Button>
           </div>
         </Card>
