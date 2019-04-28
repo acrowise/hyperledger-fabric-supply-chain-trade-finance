@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, Checkbox, Card, MenuItem
@@ -6,11 +6,11 @@ import {
 import { Select } from '@blueprintjs/select';
 
 import { post } from '../helper/api';
-
+import { formReducer } from '../reducers';
 import { INPUTS, REVIEWERS } from '../constants';
 
 const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
-  const defaultFormState = {
+  const initialState = {
     contractId: false,
     consignorName: false,
     totalDue: false,
@@ -21,7 +21,8 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
     doc1: false,
     reviewer: null
   };
-  const [formState, setFormState] = useState(defaultFormState);
+
+  const [formState, dispatch] = useReducer(formReducer, initialState);
   const [proofRes, generateProof] = post('generateProof')();
 
   return (
@@ -40,21 +41,25 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
               key={label}
               label={label}
               value={formState[field]}
-              onChange={({ target }) => setFormState(
-                Object.assign({}, formState, {
-                  [field]: !formState[field]
-                })
-              )
+              onChange={() => dispatch({
+                type: 'change',
+                payload: {
+                  field,
+                  value: !formState[field]
+                }
+              })
               }
             />
           ))}
           <Select
-            onItemSelect={(reviewer) => {
-              setFormState(
-                Object.assign({}, formState, {
-                  reviewer
-                })
-              );
+            onItemSelect={(value) => {
+              dispatch({
+                type: 'change',
+                payload: {
+                  field: 'reviewer',
+                  value
+                }
+              });
             }}
             itemRenderer={(item, { handleClick }) => (
               <MenuItem text={item.title} onClick={handleClick} />
@@ -74,7 +79,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
               intent="danger"
               onClick={() => {
                 setDialogOpenState(false);
-                setFormState(defaultFormState);
+                dispatch({ type: 'reset', payload: initialState });
               }}
             >
               Cancel
@@ -85,8 +90,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
               onClick={() => {
                 setDialogOpenState(false);
                 generateProof(formState);
-                console.log(formState);
-                setFormState(defaultFormState);
+                dispatch({ type: 'reset', payload: initialState });
               }}
             >
               Generate

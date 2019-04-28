@@ -52,16 +52,8 @@ const ShipmentDetailPage = (props) => {
         setDialogOpenState={setCdDialogOpenState}
         shipment={props}
       />
-      {/* <DocumentViewer
-        dialogIsOpen={docViewerDialogIsOpen}
-        setDialogOpenState={setDocViewerDialogOpenState}
-      /> */}
       <div
         style={{ display: 'flex', flexDirection: 'row' }}
-        // onClick={() => {
-        //   props.showShipmentDetail(false);
-        //   props.setContent(null);
-        // }}
       >
         <Icon icon="arrow-left" />
         <p>Back</p>
@@ -163,9 +155,6 @@ const ShipmentDetailPage = (props) => {
               data.map(d => (
                 <div
                   key={data}
-                  onClick={() => {
-                    setDocViewerDialogOpenState(true);
-                  }}
                   style={{ display: 'flex', flexDirection: 'row' }}
                 >
                   <Icon icon="document" />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Spinner, Label
@@ -11,16 +11,18 @@ import ActionCompleted from '../components/ActionCompleted';
 
 import { INPUTS } from '../constants';
 
-const defaultFormState = {
-  productName: '',
-  quantity: 0,
-  price: 0,
-  destinationPort: '',
-  dueDate: new Date()
-};
+import { formReducer } from '../reducers';
 
 const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
-  const [formState, setFormState] = useState(defaultFormState);
+  const initialState = {
+    productName: '',
+    quantity: 0,
+    price: 0,
+    destinationPort: '',
+    dueDate: new Date()
+  };
+  const [formState, dispatch] = useReducer(formReducer, initialState);
+
   const [newOrder, placeOrder, r] = post('placeOrder')();
 
   if (!newOrder.pending) {
@@ -68,11 +70,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     type={type}
                     placeholder={placeholder}
                     value={formState[field]}
-                    onChange={({ target }) => setFormState(
-                      Object.assign({}, formState, {
-                        [field]: target.value
-                      })
-                    )
+                    onChange={({ target: { value } }) => dispatch({
+                      type: 'change',
+                      payload: {
+                        field,
+                        value
+                      }
+                    })
                     }
                   />
                 </FormGroup>
@@ -84,11 +88,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   formatDate={date => date.toLocaleDateString()}
                   onChange={(date) => {
                     console.log(date);
-                    setFormState(
-                      Object.assign({}, formState, {
-                        dueDate: date
-                      })
-                    );
+                    dispatch({
+                      type: 'change',
+                      payload: {
+                        field: 'dueDate',
+                        value: date
+                      }
+                    });
                   }}
                   timePrecision={undefined}
                   parseDate={str => new Date(str)}
@@ -101,7 +107,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   intent="danger"
                   onClick={() => {
                     setDialogOpenState(false);
-                    setFormState(defaultFormState);
+                    dispatch({ type: 'reset', payload: initialState });
                   }}
                 >
                   Cancel
@@ -110,7 +116,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   large
                   intent="primary"
                   onClick={() => {
-                    setFormState(defaultFormState);
+                    dispatch({ type: 'reset', payload: initialState });
                     placeOrder(formState);
                   }}
                 >

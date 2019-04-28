@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
 import PropTypes from 'prop-types';
 
 import {
@@ -11,7 +11,9 @@ import FileUploader from '../components/FileUploader';
 
 import { INPUTS } from '../constants';
 
-const defaultFormState = {
+import { formReducer } from '../reducers';
+
+const initialState = {
   shipFrom: '',
   shipTo: '',
   transport: '',
@@ -19,7 +21,8 @@ const defaultFormState = {
 };
 
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
-  const [formState, setFormState] = useState(defaultFormState);
+  const [formState, dispatch] = useReducer(formReducer, initialState);
+  // const [formState, setFormState] = useState(defaultFormState);
   const [files, setFiles] = useState([]);
   const [shipmentRequest, requestShipment] = post('requestShipment')();
   const [documentsRequest, uploadDocs] = post('uploadDocuments')();
@@ -44,11 +47,13 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 type={type}
                 placeholder={placeholder}
                 value={formState[field]}
-                onChange={({ target }) => setFormState(
-                  Object.assign({}, formState, {
-                    [field]: target.value
-                  })
-                )
+                onChange={({ target: { value } }) => dispatch({
+                  type: 'change',
+                  payload: {
+                    field,
+                    value
+                  }
+                })
                 }
               />
             </FormGroup>
@@ -58,27 +63,16 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
             <TextArea
               growVertically={true}
               value={formState.description}
-              onChange={(e) => {
-                setFormState(
-                  Object.assign({}, formState, {
-                    description: e.target.value
-                  })
-                );
-              }}
+              onChange={({ target: { value } }) => dispatch({
+                type: 'change',
+                payload: {
+                  field: 'description',
+                  value
+                }
+              })
+              }
             />
           </Label>
-
-          {/* <FileInput
-            text={formState.file}
-            onInputChange={(e) => {
-              console.log(e.target.files[0]);
-              setFormState(
-                Object.assign({}, formState, {
-                  file: e.target.files[0].name
-                })
-              );
-            }}
-          /> */}
           <FileUploader files={files} setFiles={setFiles} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button
@@ -89,7 +83,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   state: false,
                   item: {}
                 });
-                setFormState(defaultFormState);
+                dispatch({ type: 'reset', payload: initialState });
                 setFiles([]);
               }}
             >
@@ -106,7 +100,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 requestShipment(
                   Object.assign({ contractId: dialogIsOpen.item.contractId }, formState)
                 );
-                setFormState(defaultFormState);
+                dispatch({ type: 'reset', payload: initialState });
 
                 const form = new FormData();
                 files.forEach((f) => {

@@ -11,7 +11,6 @@ import { post } from '../helper/api';
 import { STATUSES } from '../constants';
 
 const Invoices = ({ role }) => {
-  const [invoiceDialogIsOpen, setInvoiceDialogOpenState] = useState(false);
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
 
   const [data, loading, setData] = useFetch('listInvoices', true);
