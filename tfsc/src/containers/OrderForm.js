@@ -9,6 +9,8 @@ import { post } from '../helper/api';
 
 import ActionCompleted from '../components/ActionCompleted';
 
+import { INPUTS } from '../constants';
+
 const defaultFormState = {
   productName: '',
   quantity: 0,
@@ -39,33 +41,6 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
     // r();
   }
 
-  const FORM_FIELDS = [
-    {
-      label: 'Product Name',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'productName'
-    },
-    {
-      label: 'Price',
-      placeholder: 'Placeholder text',
-      type: 'number',
-      field: 'price'
-    },
-    {
-      label: 'Quantity',
-      placeholder: 'Placeholder text',
-      type: 'number',
-      field: 'quantity'
-    },
-    {
-      label: 'Destination Port',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'destinationPort'
-    }
-  ];
-
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -85,7 +60,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
           {newOrder.pending && !newOrder.complete ? <Spinner large intent="primary" /> : <></>}
           {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
             <>
-              {FORM_FIELDS.map(({
+              {INPUTS.NEW_PURCHASE_ORDER.map(({
                 label, type, placeholder, field
               }) => (
                 <FormGroup key={label} label={label}>

@@ -4,20 +4,11 @@ import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
-import InvoiceForm from './InvoiceForm';
 import PlaceBidForm from './PlaceBidForm';
 import { AppToaster } from '../toaster';
 
 import { post } from '../helper/api';
-
-const statuses = {
-  0: 'Unknown',
-  1: 'Issued',
-  2: 'Signed',
-  3: 'For Sale',
-  5: 'Sold',
-  6: 'Removed'
-};
+import { STATUSES } from '../constants';
 
 const Invoices = ({ role }) => {
   const [invoiceDialogIsOpen, setInvoiceDialogOpenState] = useState(false);
@@ -81,22 +72,6 @@ const Invoices = ({ role }) => {
     <>Loading...</>
   ) : (
     <div>
-      <InvoiceForm
-        dialogIsOpen={invoiceDialogIsOpen}
-        setDialogOpenState={setInvoiceDialogOpenState}
-      />
-      {/* {role === 'supplier' ? (
-        <Button
-          icon="add"
-          onClick={() => {
-            setInvoiceDialogOpenState(true);
-          }}
-        >
-          New Invoice
-        </Button>
-      ) : (
-        <></>
-      )} */}
       <table className="bp3-html-table .modifier">
         <thead>
           <tr>
@@ -128,7 +103,7 @@ const Invoices = ({ role }) => {
               <td>{value.totalDue}</td>
               <td>{value.dueDate}</td>
               <td>{value.owner}</td>
-              <td>{statuses[value.state]}</td>
+              <td>{STATUSES.INVOICE[value.state]}</td>
               {role === 'supplier' && value.state === 3 && bids ? (
                 <>
                   <td style={{ paddingTop: '10px' }}>

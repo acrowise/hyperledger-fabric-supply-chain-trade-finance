@@ -9,6 +9,8 @@ import { post } from '../helper/api';
 
 import FileUploader from '../components/FileUploader';
 
+import { INPUTS } from '../constants';
+
 const defaultFormState = {
   shipFrom: '',
   shipTo: '',
@@ -22,33 +24,6 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [shipmentRequest, requestShipment] = post('requestShipment')();
   const [documentsRequest, uploadDocs] = post('uploadDocuments')();
 
-  const FORM_FIELDS = [
-    {
-      label: 'Ship From',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'shipFrom'
-    },
-    {
-      label: 'Ship To',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'shipTo'
-    },
-    {
-      label: 'Transport',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'transport'
-    }
-    // {
-    //   label: 'Description',
-    //   placeholder: 'Placeholder text',
-    //   type: 'text',
-    //   field: 'description'
-    // }
-  ];
-
   return (
     <Overlay usePortal isOpen={dialogIsOpen.state}>
       <div
@@ -61,7 +36,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
       >
         <Card style={{ width: '20vw' }}>
           <Label>ContractId: {dialogIsOpen.item.contractId}</Label>
-          {FORM_FIELDS.map(({
+          {INPUTS.TRANSPORT_REQUEST.map(({
             label, type, placeholder, field
           }) => (
             <FormGroup key={label} label={label}>

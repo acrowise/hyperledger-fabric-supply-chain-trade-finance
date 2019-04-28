@@ -10,6 +10,8 @@ import ShipmentDetailPage from './ShipmentDetailPage';
 
 import Table from '../components/Table/Table';
 
+import { TABLE_MAP } from '../constants';
+
 const ShippingDocuments = ({ role, content, setContent }) => {
   const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
@@ -49,14 +51,7 @@ const ShippingDocuments = ({ role, content, setContent }) => {
         shipment={selectedShipment}
       />
       <Table
-        fields={{
-          shipmentId: 'Shipment Id',
-          contractId: 'Contract ID',
-          shipFrom: 'From',
-          shipTo: 'To',
-          transport: 'Transport',
-          state: 'Status'
-        }}
+        fields={TABLE_MAP.SHIPMENTS}
         data={shipments}
         onSelect={(item) => {
           setContent(item);
@@ -78,7 +73,6 @@ const ShippingDocuments = ({ role, content, setContent }) => {
             ) : (
               <></>
             )}
-
           </div>
         )}
       />

@@ -5,7 +5,6 @@ import {
   Navbar, Alignment, Button, Popover, Icon
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
-import { AppToaster } from '../toaster';
 import logo from '../logo.svg';
 
 const Nav = ({ location: { state } }) => {

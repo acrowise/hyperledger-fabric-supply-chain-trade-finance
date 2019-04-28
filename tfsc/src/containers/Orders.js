@@ -10,6 +10,8 @@ import { post } from '../helper/api';
 
 import Table from '../components/Table/Table';
 
+import { TABLE_MAP } from '../constants';
+
 const Orders = ({ role, filter, search }) => {
   const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('orders');
@@ -62,16 +64,7 @@ const Orders = ({ role, filter, search }) => {
         <></>
       )}
       <Table
-        fields={{
-          orderId: 'Order ID',
-          productName: 'Name',
-          quantity: 'Quantity',
-          price: 'Price',
-          destinationPort: 'Destination Port',
-          dueDate: 'Due Date',
-          dateCreated: 'Date Created',
-          state: 'State'
-        }}
+        fields={TABLE_MAP.ORDERS}
         data={filteredData}
         actions={item => (role === 'supplier' && item.state === 'New' ? (
             <div>

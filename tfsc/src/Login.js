@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Card, Elevation } from '@blueprintjs/core';
 
-import { actors } from './mocks';
+import { actors } from './constants';
 
 const Login = () => (
   <div

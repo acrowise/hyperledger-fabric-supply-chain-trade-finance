@@ -6,21 +6,14 @@ import {
 
 import { post } from '../helper/api';
 
+import { INPUTS } from '../constants';
+
 const PlaceBidForm = ({
   dialogIsOpen, setDialogOpenState, invoiceId, role
 }) => {
   const defaultFormState = { rate: 0, invoiceId, role };
   const [formState, setFormState] = useState(defaultFormState);
   const [newBid, placeBid] = post('placeBid', true)();
-
-  const FORM_FIELDS = [
-    {
-      label: 'Bid Value',
-      placeholder: 'Placeholder text',
-      type: 'number',
-      field: 'rate'
-    }
-  ];
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
@@ -34,7 +27,7 @@ const PlaceBidForm = ({
         }}
       >
         <Card style={{ width: '20vw' }}>
-          {FORM_FIELDS.map(({
+          {INPUTS.PLACE_BID.map(({
             label, type, placeholder, field
           }) => (
             <FormGroup key={label} label={label}>
@@ -66,7 +59,10 @@ const PlaceBidForm = ({
               large
               intent="primary"
               onClick={() => {
-                placeBid({ fcn: 'placeBid', args: ['0', formState.rate.toString(), 'f', invoiceId] }); // FIXME:  f- factor-id
+                placeBid({
+                  fcn: 'placeBid',
+                  args: ['0', formState.rate.toString(), 'f', invoiceId]
+                }); // FIXME:  f- factor-id
                 setDialogOpenState(false);
                 setFormState(defaultFormState);
               }}

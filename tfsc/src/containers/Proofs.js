@@ -7,6 +7,7 @@ import { useFetch } from '../hooks';
 
 import VerifyProofForm from './VerifyProofForm';
 import Table from '../components/Table/Table';
+import { TABLE_MAP } from '../constants';
 
 const Proofs = ({ role }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
@@ -41,13 +42,7 @@ const Proofs = ({ role }) => {
         proof={selectedProof}
       />
       <Table
-        fields={{
-          contractId: 'Contract ID',
-          shipFrom: 'From',
-          shipTo: 'To',
-          tarnsport: 'Transport',
-          state: 'Status'
-        }}
+        fields={TABLE_MAP.PROOFS}
         data={proofs}
         actions={item => (
           <div>

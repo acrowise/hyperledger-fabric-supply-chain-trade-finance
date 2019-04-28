@@ -7,16 +7,7 @@ import { Select } from '@blueprintjs/select';
 
 import { post } from '../helper/api';
 
-const reviewers = [
-  {
-    id: 'agency-1',
-    title: 'Government Goods Control Bureau'
-  },
-  {
-    id: 'agency-2',
-    title: 'US Commercial Trade Service'
-  }
-];
+import { INPUTS, REVIEWERS } from '../constants';
 
 const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const defaultFormState = {
@@ -33,49 +24,6 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, setFormState] = useState(defaultFormState);
   const [proofRes, generateProof] = post('generateProof')();
 
-  const FORM_FIELDS = [
-    {
-      label: 'Contract_Id',
-      field: 'contractId'
-    },
-    {
-      label: 'Consignor_Name',
-      field: 'consignorName'
-    },
-    {
-      label: 'Total_Due',
-      field: 'totalDue'
-    },
-    {
-      label: 'Quantity',
-      field: 'quantity'
-    },
-    {
-      label: 'Destination',
-      field: 'destination'
-    },
-    {
-      label: 'Due_Date',
-      field: 'dueDate'
-    },
-    {
-      label: 'Payment_Date',
-      field: 'paymentDay'
-    },
-    {
-      label: 'doc1',
-      field: 'doc'
-    },
-    {
-      label: 'Reviewer (GGCB)',
-      field: 'ggcb'
-    },
-    {
-      label: 'Reviewer (USCTS)',
-      field: 'uscts'
-    }
-  ];
-
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -87,7 +35,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
         }}
       >
         <Card style={{ width: '20vw' }}>
-          {FORM_FIELDS.map(({ label, field }) => (
+          {INPUTS.GENERATE_PROOF.map(({ label, field }) => (
             <Checkbox
               key={label}
               label={label}
@@ -111,7 +59,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
             itemRenderer={(item, { handleClick }) => (
               <MenuItem text={item.title} onClick={handleClick} />
             )}
-            items={reviewers}
+            items={REVIEWERS}
             filterable={false}
             popoverProps={{ minimal: true }}
           >

@@ -8,10 +8,13 @@ import { useFetch } from '../hooks';
 import TransportRequestForm from './TransportRequestForm';
 import Table from '../components/Table/Table';
 
+import { TABLE_MAP } from '../constants';
+
 const Contracts = ({ role }) => {
   const [data, loading, setData] = useFetch('contracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
-    state: false, item: {}
+    state: false,
+    item: {}
   });
 
   const onMessage = (message) => {
@@ -31,18 +34,7 @@ const Contracts = ({ role }) => {
         setDialogOpenState={setTsrDialogOpenState}
       />
       <Table
-        fields={{
-          contractId: 'Contract ID',
-          consignorName: 'Consignor',
-          consigneeName: 'Consignee',
-          totalDue: 'Total Due',
-          dateCreated: 'Date Created',
-          lastUpdated: 'Last Updated',
-          dueDate: 'Due Date',
-          destinationPort: 'Destination',
-          quantity: 'Quantity',
-          state: 'Satus'
-        }}
+        fields={TABLE_MAP.CONTRACTS}
         data={data}
         actions={item => (role === 'supplier' ? (
             <div>
