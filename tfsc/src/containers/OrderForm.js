@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Overlay, FormGroup, InputGroup, Card, Spinner
+  Button, Overlay, FormGroup, InputGroup, Card, Spinner, Label
 } from '@blueprintjs/core';
+import { DateInput } from '@blueprintjs/datetime';
 
 import { post } from '../helper/api';
 
@@ -13,7 +14,7 @@ const defaultFormState = {
   quantity: 0,
   price: 0,
   destinationPort: '',
-  dueDate: ''
+  dueDate: new Date()
 };
 
 const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
@@ -56,12 +57,6 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
       placeholder: 'Placeholder text',
       type: 'number',
       field: 'quantity'
-    },
-    {
-      label: 'Due Date',
-      placeholder: 'Placeholder text',
-      type: 'text',
-      field: 'dueDate'
     },
     {
       label: 'Destination Port',
@@ -107,6 +102,24 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   />
                 </FormGroup>
               ))}
+              <Label>
+                Due Date
+                <DateInput
+                  value={formState.dueDate}
+                  formatDate={date => date.toLocaleDateString()}
+                  onChange={(date) => {
+                    console.log(date);
+                    setFormState(
+                      Object.assign({}, formState, {
+                        dueDate: date
+                      })
+                    );
+                  }}
+                  timePrecision={undefined}
+                  parseDate={str => new Date(str)}
+                  placeholder={'D/M/YYYY'}
+                />
+              </Label>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Button
                   large

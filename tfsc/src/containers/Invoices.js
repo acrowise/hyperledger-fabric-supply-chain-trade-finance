@@ -64,8 +64,6 @@ const Invoices = ({ role }) => {
   useSocket('notification', onMessage);
 
   if (data.result && bids.result) {
-    console.log(bids.result);
-    console.log('HERE');
     const a = data.result.concat([]);
     bids.result.forEach((bid) => {
       const invoice = a.find(i => i.key.id === bid.value.invoiceID);
@@ -170,10 +168,10 @@ const Invoices = ({ role }) => {
                         // style={{ marginRight: '5px' }}
                         intent="primary"
                         onClick={() => {
-                          console.log({
-                            fcn: 'acceptBid',
-                            args: [i.bidId, '0', '0', '0']
-                          })
+                          // console.log({
+                          //   fcn: 'acceptBid',
+                          //   args: [i.bidId, '0', '0', '0']
+                          // });
                           acceptBid({
                             fcn: 'acceptBid',
                             args: [i.bidId, '0', '0', '0']

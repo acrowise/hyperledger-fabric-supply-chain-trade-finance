@@ -2,16 +2,17 @@ import React, { useState } from 'react';
 import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
-import DocumentViewer from '../components/DocumentViewer';
 
 import GenerateProofForm from './GenerateProofForm';
+import ConfirmDeliveryForm from './ConfirmDeliveryForm';
 import Proofs from '../components/Proofs';
 
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
   const [proofs, loadingProofs, setData] = useFetch('proofs');
-  const [docViewerDialogIsOpen, setDocViewerDialogOpenState] = useState(false);
+  // const [docViewerDialogIsOpen, setDocViewerDialogOpenState] = useState(false);
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
+  const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -46,21 +47,32 @@ const ShipmentDetailPage = (props) => {
   return (
     <>
       <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
-      <DocumentViewer
+      <ConfirmDeliveryForm
+        dialogIsOpen={cdDialogIsOpen}
+        setDialogOpenState={setCdDialogOpenState}
+        shipment={props}
+      />
+      {/* <DocumentViewer
         dialogIsOpen={docViewerDialogIsOpen}
         setDialogOpenState={setDocViewerDialogOpenState}
-      />
+      /> */}
       <div
         style={{ display: 'flex', flexDirection: 'row' }}
-        onClick={() => {
-          props.showShipmentDetail(false);
-          props.setContent(null);
-        }}
+        // onClick={() => {
+        //   props.showShipmentDetail(false);
+        //   props.setContent(null);
+        // }}
       >
         <Icon icon="arrow-left" />
         <p>Back</p>
       </div>
-      <Button>Confirm Delivery</Button>
+      <Button
+        onClick={() => {
+          setCdDialogOpenState(true);
+        }}
+      >
+        Confirm Delivery
+      </Button>
       <Button>Add Document</Button>
       {props.state === 'Confirmed' ? (
         <Button
@@ -136,13 +148,7 @@ const ShipmentDetailPage = (props) => {
 
         {proofs.length > 0 ? (
           <div style={{ width: '20vw' }}>
-            <div>
-              {loadingProofs ? (
-                <div>Loading...</div>
-              ) : (
-                <Proofs data={proofs}/>
-              )}
-            </div>
+            <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs} />}</div>
           </div>
         ) : (
           <></>

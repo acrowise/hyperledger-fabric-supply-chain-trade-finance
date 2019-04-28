@@ -10,7 +10,12 @@ const upload = multer();
 const PORT = 3000;
 
 const ORDERS = [];
-const INVOICES = [];
+const INVOICES = {
+  result: []
+};
+const BIDS = {
+  result: []
+};
 const CONTRACTS = [];
 const SHIPMENTS = [];
 const PROOFS = [];
@@ -51,8 +56,12 @@ router.get('/orders', (_, res) => {
   res.json(ORDERS);
 });
 
-router.get('/invoices', (_, res) => {
+router.get('/listInvoices', (_, res) => {
   res.json(INVOICES);
+});
+
+router.get('/listBids', (_, res) => {
+  res.json(BIDS);
 });
 
 router.post('/uploadDocuments', upload.array('file'), (req, res) => {
@@ -117,6 +126,26 @@ router.post('/requestShipment', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentRequested' }))));
 });
 
+router.post('/confirmDelivery', (req, res) => {
+  const id = nanoid();
+  const newInvoice = Object.assign(req.body, { state: 2 });
+
+  INVOICES.result.push({
+    key: {
+      id
+    },
+    value: newInvoice
+  });
+
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
+
+  const shipment = SHIPMENTS.find(i => i.shipmentId === req.body.shipmentId);
+  shipment.state = 'Delivered';
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentDelivered' }))));
+
+  res.send('ok');
+});
+
 router.post('/confirmShipment', (req, res) => {
   res.send('ok');
   const shipment = SHIPMENTS.find(i => i.shipmentId === req.body.shipmentId);
@@ -158,21 +187,12 @@ router.post('/updateOrder', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
 });
 
-router.post('/placeInvoice', (req, res) => {
-  const id = nanoid();
-  const newInvoice = Object.assign(req.body, { invoiceId: id, state: 'Awaiting' });
-  res.send('ok');
-
-  INVOICES.push(newInvoice);
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
-});
-
 router.post('/placeInvoiceForTrade', (req, res) => {
   res.send('ok');
 
-  const invoice = INVOICES.find(i => i.invoiceId === req.body.invoiceId);
+  const invoice = INVOICES.result.find(i => i.key.id === req.body.invoiceId);
 
-  invoice.state = 'For Sale';
+  invoice.value.state = 3;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoiceForTrade' }))));
 });
 
