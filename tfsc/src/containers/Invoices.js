@@ -63,7 +63,6 @@ const Invoices = ({ role }) => {
       invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
     });
     setDataToDisplay(a);
-    console.log(a);
     setData({});
   }
 

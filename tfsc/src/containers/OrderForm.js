@@ -87,7 +87,6 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   value={formState.dueDate}
                   formatDate={date => date.toLocaleDateString()}
                   onChange={(date) => {
-                    console.log(date);
                     dispatch({
                       type: 'change',
                       payload: {

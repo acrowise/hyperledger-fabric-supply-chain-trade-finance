@@ -40,7 +40,6 @@ const Contracts = ({ role }) => {
             <div>
               <Button
                 onClick={() => {
-                  console.log('item', item);
                   setTsrDialogOpenState({ state: true, item });
                 }}
                 style={{ marginRight: '5px' }}

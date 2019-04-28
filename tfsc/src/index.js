@@ -1,16 +1,21 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { Route, BrowserRouter as Router } from 'react-router-dom';
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 import { ClientSocket } from 'use-socketio';
 import App from './App';
 import Dashboard from './containers/Dashboard';
+import { AuthProvider } from './context/auth';
 
 const routing = (
   <Router>
-    <ClientSocket url={'http://localhost:3000'}>
-        <Route exact path="/" component={App} />
-        <Route path="/dashboard" component={Dashboard} />
-    </ClientSocket>
+    <AuthProvider>
+      <ClientSocket url={'http://localhost:3000'}>
+        <Switch>
+          <Route exact path="/" component={App} />
+          <Route path="/dashboard" component={Dashboard} />
+        </Switch>
+      </ClientSocket>
+    </AuthProvider>
   </Router>
 );
 

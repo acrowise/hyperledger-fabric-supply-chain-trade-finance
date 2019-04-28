@@ -9,7 +9,6 @@ import OrderForm from './OrderForm';
 import { post } from '../helper/api';
 
 import Table from '../components/Table/Table';
-
 import { TABLE_MAP } from '../constants';
 
 const Orders = ({ role, filter, search }) => {

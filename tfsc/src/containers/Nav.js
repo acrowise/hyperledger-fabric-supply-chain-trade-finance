@@ -7,7 +7,7 @@ import {
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
 
-const Nav = ({ location: { state } }) => {
+const Nav = ({ role }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasNewNotifications, setNewNotification] = useState(false);
@@ -33,11 +33,7 @@ const Nav = ({ location: { state } }) => {
         <Navbar.Group align={Alignment.LEFT}>
           <Link to="/" style={{ textDecoration: 'none' }}>
             <Navbar.Heading>
-              <img
-                src={logo}
-                alt="Altoros"
-                className="header-logo"
-              />
+              <img src={logo} alt="Altoros" className="header-logo" />
             </Navbar.Heading>
           </Link>
         </Navbar.Group>
@@ -73,7 +69,7 @@ const Nav = ({ location: { state } }) => {
           />
 
           <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
-            {state.role}
+            {role}
           </Button>
         </Navbar.Group>
       </div>
@@ -82,11 +78,7 @@ const Nav = ({ location: { state } }) => {
 };
 
 Nav.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      role: PropTypes.string
-    })
-  })
+  role: PropTypes.string
 };
 
 export default Nav;

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Tab, Tabs, Icon } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
+import { Redirect } from 'react-router-dom';
+
 import Nav from './Nav';
 
 import Orders from './Orders';
@@ -11,15 +13,16 @@ import ShippingDocuments from './ShippingDocuments';
 import Proofs from './Proofs';
 import Filter from '../components/Filter';
 
+import { AuthConsumer } from '../context/auth';
 import { notifications } from '../mocks';
 
-const tabs = props => [
+const tabs = role => [
   {
     name: 'Orders',
     actors: ['buyer', 'supplier'],
     panel: (
-      <Filter statuses={['New', 'Accepted', 'Cancelled']} {...props}>
-        <Orders {...props} />
+      <Filter statuses={['New', 'Accepted', 'Cancelled']}>
+        <Orders role={role} />
       </Filter>
     )
   },
@@ -27,8 +30,8 @@ const tabs = props => [
     name: 'Contracts',
     actors: ['buyer', 'supplier', 'ggcb', 'uscts'],
     panel: (
-      <Filter statuses={['Signed', 'Completed']} {...props}>
-        <Contracts {...props} />
+      <Filter statuses={['Signed', 'Completed']}>
+        <Contracts role={role} />
       </Filter>
     )
   },
@@ -36,8 +39,8 @@ const tabs = props => [
     name: 'Invoices',
     actors: ['buyer', 'supplier', 'factor-1', 'factor-2'],
     panel: (
-      <Filter statuses={['Issued', 'Signed', 'For Sale', 'Sold']} {...props}>
-        <Invoices {...props} />
+      <Filter statuses={['Issued', 'Signed', 'For Sale', 'Sold']}>
+        <Invoices role={role} />
       </Filter>
     )
   },
@@ -45,8 +48,8 @@ const tabs = props => [
     name: 'Shipping Documents',
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
-      <Filter statuses={[]} {...props}>
-        <ShippingDocuments {...props} />
+      <Filter statuses={[]}>
+        <ShippingDocuments role={role} />
       </Filter>
     )
   },
@@ -54,8 +57,8 @@ const tabs = props => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter statuses={[]} {...props}>
-        <Proofs {...props} />
+      <Filter statuses={[]}>
+        <Proofs role={role} />
       </Filter>
     )
   }
@@ -78,15 +81,15 @@ const Panel = ({ panel }) => (
   </div>
 );
 
-const Dashboard = ({ location: { state } }) => {
+const Dashboard = ({ role }) => {
   const [test, setTest] = useState('');
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
     setTest(notification.type);
   });
 
-  const userTabs = tabs(state)
-    .filter(i => i.actors.includes(state.role))
+  const userTabs = tabs(role)
+    .filter(i => i.actors.includes(role))
     .map(({ name, panel }) => (
       <Tab
         id={name}
@@ -128,10 +131,17 @@ Dashboard.propTypes = {
 
 function Wrapper(props) {
   return (
-    <>
-      <Nav {...props} />
-      <Dashboard {...props} />
-    </>
+    <AuthConsumer>
+      {({ isAuth, role }) => (isAuth ? (
+          <>
+            <Nav role={role} {...props} />
+            <Dashboard isAuth={isAuth} role={role} {...props} />
+          </>
+      ) : (
+          <Redirect to="/" />
+      ))
+      }
+    </AuthConsumer>
   );
 }
 
