@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"strconv"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 const (
@@ -26,6 +26,7 @@ const (
 	stateInvoiceForSale
 	stateInvoiceSold
 	stateInvoiceRemoved
+	stateInvoiceRejected
 )
 
 var invoiceStateLegal = map[int][]int{
