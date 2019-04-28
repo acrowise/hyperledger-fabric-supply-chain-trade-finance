@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"testing"
-	"fmt"
 )
 
 func getInitializedStub() *shim.MockStub {
@@ -35,7 +35,7 @@ func TestRegisterInvoice(t *testing.T) {
 	fmt.Printf("###### Test: %s is running. #####", fcnName)
 	stub := getInitializedStub()
 
-	var args []string;
+	var args []string
 	args = []string{
 		fcnName,
 		"1b671a64-40d5-491e-99b0-da01ff1f3341",

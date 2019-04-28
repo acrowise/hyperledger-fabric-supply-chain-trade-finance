@@ -1,19 +1,19 @@
 package main
 
 import (
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"strings"
-	"encoding/pem"
-	"crypto/x509"
 )
 
 var ledgerDataLogger = shim.NewLogger("LedgerData")
 
 const (
-	NoticeRuningType  = iota
+	NoticeRuningType = iota
 	NoticeSuccessType
 )
 
