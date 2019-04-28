@@ -8,7 +8,7 @@ import { useFetch } from '../hooks';
 import ConfirmShipmentForm from './ConfirmShipmentForm';
 import ShipmentDetailPage from './ShipmentDetailPage';
 
-import Table from '../components/Table';
+import Table from '../components/Table/Table';
 
 const ShippingDocuments = ({ role, content, setContent }) => {
   const [selectedShipment, setSelectedShipment] = useState({});

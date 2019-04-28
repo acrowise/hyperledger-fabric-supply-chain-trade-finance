@@ -1,0 +1,26 @@
+@import "../../styles/variables";
+.table-wrap {
+  padding: 10px 20px 65px;
+  box-shadow: $box-shadow;
+  background: white;
+}
+.table {
+  width: 100%;
+  font-size: $fs-bigger;
+  border-collapse: collapse;
+
+  tbody tr:hover {
+    background-color: #D3F3E8;
+    box-shadow: $box-shadow;
+    outline: 2px solid $color-secondary;
+    position: relative;
+  }
+  th {
+    padding: 8px 10px;
+    text-align: left;
+  }
+  td {
+    padding: 11px 10px;
+    border-bottom: 2px solid $color-bg-gray;
+  }
+}

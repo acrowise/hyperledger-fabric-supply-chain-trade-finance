@@ -73,8 +73,8 @@ const Title = ({ title, notification }) => (
 );
 
 const Panel = ({ panel }) => (
-  <div className="container">
-    <div className="dashboard-tabs-panel">{panel}</div>
+  <div className="dashboard-tabs-panel">
+    <div className="container">{panel}</div>
   </div>
 );
 
