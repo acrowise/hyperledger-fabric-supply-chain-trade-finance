@@ -5,6 +5,7 @@ import { useFetch } from '../hooks';
 import DocumentViewer from '../components/DocumentViewer';
 
 import GenerateProofForm from './GenerateProofForm';
+import Proofs from '../components/Proofs';
 
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
@@ -132,21 +133,21 @@ const ShipmentDetailPage = (props) => {
             </div>
           </div>
         </div>
-        <div style={{ width: '20vw' }}>
-          <>Proofs</>
-          <div>
-            {loadingProofs ? (
-              <div>Loading...</div>
-            ) : (
-              proofs.map(d => (
-                <div key={data} style={{ display: 'flex', flexDirection: 'column' }}>
-                  <p>ProofId: {d.contractId}</p>
-                  <p>Status: {d.state}</p>
-                </div>
-              ))
-            )}
+
+        {proofs.length > 0 ? (
+          <div style={{ width: '20vw' }}>
+            <div>
+              {loadingProofs ? (
+                <div>Loading...</div>
+              ) : (
+                <Proofs data={proofs}/>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <></>
+        )}
+
         <div style={{ width: '20vw' }}>
           <>Documents</>
           <div>

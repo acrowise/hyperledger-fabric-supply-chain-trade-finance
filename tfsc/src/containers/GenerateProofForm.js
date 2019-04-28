@@ -1,10 +1,22 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Overlay, Checkbox, Card
+  Button, Overlay, Checkbox, Card, MenuItem
 } from '@blueprintjs/core';
+import { Select } from '@blueprintjs/select';
 
 import { post } from '../helper/api';
+
+const reviewers = [
+  {
+    id: 'agency-1',
+    title: 'Government Goods Control Bureau'
+  },
+  {
+    id: 'agency-2',
+    title: 'US Commercial Trade Service'
+  }
+];
 
 const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const defaultFormState = {
@@ -16,8 +28,7 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
     dueDate: false,
     paymentDay: false,
     doc1: false,
-    ggcb: false,
-    uscts: false
+    reviewer: null
   };
   const [formState, setFormState] = useState(defaultFormState);
   const [proofRes, generateProof] = post('generateProof')();
@@ -89,7 +100,27 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
               }
             />
           ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Select
+            onItemSelect={(reviewer) => {
+              setFormState(
+                Object.assign({}, formState, {
+                  reviewer
+                })
+              );
+            }}
+            itemRenderer={(item, { handleClick }) => (
+              <MenuItem text={item.title} onClick={handleClick} />
+            )}
+            items={reviewers}
+            filterable={false}
+            popoverProps={{ minimal: true }}
+          >
+            <Button
+              text={(formState.reviewer && formState.reviewer.title) || 'Select Reviewer'}
+              rightIcon="double-caret-vertical"
+            />
+          </Select>
+          <div style={{ paddingTop: '30px', display: 'flex', justifyContent: 'space-between' }}>
             <Button
               large
               intent="danger"

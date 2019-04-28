@@ -115,6 +115,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   item: {}
                 });
                 setFormState(defaultFormState);
+                setFiles([]);
               }}
             >
               Cancel
@@ -137,6 +138,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   form.append('file', f);
                 });
                 uploadDocs(form);
+                setFiles([]);
               }}
             >
               Request
