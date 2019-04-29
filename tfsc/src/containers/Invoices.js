@@ -69,156 +69,156 @@ const Invoices = ({ role }) => {
   return loading && bidsLoading ? (
     <>Loading...</>
   ) : (
-    <div>
-      <table className="bp3-html-table .modifier">
+    <div className="table-wrap">
+      <table className="bp3-html-table table ">
         <thead>
-          <tr>
-            <th>Invoice ID</th>
-            <th>Debtor</th>
-            <th>Beneficiary</th>
-            <th>Total Due</th>
-            <th>Due Date</th>
-            <th>Invoice Owner</th>
-            <th>Sate</th>
-            {role === 'supplier' ? <th>Bid</th> : <></>}
-            {role === 'supplier' ? <th>Factor</th> : <></>}
-            {role === 'buyer'
-            || role === 'supplier'
-            || role === 'factor-1'
-            || role === 'factor-2' ? (
-              <th>Action</th>
-              ) : (
-              <></>
-              )}
-          </tr>
+        <tr>
+          <th>Invoice ID</th>
+          <th>Debtor</th>
+          <th>Beneficiary</th>
+          <th>Total Due</th>
+          <th>Due Date</th>
+          <th>Invoice Owner</th>
+          <th>Sate</th>
+          {role === 'supplier' ? <th>Bid</th> : <></>}
+          {role === 'supplier' ? <th>Factor</th> : <></>}
+          {role === 'buyer'
+          || role === 'supplier'
+          || role === 'factor-1'
+          || role === 'factor-2' ? (
+            <th>Action</th>
+          ) : (
+            <></>
+          )}
+        </tr>
         </thead>
         <tbody>
-          {dataToDisplay.map(({ key, value, bids }) => (
-            <tr key={key.id}>
-              <td>{key.id}</td>
-              <td>{value.debtor}</td>
-              <td>{value.beneficiary}</td>
-              <td>{value.totalDue}</td>
-              <td>{value.dueDate}</td>
-              <td>{value.owner}</td>
-              <td>{STATUSES.INVOICE[value.state]}</td>
-              {role === 'supplier' && value.state === 3 && bids ? (
-                <>
-                  <td style={{ paddingTop: '10px' }}>
-                    {bids.map(i => (
-                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
-                        {i.rate}
-                      </div>
-                    ))}
-                  </td>
-                  <td style={{ paddingTop: '10px' }}>
-                    {bids.map(i => (
-                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
-                        {i.factor}
-                      </div>
-                    ))}
-                  </td>
-                </>
-              ) : (
-                <></>
-              )}
+        {dataToDisplay.map(({ key, value, bids }) => (
+          <tr key={key.id}>
+            <td>{key.id}</td>
+            <td>{value.debtor}</td>
+            <td>{value.beneficiary}</td>
+            <td>{value.totalDue}</td>
+            <td>{value.dueDate}</td>
+            <td>{value.owner}</td>
+            <td>{STATUSES.INVOICE[value.state]}</td>
+            {role === 'supplier' && value.state === 3 && bids ? (
+              <>
+              <td style={{ paddingTop: '10px' }}>
+                {bids.map(i => (
+                  <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                    {i.rate}
+                  </div>
+                ))}
+              </td>
+              <td style={{ paddingTop: '10px' }}>
+                {bids.map(i => (
+                  <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                    {i.factor}
+                  </div>
+                ))}
+              </td>
+              </>
+            ) : (
+              <></>
+            )}
 
-              {role === 'supplier' && value.state === 4 && bids ? (
-                <>
-                  <td style={{ paddingTop: '10px' }}>{value.value}</td>
-                  <td style={{ paddingTop: '10px' }}>{value.factor}</td>
-                </>
-              ) : (
-                <></>
-              )}
+            {role === 'supplier' && value.state === 4 && bids ? (
+              <>
+              <td style={{ paddingTop: '10px' }}>{value.value}</td>
+              <td style={{ paddingTop: '10px' }}>{value.factor}</td>
+              </>
+            ) : (
+              <></>
+            )}
 
-              {role === 'supplier' && value.state === 3 && bids ? (
-                <td>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    {bids.map(i => (
-                      <Button
-                        key={i.bidId}
-                        // style={{ marginRight: '5px' }}
-                        intent="primary"
-                        onClick={() => {
-                          // console.log({
-                          //   fcn: 'acceptBid',
-                          //   args: [i.bidId, '0', '0', '0']
-                          // });
-                          acceptBid({
-                            fcn: 'acceptBid',
-                            args: [i.bidId, '0', '0', '0']
-                          });
-                        }}
-                      >
-                        Accept Bid
-                      </Button>
-                    ))}
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-              {role === 'buyer' && value.state === 1 ? (
-                <td>
-                  <div>
+            {role === 'supplier' && value.state === 3 && bids ? (
+              <td>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  {bids.map(i => (
                     <Button
-                      style={{ marginRight: '5px' }}
+                      key={i.bidId}
+                      // style={{ marginRight: '5px' }}
                       intent="primary"
                       onClick={() => {
-                        acceptInvoice({ invoiceId: key.id });
+                        // console.log({
+                        //   fcn: 'acceptBid',
+                        //   args: [i.bidId, '0', '0', '0']
+                        // });
+                        acceptBid({
+                          fcn: 'acceptBid',
+                          args: [i.bidId, '0', '0', '0']
+                        });
                       }}
                     >
-                      Sign
+                      Accept Bid
                     </Button>
-                    <Button intent="danger">Reject</Button>
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-              {role === 'supplier' && value.state === 2 ? (
-                <td>
-                  <div>
-                    <Button
-                      style={{ marginRight: '5px' }}
-                      intent="primary"
-                      onClick={() => {
-                        placeForTradeInvoice({ invoiceId: key.id });
-                      }}
-                    >
-                      Place for Trade
-                    </Button>
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-              {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
-                <td>
-                  <div>
-                    <PlaceBidForm
-                      dialogIsOpen={invoiceBidDialogIsOpen}
-                      setDialogOpenState={setInvoiceBidDialogOpenState}
-                      invoiceId={key.id}
-                      role={role}
-                    />
-                    <Button
-                      style={{ marginRight: '5px' }}
-                      intent="primary"
-                      onClick={() => {
-                        setInvoiceBidDialogOpenState(true);
-                      }}
-                    >
-                      Place Bid
-                    </Button>
-                  </div>
-                </td>
-              ) : (
-                <></>
-              )}
-            </tr>
-          ))}
+                  ))}
+                </div>
+              </td>
+            ) : (
+              <></>
+            )}
+            {role === 'buyer' && value.state === 1 ? (
+              <td>
+                <div>
+                  <Button
+                    style={{ marginRight: '5px' }}
+                    intent="primary"
+                    onClick={() => {
+                      acceptInvoice({ invoiceId: key.id });
+                    }}
+                  >
+                    Sign
+                  </Button>
+                  <Button intent="danger">Reject</Button>
+                </div>
+              </td>
+            ) : (
+              <></>
+            )}
+            {role === 'supplier' && value.state === 2 ? (
+              <td>
+                <div>
+                  <Button
+                    style={{ marginRight: '5px' }}
+                    intent="primary"
+                    onClick={() => {
+                      placeForTradeInvoice({ invoiceId: key.id });
+                    }}
+                  >
+                    Place for Trade
+                  </Button>
+                </div>
+              </td>
+            ) : (
+              <></>
+            )}
+            {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
+              <td>
+                <div>
+                  <PlaceBidForm
+                    dialogIsOpen={invoiceBidDialogIsOpen}
+                    setDialogOpenState={setInvoiceBidDialogOpenState}
+                    invoiceId={key.id}
+                    role={role}
+                  />
+                  <Button
+                    style={{ marginRight: '5px' }}
+                    intent="primary"
+                    onClick={() => {
+                      setInvoiceBidDialogOpenState(true);
+                    }}
+                  >
+                    Place Bid
+                  </Button>
+                </div>
+              </td>
+            ) : (
+              <></>
+            )}
+          </tr>
+        ))}
         </tbody>
       </table>
     </div>

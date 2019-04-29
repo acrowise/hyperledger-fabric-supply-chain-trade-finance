@@ -17,7 +17,7 @@ const Table = ({
       </thead>
       <tbody>
       {data.length === 0 ? (
-        <>No Data</>
+        <tr className="no-data-cell"><td colSpan="100%">No Data</td></tr>
       ) : (
         data.map(i => (
           <tr key={i.toString()}>

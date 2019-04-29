@@ -83,6 +83,16 @@ const Orders = ({ role, filter, search }) => {
         ))
         }
       />
+      {role === 'buyer' && (
+        <Button
+          icon="add"
+          onClick={() => {
+            setDialogOpenState(true);
+          }}
+        >
+          New Order
+        </Button>
+      )}
     </div>
   );
 };

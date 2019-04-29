@@ -1,12 +1,18 @@
 @import "./font";
 @import "./variables";
 
+//Typography
+h4 {
+  font-size: $fs-bigger;
+  margin: 10px 0;
+}
+
 // General
 body {
   margin: 0;
   color: $color-txt;
   background-color: $color-bg-gray;
-  font: $fw-normal $fs-normal "Proxima Nova", sans-serif;
+  font: $fw-normal $fs-normal $ff-primary;
   line-height: 1.2;
 }
 
@@ -85,9 +91,27 @@ $header-height: 65px;
   margin-bottom: 0;
 }
 
+.dashboard-panel-header {
+  margin: 20px 0;
+}
+
+.dashboard-header {
+  display: flex;
+  align-items: center;
+}
+.dashboard-header-col-3 {
+  flex: 3;
+}
+.dashboard-header-col-2 {
+  flex: 2;
+}
+
 //Radio buttons
 .radio-button {
   font-size: $fs-normal;
+  margin-right: 0 !important;
+  margin-bottom: 0;
+  padding-right: 70px;
 }
 .radio-button input:focus ~ .bp3-control-indicator {
   outline: none;
@@ -109,6 +133,55 @@ $header-height: 65px;
     padding: 0 25px;
     border: 1px solid #d3dae0;
     box-shadow: none;
-    font: $fw-normal $fs-normal "Proxima Nova", sans-serif;
+    font: $fw-normal $fs-normal $ff-primary;
+    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyMCAxNiIgd2lkdGg9IjIwIiBoZWlnaHQ9IjE2IiA+PHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xNy4xOTk0IDdDMTcuMTk5NCA5Ljc2MTQyIDE0Ljk2MDggMTIgMTIuMTk5NCAxMkM5LjQzNzk2IDEyIDcuMTk5MzggOS43NjE0MiA3LjE5OTM4IDdDNy4xOTkzOCA0LjIzODU4IDkuNDM3OTYgMiAxMi4xOTk0IDJDMTQuOTYwOCAyIDE3LjE5OTQgNC4yMzg1OCAxNy4xOTk0IDdaTTE5LjE5OTQgN0MxOS4xOTk0IDEwLjg2NiAxNi4wNjU0IDE0IDEyLjE5OTQgMTRDMTAuMjEyNyAxNCA4LjQxOTI2IDEzLjE3MjMgNy4xNDUxNSAxMS44NDNDNy4xMDM0NiAxMS44ODA4IDcuMDU3OTkgMTEuOTE1NyA3LjAwODg4IDExLjk0NjlMMS41MzY4NCAxNS40Mjc2QzEuMDcwODQgMTUuNzI0MSAwLjQ1Mjc4MyAxNS41ODY2IDAuMTU2MzYzIDE1LjEyMDZDLTAuMTQwMDU3IDE0LjY1NDYgLTAuMDAyNTg2OTcgMTQuMDM2NSAwLjQ2MzQxMSAxMy43NDAxTDUuOTM1NDUgMTAuMjU5NEM1Ljk1MjQgMTAuMjQ4NiA1Ljk2OTU0IDEwLjIzODQgNS45ODY4NyAxMC4yMjg4QzUuNDgzNzYgOS4yNjI3IDUuMTk5MzggOC4xNjQ1NiA1LjE5OTM4IDdDNS4xOTkzOCAzLjEzNDAxIDguMzMzMzkgMCAxMi4xOTk0IDBDMTYuMDY1NCAwIDE5LjE5OTQgMy4xMzQwMSAxOS4xOTk0IDdaIiBmaWxsPSIjRDNEQUUwIi8+PC9zdmc+);
+    background-repeat: no-repeat;
+    background-position: right 15px center;
+  }
+}
+
+//Filter select
+.filter-select-wrap {
+  + .filter-select-wrap {
+    margin-top: 10px;
+  }
+}
+.filter-select {
+  padding: 15px;
+  background-color: white;
+  border: 1px solid $color-border;
+  color: $color-primary;
+  width: 250px;
+  font: $fw-normal $fs-normal $ff-primary;
+  border-radius: 2px;
+  -webkit-appearance: button;
+  appearance: button;
+  outline: none;
+  cursor: pointer;
+  background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMyA2IiAgZmlsbD0ibm9uZSIgPiAgPHBhdGggZD0iTTYuNSA2TDAuODcwODM0IDAuMDUwNDc5OUwxMi4xMjkyIDAuMDUwNDc5OUw2LjUgNloiIGZpbGw9IiMxQjI2M0MiLz48L3N2Zz4=);
+  background-repeat: no-repeat;
+  background-size: 14px;
+  background-position: right 15px center;
+  &::-moz-focus-inner {
+    border: 0!important;
+  }
+}
+
+//Buttons
+.bp3-button {
+  box-shadow: none!important;
+  min-height: 38px!important;
+  min-width: 234px!important;
+  text-transform: uppercase;
+  font-size: $fs-normal!important;
+}
+.bp3-button.bp3-intent-primary {
+  background-color: $color-secondary;
+  border-color: $color-secondary;
+  &:hover {
+    background-color: #3FBEA5;
+  }
+  &:disabled {
+    background-color: #D3F3E8;
   }
 }

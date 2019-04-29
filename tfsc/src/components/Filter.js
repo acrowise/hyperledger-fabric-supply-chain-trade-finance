@@ -22,8 +22,8 @@ const Filter = (props) => {
     childrenWithProps
   ) : (
     <div className="dashboard-panel">
-      <div className="dashboard-panel-header">
-        <div className="dashboard-panel-header-">
+      <div className="dashboard-panel-header dashboard-header">
+        <div className="dashboard-header-col-3">
           <RadioGroup
             inline
             selectedValue={filter}
@@ -47,7 +47,7 @@ const Filter = (props) => {
             ))}
           </RadioGroup>
         </div>
-        <div>
+        <div className="dashboard-header-col-2">
           <InputGroup
             large
             placeholder="Search"
@@ -61,25 +61,15 @@ const Filter = (props) => {
       </div>
       <div className="dashboard-panel-body layout-container">
         <aside className="layout-aside">
+          <h4>Filter by</h4>
           {fields.map(f => (
             <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                height: '50px',
-                justifyContent: 'space-between',
-                backgroundColor: '#f1f1f1',
-                marginTop: '7px',
-                marginBottom: '7px',
-                alignItems: 'center',
-                paddingLeft: '7px',
-                paddingRight: '7px'
-                // paddingTop: '7px'
-              }}
               key={f}
+              className="filter-select-wrap"
             >
-              <p>{f}</p>
-              <Icon icon="caret-down"/>
+              <select className="filter-select">
+                <option selected>{f}</option>
+              </select>
             </div>
           ))}
         </aside>

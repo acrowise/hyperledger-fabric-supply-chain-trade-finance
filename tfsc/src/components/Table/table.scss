@@ -3,6 +3,10 @@
   padding: 10px 20px 65px;
   box-shadow: $box-shadow;
   background: white;
+  //&:before {
+  //  content: "";
+  //  background-color:;
+  //}
 }
 .table {
   width: 100%;
@@ -10,11 +14,23 @@
   border-collapse: collapse;
 
   tbody tr:hover {
-    background-color: #D3F3E8;
     box-shadow: $box-shadow;
-    outline: 2px solid $color-secondary;
     position: relative;
   }
+
+  tbody tr.no-data-cell {
+    td {
+      padding-top: 60px;
+      text-align: center;
+      border-bottom: 0;
+    }
+    &:hover {
+      outline: none;
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+
   th {
     padding: 8px 10px;
     text-align: left;
