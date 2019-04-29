@@ -220,3 +220,29 @@ $header-height: 65px;
   padding: 20px;
   background: white;
 }
+
+.modal {
+  padding: 0!important;
+}
+
+.modal-header {
+  padding: 20px 0;
+  font-size: $fs-big;
+  background-color: $color-primary;
+  color: $color-txt-light;
+  text-align: center;
+}
+.modal-body {
+  padding: 30px;
+}
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  padding: 0 0 30px;
+}
+
+.btn-modal {
+  width: 234px;
+  height: 50px;
+  border-radius: 25px;
+}

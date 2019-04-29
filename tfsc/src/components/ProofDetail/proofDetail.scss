@@ -1,0 +1,15 @@
+@import "../../styles/variables";
+
+.proof-detail-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  td,
+  th {
+    padding: 20px 20px;
+    border: 1px solid $color-border;
+  }
+  th {
+    background-color: $color-bg-gray;
+  }
+}

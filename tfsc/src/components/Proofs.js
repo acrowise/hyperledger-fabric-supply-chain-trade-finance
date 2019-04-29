@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
-import ProofDetail from './ProofDetail';
+import ProofDetail from './ProofDetail/ProofDetail';
 
 const Proofs = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
@@ -33,7 +33,7 @@ const Proofs = ({ data }) => {
                 setSelectedProof(proof);
               }}
               key={proof.proofId}
-              style={{ display: 'flex', flexDirection: 'column' }}
+              style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
             >
               <p>ProofId: {proof.proofId}</p>
             </div>
