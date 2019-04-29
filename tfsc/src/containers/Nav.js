@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import {
-  Navbar, Alignment, Button, Popover, Icon
+  Navbar, Alignment, Button, Popover
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
@@ -10,11 +9,11 @@ import logo from '../logo.svg';
 const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [hasNewNotifications, setNewNotification] = useState(false);
+  const [hasNewNotifications, setNewNotification] = useState(0);
 
   useSocket('notification', (message) => {
     setNotifications(notifications.concat(JSON.parse(message)));
-    setNewNotification(true);
+    setNewNotification(hasNewNotifications + 1);
   });
 
   const Notifications = () => (
@@ -31,30 +30,25 @@ const Nav = ({ role, logout }) => {
     <Navbar fixedToTop className="header">
       <div className="container">
         <Navbar.Group align={Alignment.LEFT}>
-          {/* <Link to="/" style={{ textDecoration: 'none' }}> */}
           <Navbar.Heading onClick={logout}>
             <img src={logo} alt="Altoros" className="header-logo" />
           </Navbar.Heading>
-          {/* </Link> */}
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
           <Popover
             onClose={() => {
-              setNewNotification(false);
+              setNewNotification(0);
               setShowNotifications(false);
             }}
             isOpen={showNotifications}
             content={<Notifications />}
             target={
-              <div>
-                <Icon
-                  icon="symbol-circle"
-                  intent={hasNewNotifications ? 'danger' : 'none'}
-                  className="notification-circle"
-                  onClick={() => {
-                    setShowNotifications(true);
-                  }}
-                />
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
                 <Button
                   className="bp3-minimal"
                   style={{ textTransform: 'capitalize' }}
@@ -64,6 +58,28 @@ const Nav = ({ role, logout }) => {
                 >
                   Notifications
                 </Button>
+                {hasNewNotifications !== 0 ? (
+                  <div
+                    style={{
+                      borderRadius: '100%',
+                      height: '1.5em',
+                      width: '1.5em',
+                      textAlign: 'center',
+                      backgroundColor: '#69D7BC'
+                    }}
+                  >
+                    <p
+                      style={{
+                        color: 'white',
+                        marginTop: '0.2em'
+                      }}
+                    >
+                      {hasNewNotifications}
+                    </p>
+                  </div>
+                ) : (
+                  <></>
+                )}
               </div>
             }
           />
@@ -78,7 +94,8 @@ const Nav = ({ role, logout }) => {
 };
 
 Nav.propTypes = {
-  role: PropTypes.string
+  role: PropTypes.string,
+  logout: PropTypes.func
 };
 
 export default Nav;
