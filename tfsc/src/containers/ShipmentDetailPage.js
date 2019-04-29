@@ -10,23 +10,23 @@ import Timeline from '../components/Timeline/Timeline';
 
 const EVENTS = [
   {
-    id: Math.random().toString(36).substr(2, 9),
+    id: 1,
     date: '10 april 2019',
   },
   {
-    id: Math.random().toString(36).substr(2, 9),
+    id: 2,
     date: '20 april 2019',
   },
   {
-    id: Math.random().toString(36).substr(2, 9),
+    id: 3,
     date: '23 april 2019',
   },
   {
-    id: Math.random().toString(36).substr(2, 9),
+    id: 4,
     date: '25 april 2019',
   },
   {
-    id: Math.random().toString(36).substr(2, 9),
+    id: 5,
     date: '28 april 2019',
   }
 ];

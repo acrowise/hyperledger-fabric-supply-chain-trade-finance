@@ -33,39 +33,39 @@ import './timeline.scss';
 //   }
 // }
 
-
-const TimelineItem = ({id, date, selected, timelineItemClickHandler}) => (
-  <div
-    onClick={timelineItemClickHandler}
-    className={classNames('timeline-item', {'timeline-item__selected': selected})}
+const TimelineItem = ({id, date, isSelected, timelineItemClickHandler}) => {
+  console.log()
+  return <div
+    className={classNames('timeline-item', {'timeline-item__selected': isSelected})}
   >
-    <div className="timeline-item-node">
+    <div
+      className="timeline-item-node"
+      onClick={() => {
+        timelineItemClickHandler(id);
+        console.log(id, isSelected)
+      }}
+    >
+      <i className="timeline-item-dot" />
       <div className="timeline-item-text">
         {date}
       </div>
     </div>
   </div>
-);
+};
 
 const Timeline = ({events}) => {
-  const [selected, setSelected] = useState(false);
-
-  const timelineItemClickHandler = (id) => {
-    console.log(id)
-
-
-  };
+  const [selectedId, setSelected] = useState('');
 
   return (
     <div className="timeline">
       <div className="timeline-past">
-        {events && events.map((event, index) => (
+        {events && events.map(event => (
           <TimelineItem
             id={event.id}
             key={event.id}
             date={event.date}
-            timelineItemClickHandler={timelineItemClickHandler}
-            selected={index === 2}
+            timelineItemClickHandler={setSelected}
+            isSelected={event.id === selectedId}
           />
         ))}
       </div>
