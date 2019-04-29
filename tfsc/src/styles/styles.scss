@@ -177,7 +177,7 @@ $header-height: 65px;
 .bp3-button {
   box-shadow: none!important;
   min-height: 38px!important;
-  min-width: 234px!important;
+  //min-width: 234px!important;
   text-transform: uppercase;
   font-size: $fs-normal!important;
   border-radius: 20px;
@@ -192,6 +192,7 @@ $header-height: 65px;
     background-color: #D3F3E8;
   }
 }
+
 .btn-generate-proof {
   height: 46px;
   margin-bottom: 15px;

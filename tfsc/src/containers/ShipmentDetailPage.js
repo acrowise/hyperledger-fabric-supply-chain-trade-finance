@@ -6,6 +6,30 @@ import { useFetch } from '../hooks';
 import GenerateProofForm from './Forms/GenerateProof';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
 import Proofs from '../components/Proofs';
+import Timeline from '../components/Timeline/Timeline';
+
+const EVENTS = [
+  {
+    id: Math.random().toString(36).substr(2, 9),
+    date: '10 april 2019',
+  },
+  {
+    id: Math.random().toString(36).substr(2, 9),
+    date: '20 april 2019',
+  },
+  {
+    id: Math.random().toString(36).substr(2, 9),
+    date: '23 april 2019',
+  },
+  {
+    id: Math.random().toString(36).substr(2, 9),
+    date: '25 april 2019',
+  },
+  {
+    id: Math.random().toString(36).substr(2, 9),
+    date: '28 april 2019',
+  }
+];
 
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
@@ -84,8 +108,9 @@ const ShipmentDetailPage = (props) => {
               </tbody>
             </table>
           </div>
-        </div>
 
+          <Timeline events={EVENTS}/>
+        </div>
 
         <div className="layout-aside">
           {props.state === 'Confirmed' && (
