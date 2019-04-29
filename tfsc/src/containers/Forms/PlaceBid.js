@@ -4,9 +4,9 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, Spinner
 } from '@blueprintjs/core';
 
-import { post } from '../helper/api';
+import { post } from '../../helper/api';
 
-import { INPUTS } from '../constants';
+import { INPUTS } from '../../constants';
 
 const PlaceBidForm = ({
   dialogIsOpen, setDialogOpenState, invoiceId, role

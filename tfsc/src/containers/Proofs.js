@@ -5,7 +5,7 @@ import { Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
-import VerifyProofForm from './VerifyProofForm';
+import VerifyProof from './Forms/VerifyProof';
 import Table from '../components/Table/Table';
 import { TABLE_MAP } from '../constants';
 
@@ -36,7 +36,7 @@ const Proofs = ({ role }) => {
 
   return (
     <div>
-      <VerifyProofForm
+      <VerifyProof
         dialogIsOpen={vpDialogIsOpen}
         setDialogOpenState={setVpDialogOpenState}
         proof={selectedProof}

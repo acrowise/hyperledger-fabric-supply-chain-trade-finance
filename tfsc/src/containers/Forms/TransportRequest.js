@@ -5,13 +5,13 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, TextArea, Label
 } from '@blueprintjs/core';
 
-import { post } from '../helper/api';
+import { post } from '../../helper/api';
 
-import FileUploader from '../components/FileUploader';
+import FileUploader from '../../components/FileUploader';
 
-import { INPUTS } from '../constants';
+import { INPUTS } from '../../constants';
 
-import { formReducer } from '../reducers';
+import { formReducer } from '../../reducers';
 
 const initialState = {
   shipFrom: '',

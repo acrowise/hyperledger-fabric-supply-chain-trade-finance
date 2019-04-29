@@ -7,7 +7,7 @@ import {
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
 
-const Nav = ({ role }) => {
+const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [hasNewNotifications, setNewNotification] = useState(false);
@@ -31,11 +31,11 @@ const Nav = ({ role }) => {
     <Navbar fixedToTop className="header">
       <div className="container">
         <Navbar.Group align={Alignment.LEFT}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <Navbar.Heading>
-              <img src={logo} alt="Altoros" className="header-logo" />
-            </Navbar.Heading>
-          </Link>
+          {/* <Link to="/" style={{ textDecoration: 'none' }}> */}
+          <Navbar.Heading onClick={logout}>
+            <img src={logo} alt="Altoros" className="header-logo" />
+          </Navbar.Heading>
+          {/* </Link> */}
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
           <Popover

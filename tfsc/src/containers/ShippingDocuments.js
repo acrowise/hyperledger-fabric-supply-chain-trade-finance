@@ -5,7 +5,7 @@ import { Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
-import ConfirmShipmentForm from './ConfirmShipmentForm';
+import ConfirmShipmentForm from './Forms/ConfirmShipment';
 import ShipmentDetailPage from './ShipmentDetailPage';
 
 import Table from '../components/Table/Table';

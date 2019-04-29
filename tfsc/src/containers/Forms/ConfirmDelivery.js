@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 
 import { Button, Overlay, Card } from '@blueprintjs/core';
 
-import FileUploader from '../components/FileUploader';
+import FileUploader from '../../components/FileUploader';
 
-import { post } from '../helper/api';
+import { post } from '../../helper/api';
 
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);

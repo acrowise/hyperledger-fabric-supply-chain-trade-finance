@@ -13,12 +13,15 @@ const AuthProvider = (props) => {
     setState({ isAuth: true, role });
   };
 
+  const logout = () => setState({ isAuth: false, role: null });
+
   return (
     <AuthContext.Provider
       value={{
         role: state.role,
         isAuth: state.isAuth,
-        login
+        login,
+        logout
       }}
     >
       {props.children}

@@ -5,11 +5,11 @@ import {
 } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
 
-import { post } from '../helper/api';
-import { formReducer } from '../reducers';
-import { INPUTS, REVIEWERS } from '../constants';
+import { post } from '../../helper/api';
+import { formReducer } from '../../reducers';
+import { INPUTS, REVIEWERS } from '../../constants';
 
-const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
+const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
   const initialState = {
     contractId: false,
     consignorName: false,
@@ -102,11 +102,11 @@ const GenerateProofForm = ({ dialogIsOpen, setDialogOpenState }) => {
   );
 };
 
-GenerateProofForm.propTypes = {
+GenerateProof.propTypes = {
   role: PropTypes.string,
   invoiceId: PropTypes.string,
   dialogIsOpen: PropTypes.bool,
   setDialogOpenState: PropTypes.func
 };
 
-export default GenerateProofForm;
+export default GenerateProof;

@@ -4,7 +4,7 @@ import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 import { useFetch } from '../hooks';
 
-import OrderForm from './OrderForm';
+import OrderPurchaseForm from './Forms/OrderPurchase';
 
 import { post } from '../helper/api';
 
@@ -49,7 +49,7 @@ const Orders = ({ role, filter, search }) => {
     <>Loading...</>
   ) : (
     <div>
-      <OrderForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
+      <OrderPurchaseForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
       {role === 'buyer' ? (
         <Button
           icon="add"

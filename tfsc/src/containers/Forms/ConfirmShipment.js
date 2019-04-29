@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 
 import { Button, Overlay, Card } from '@blueprintjs/core';
 
-import { post } from '../helper/api';
+import FileUploader from '../../components/FileUploader';
 
-import FileUploader from '../components/FileUploader';
+import { post } from '../../helper/api';
 
-const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
+const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, validateProof] = post('validateProof')();
-  const [documentsRequest, uploadDocs] = post('uploadDocuments')();
+  const [shipmentRes, confirmShipment] = post('confirmShipment')();
+  const [documentsRes, uploadDocs] = post('uploadDocument')();
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
@@ -23,6 +23,12 @@ const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
         }}
       >
         <Card style={{ width: '20vw' }}>
+          <p>ShipmentId: {shipment.shipmentId}</p>
+          <p>ContractId: {shipment.contractId}</p>
+          <p>From: {shipment.shipFrom}</p>
+          <p>To: {shipment.shipTo}</p>
+          <p>Transport: {shipment.transport}</p>
+          <p>Description: {shipment.description}</p>
           <p>Upload Bill of Lading</p>
           <FileUploader files={files} setFiles={setFiles} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -40,7 +46,7 @@ const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
               intent="primary"
               onClick={() => {
                 setDialogOpenState(false);
-                validateProof({ proofId: proof.proofId });
+                confirmShipment({ shipmentId: shipment.shipmentId });
 
                 const form = new FormData();
                 files.forEach((f) => {
@@ -49,7 +55,7 @@ const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
                 uploadDocs(form);
               }}
             >
-              Validate
+              Confirm Shipment
             </Button>
           </div>
         </Card>
@@ -58,9 +64,9 @@ const ValidateProofForm = ({ dialogIsOpen, setDialogOpenState, proof }) => {
   );
 };
 
-export default ValidateProofForm;
+export default ConfirmShipmentForm;
 
-ValidateProofForm.propTypes = {
+ConfirmShipmentForm.propTypes = {
   dialogIsOpen: PropTypes.bool,
   setDialogOpenState: PropTypes.func
 };

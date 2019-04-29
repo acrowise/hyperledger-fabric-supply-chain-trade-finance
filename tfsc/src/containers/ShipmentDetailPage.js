@@ -3,8 +3,8 @@ import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
-import GenerateProofForm from './GenerateProofForm';
-import ConfirmDeliveryForm from './ConfirmDeliveryForm';
+import GenerateProofForm from './Forms/GenerateProof';
+import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
 import Proofs from '../components/Proofs';
 
 const ShipmentDetailPage = (props) => {

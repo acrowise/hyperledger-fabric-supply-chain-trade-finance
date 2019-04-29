@@ -4,7 +4,7 @@ import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
-import PlaceBidForm from './PlaceBidForm';
+import PlaceBidForm from './Forms/PlaceBid';
 import { AppToaster } from '../toaster';
 
 import { post } from '../helper/api';

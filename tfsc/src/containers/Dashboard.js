@@ -132,9 +132,9 @@ Dashboard.propTypes = {
 function Wrapper(props) {
   return (
     <AuthConsumer>
-      {({ isAuth, role }) => (isAuth ? (
+      {({ isAuth, logout, role }) => (isAuth ? (
           <>
-            <Nav role={role} {...props} />
+            <Nav role={role} logout={logout} {...props} />
             <Dashboard isAuth={isAuth} role={role} {...props} />
           </>
       ) : (

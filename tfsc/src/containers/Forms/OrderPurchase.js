@@ -5,13 +5,13 @@ import {
 } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
 
-import { post } from '../helper/api';
+import { post } from '../../helper/api';
 
-import ActionCompleted from '../components/ActionCompleted';
+import ActionCompleted from '../../components/ActionCompleted';
 
-import { INPUTS } from '../constants';
+import { INPUTS } from '../../constants';
 
-import { formReducer } from '../reducers';
+import { formReducer } from '../../reducers';
 
 const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const initialState = {

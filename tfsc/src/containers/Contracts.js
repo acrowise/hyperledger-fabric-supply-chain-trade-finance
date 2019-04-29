@@ -5,7 +5,7 @@ import { Button } from '@blueprintjs/core';
 
 import { useFetch } from '../hooks';
 
-import TransportRequestForm from './TransportRequestForm';
+import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
 import { TABLE_MAP } from '../constants';
