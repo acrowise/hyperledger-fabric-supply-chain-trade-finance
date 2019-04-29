@@ -23,24 +23,18 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   };
   const [formState, dispatch] = useReducer(formReducer, initialState);
 
-  const [newOrder, placeOrder, r] = post('placeOrder')();
+  const [newOrder, placeOrder, reset] = post('placeOrder')();
 
   if (!newOrder.pending) {
     if (newOrder.complete) {
       setTimeout(() => {
         setDialogOpenState(false);
-        r();
+        reset();
       }, 1500);
-      // r();
     }
     if (newOrder.error) {
       // TODO:
     }
-    // setTimeout(() => {
-    //   setDialogOpenState(false);
-    // }, 1500);
-
-    // r();
   }
 
   return (
@@ -50,10 +44,10 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
           display: 'flex',
           width: '100vw',
           justifyContent: 'center',
-          paddingTop: '15vh'
+          marginTop: newOrder.pending || newOrder.complete ? '40vh' : '15vh'
         }}
       >
-        <Card style={{ width: '20vw' }}>
+        <Card style={{ width: '25vw' }}>
           {newOrder.complete && newOrder.data ? (
             <ActionCompleted action="New Order Purchased" result="Accepted" />
           ) : (
