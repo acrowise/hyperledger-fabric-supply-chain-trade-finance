@@ -5,26 +5,30 @@ import { Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 import PlaceBidForm from './Forms/PlaceBid';
-import { AppToaster } from '../toaster';
 
 import { post } from '../helper/api';
 import { STATUSES } from '../constants';
 
-const Invoices = ({ role }) => {
+const Invoices = ({ role, filter, search }) => {
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
 
-  const [data, loading, setData] = useFetch('listInvoices', true);
-  const [bids, bidsLoading, setBidsData] = useFetch('listBids', true);
+  const [data, loading, setData] = useFetch('listInvoices');
+  const [bids, bidsLoading, setBidsData] = useFetch('listBids');
 
-  const [dataToDisplay, setDataToDisplay] = useState([]);
+  // BUYER
+  const [acceptedInvoiceRes, acceptInvoice] = post('acceptInvoice')();
+  // SUPPLIER
 
-  const [acceptedInvoice, acceptInvoice] = post('acceptInvoice')();
-  const [forSaleInvoice, placeForTradeInvoice] = post('placeInvoiceForTrade')();
-  const [acceptedBid, acceptBid] = post('acceptBid', true)();
+  const [forSaleInvoiceRes, placeForTradeInvoice] = post('placeInvoiceForTrade')();
+  const [removeInvoiceRes, removeInvoice] = post('removeInvoice')();
+  const [acceptedBidRes, acceptBid] = post('acceptBid')();
+  const [cancelBidRes, cancelBid] = post('cancelBid')();
+
+  // FACTOR
+  const [editBidRes, editBid] = post('editBid')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
-    AppToaster.show({ message: `Invoices: ${notification}` });
 
     if (notification.type === 'acceptInvoice' || notification.type === 'placeInvoiceForTrade') {
       const newState = data.concat([]);
@@ -53,17 +57,34 @@ const Invoices = ({ role }) => {
 
   useSocket('notification', onMessage);
 
-  if (data.result && bids.result) {
-    const a = data.result.concat([]);
-    bids.result.forEach((bid) => {
-      const invoice = a.find(i => i.key.id === bid.value.invoiceID);
-      if (!invoice.bids) {
-        invoice.bids = [];
-      }
-      invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
-    });
-    setDataToDisplay(a);
-    setData({});
+  let dataToDisplay = [];
+  if (data.result) {
+    dataToDisplay = data.result;
+  }
+
+  if (filter) {
+    dataToDisplay = dataToDisplay.concat([]);
+    console.log('filter1', filter);
+    if (filter) {
+      console.log('filter11');
+      dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.value.state] === filter);
+    }
+  }
+
+  if (bids.result) {
+    if (dataToDisplay.length > 0) {
+      const a = dataToDisplay.concat([]);
+      bids.result.forEach((bid) => {
+        const invoice = a.find(i => i.key.id === bid.value.invoiceID);
+        if (invoice) {
+          if (!invoice.bids) {
+            invoice.bids = [];
+          }
+          invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
+        }
+      });
+      dataToDisplay = a;
+    }
   }
 
   return loading && bidsLoading ? (
@@ -72,153 +93,187 @@ const Invoices = ({ role }) => {
     <div className="table-wrap">
       <table className="bp3-html-table table ">
         <thead>
-        <tr>
-          <th>Invoice ID</th>
-          <th>Debtor</th>
-          <th>Beneficiary</th>
-          <th>Total Due</th>
-          <th>Due Date</th>
-          <th>Invoice Owner</th>
-          <th>Sate</th>
-          {role === 'supplier' ? <th>Bid</th> : <></>}
-          {role === 'supplier' ? <th>Factor</th> : <></>}
-          {role === 'buyer'
-          || role === 'supplier'
-          || role === 'factor-1'
-          || role === 'factor-2' ? (
-            <th>Action</th>
-          ) : (
-            <></>
-          )}
-        </tr>
+          <tr>
+            <th>Invoice ID</th>
+            <th>Debtor</th>
+            <th>Beneficiary</th>
+            <th>Total Due</th>
+            <th>Due Date</th>
+            <th>Invoice Owner</th>
+            <th>Sate</th>
+            {role === 'supplier' ? <th>Bid</th> : <></>}
+            {role === 'supplier' ? <th>Factor</th> : <></>}
+            {role === 'buyer'
+            || role === 'supplier'
+            || role === 'factor-1'
+            || role === 'factor-2' ? (
+              <th>Action</th>
+              ) : (
+              <></>
+              )}
+          </tr>
         </thead>
         <tbody>
-        {dataToDisplay.map(({ key, value, bids }) => (
-          <tr key={key.id}>
-            <td>{key.id}</td>
-            <td>{value.debtor}</td>
-            <td>{value.beneficiary}</td>
-            <td>{value.totalDue}</td>
-            <td>{value.dueDate}</td>
-            <td>{value.owner}</td>
-            <td>{STATUSES.INVOICE[value.state]}</td>
-            {role === 'supplier' && value.state === 3 && bids ? (
-              <>
-              <td style={{ paddingTop: '10px' }}>
-                {bids.map(i => (
-                  <div style={{ paddingTop: '5px' }} key={i.bidId}>
-                    {i.rate}
-                  </div>
-                ))}
-              </td>
-              <td style={{ paddingTop: '10px' }}>
-                {bids.map(i => (
-                  <div style={{ paddingTop: '5px' }} key={i.bidId}>
-                    {i.factor}
-                  </div>
-                ))}
-              </td>
-              </>
-            ) : (
-              <></>
-            )}
+          {dataToDisplay.map(({ key, value, bids }) => (
+            <tr key={key.id}>
+              <td>{key.id}</td>
+              <td>{value.debtor}</td>
+              <td>{value.beneficiary}</td>
+              <td>{value.totalDue}</td>
+              <td>{value.dueDate}</td>
+              <td>{value.owner}</td>
+              <td>{STATUSES.INVOICE[value.state]}</td>
+              {role === 'supplier' && value.state === 3 && bids ? (
+                <>
+                  <td style={{ paddingTop: '10px' }}>
+                    {bids.map(i => (
+                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                        {i.rate}
+                      </div>
+                    ))}
+                  </td>
+                  <td style={{ paddingTop: '10px' }}>
+                    {bids.map(i => (
+                      <div style={{ paddingTop: '5px' }} key={i.bidId}>
+                        {i.factor}
+                      </div>
+                    ))}
+                  </td>
+                </>
+              ) : (
+                <></>
+              )}
 
-            {role === 'supplier' && value.state === 4 && bids ? (
-              <>
-              <td style={{ paddingTop: '10px' }}>{value.value}</td>
-              <td style={{ paddingTop: '10px' }}>{value.factor}</td>
-              </>
-            ) : (
-              <></>
-            )}
+              {role === 'supplier' && value.state === 4 && bids ? (
+                <>
+                  <td style={{ paddingTop: '10px' }}>{value.value}</td>
+                  <td style={{ paddingTop: '10px' }}>{value.factor}</td>
+                </>
+              ) : (
+                <></>
+              )}
 
-            {role === 'supplier' && value.state === 3 && bids ? (
-              <td>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  {bids.map(i => (
+              {role === 'supplier' && value.state === 3 && bids ? (
+                <td>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {bids.map(i => (
+                      <Button
+                        key={i.bidId}
+                        // style={{ marginRight: '5px' }}
+                        intent="primary"
+                        onClick={() => {
+                          // console.log({
+                          //   fcn: 'acceptBid',
+                          //   args: [i.bidId, '0', '0', '0']
+                          // });
+                          acceptBid({
+                            fcn: 'acceptBid',
+                            args: [i.bidId, '0', '0', '0']
+                          });
+                        }}
+                      >
+                        Accept Bid
+                      </Button>
+                    ))}
+                  </div>
+                </td>
+              ) : (
+                <></>
+              )}
+              {role === 'buyer' && value.state === 1 ? (
+                <td>
+                  <div>
                     <Button
-                      key={i.bidId}
-                      // style={{ marginRight: '5px' }}
+                      style={{ marginRight: '5px' }}
                       intent="primary"
                       onClick={() => {
-                        // console.log({
-                        //   fcn: 'acceptBid',
-                        //   args: [i.bidId, '0', '0', '0']
-                        // });
-                        acceptBid({
-                          fcn: 'acceptBid',
-                          args: [i.bidId, '0', '0', '0']
+                        acceptInvoice({
+                          fcn: 'acceptInvoice',
+                          args: [key.id, '0', '0', '0', '0', '0', '0']
                         });
                       }}
                     >
-                      Accept Bid
+                      Sign
                     </Button>
-                  ))}
-                </div>
-              </td>
-            ) : (
-              <></>
-            )}
-            {role === 'buyer' && value.state === 1 ? (
-              <td>
-                <div>
-                  <Button
-                    style={{ marginRight: '5px' }}
-                    intent="primary"
-                    onClick={() => {
-                      acceptInvoice({ invoiceId: key.id });
-                    }}
-                  >
-                    Sign
-                  </Button>
-                  <Button intent="danger">Reject</Button>
-                </div>
-              </td>
-            ) : (
-              <></>
-            )}
-            {role === 'supplier' && value.state === 2 ? (
-              <td>
-                <div>
-                  <Button
-                    style={{ marginRight: '5px' }}
-                    intent="primary"
-                    onClick={() => {
-                      placeForTradeInvoice({ invoiceId: key.id });
-                    }}
-                  >
-                    Place for Trade
-                  </Button>
-                </div>
-              </td>
-            ) : (
-              <></>
-            )}
-            {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
-              <td>
-                <div>
-                  <PlaceBidForm
-                    dialogIsOpen={invoiceBidDialogIsOpen}
-                    setDialogOpenState={setInvoiceBidDialogOpenState}
-                    invoiceId={key.id}
-                    role={role}
-                  />
-                  <Button
-                    style={{ marginRight: '5px' }}
-                    intent="primary"
-                    onClick={() => {
-                      setInvoiceBidDialogOpenState(true);
-                    }}
-                  >
-                    Place Bid
-                  </Button>
-                </div>
-              </td>
-            ) : (
-              <></>
-            )}
-          </tr>
-        ))}
+                    <Button intent="danger">Reject</Button>
+                  </div>
+                </td>
+              ) : (
+                <></>
+              )}
+              {role === 'supplier' && value.state === 2 ? (
+                <td>
+                  <div>
+                    <Button
+                      style={{ marginRight: '5px' }}
+                      intent="primary"
+                      onClick={() => {
+                        placeForTradeInvoice({
+                          fcn: 'placeInvoice',
+                          args: [
+                            key.id,
+                            'a', // Buyer Id
+                            'b', // SupplierId
+                            '123.65', // Total Due,
+                            value.dueDate.toString(),
+                            '0',
+                            'b'
+                          ]
+                        });
+                      }}
+                    >
+                      Place for Trade
+                    </Button>
+                    <Button
+                      style={{ marginRight: '5px' }}
+                      intent="danger"
+                      onClick={() => {
+                        removeInvoice({
+                          fcn: 'removeInvoice',
+                          args: [
+                            key.id, // InvoiceId
+                            '0',
+                            '0',
+                            '0',
+                            '0',
+                            '0',
+                            '0'
+                          ]
+                        });
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                </td>
+              ) : (
+                <></>
+              )}
+              {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
+                <td>
+                  <div>
+                    <PlaceBidForm
+                      dialogIsOpen={invoiceBidDialogIsOpen}
+                      setDialogOpenState={setInvoiceBidDialogOpenState}
+                      invoiceId={key.id}
+                      role={role}
+                    />
+                    <Button
+                      style={{ marginRight: '5px' }}
+                      intent="primary"
+                      onClick={() => {
+                        setInvoiceBidDialogOpenState(true);
+                      }}
+                    >
+                      Place Bid
+                    </Button>
+                  </div>
+                </td>
+              ) : (
+                <></>
+              )}
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

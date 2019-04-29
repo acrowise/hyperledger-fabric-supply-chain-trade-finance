@@ -29,8 +29,8 @@ export const STATUSES = {
     1: 'Issued',
     2: 'Signed',
     3: 'For Sale',
-    5: 'Sold',
-    6: 'Removed'
+    4: 'Sold',
+    5: 'Removed'
   }
 };
 

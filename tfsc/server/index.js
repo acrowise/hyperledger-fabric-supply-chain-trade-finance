@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const nanoid = require('nanoid');
 const multer = require('multer');
 const proxy = require('http-proxy-middleware');
+const axios = require('axios');
+const uuid = require('uuid/v4');
 
 const upload = multer();
 
@@ -91,7 +93,7 @@ router.post('/generateProof', (req, res) => {
 
 router.post('/placeOrder', (req, res) => {
   setTimeout(() => {
-    const id = nanoid();
+    const id = uuid();
     const order = Object.assign(req.body, {
       orderId: id,
       state: 'New',
@@ -162,8 +164,7 @@ router.post('/validateProof', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'validateProof' }))));
 });
 
-router.post('/updateOrder', (req, res) => {
-  res.send('ok');
+router.post('/updateOrder', async (req, res) => {
   const order = ORDERS.find(i => i.orderId === req.body.orderId);
 
   order.state = 'Accepted';
@@ -172,9 +173,9 @@ router.post('/updateOrder', (req, res) => {
     contractId: order.orderId,
     consignorName: 'Buyer',
     consigneeName: 'Supplier',
-    totalDue: 'total_due',
+    totalDue: '123',
     quantity: order.quantity,
-    dueDate: 'due_date',
+    dueDate: new Date().getTime(),
     state: 'New',
     destinationPort: order.destinationPort,
     dateCreated: new Date().toISOString(),
@@ -182,9 +183,32 @@ router.post('/updateOrder', (req, res) => {
     documents: 'documents hashes'
   };
 
+  try {
+    const result = await axios.post(
+      'http://localhost:4002/api/channels/common/chaincodes/trade-finance-chaincode',
+      {
+        fcn: 'registerInvoice',
+        args: [
+          order.orderId, // contractId
+          'a',
+          'b',
+          contract.totalDue,
+          contract.dueDate.toString(),
+          '0',
+          'b'
+        ]
+      }
+    );
+    console.log(result.data);
+  } catch (e) {
+    console.error(e);
+  }
+
   CONTRACTS.push(contract);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'invoiceRegistered' }))));
+  res.send('ok');
 });
 
 router.post('/placeInvoiceForTrade', (req, res) => {
