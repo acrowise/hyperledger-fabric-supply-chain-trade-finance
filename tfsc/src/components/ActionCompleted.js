@@ -12,7 +12,7 @@ const ActionCompleted = ({ action, result }) => (
   >
     <Icon icon="tick" />
     <p>{action}</p>
-    <p>{result}</p>
+    <p style={{ fontWeight: 'bolder', textTransform: 'uppercase' }}>{result}</p>
   </div>
 );
 

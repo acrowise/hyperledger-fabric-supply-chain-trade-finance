@@ -23,13 +23,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   };
   const [formState, dispatch] = useReducer(formReducer, initialState);
 
-  const [newOrder, placeOrder, r] = post('placeOrder')();
+  const [newOrder, placeOrder, reset] = post('placeOrder')();
 
   if (!newOrder.pending) {
     if (newOrder.complete) {
       setTimeout(() => {
         setDialogOpenState(false);
-        r();
+        reset();
       }, 1500);
       // r();
     }
