@@ -7,6 +7,11 @@ h4 {
   margin: 10px 0;
 }
 
+h3 {
+  font-size: $fs-big;
+  margin: 20px 0;
+}
+
 // General
 body {
   margin: 0;
@@ -24,9 +29,10 @@ body {
   display: flex;
   margin: 0 -10px;
 }
+
 .layout-aside {
-  flex: 1 0 300px;
-  max-width: 300px;
+  flex: 1 0 230px;
+  max-width: 230px;
   padding: 0 10px;
 }
 
@@ -151,7 +157,7 @@ $header-height: 65px;
   background-color: white;
   border: 1px solid $color-border;
   color: $color-primary;
-  width: 250px;
+  width: 100%;
   font: $fw-normal $fs-normal $ff-primary;
   border-radius: 2px;
   -webkit-appearance: button;
@@ -174,6 +180,7 @@ $header-height: 65px;
   min-width: 234px!important;
   text-transform: uppercase;
   font-size: $fs-normal!important;
+  border-radius: 20px;
 }
 .bp3-button.bp3-intent-primary {
   background-color: $color-secondary;
@@ -184,4 +191,31 @@ $header-height: 65px;
   &:disabled {
     background-color: #D3F3E8;
   }
+}
+.btn-generate-proof {
+  height: 46px;
+  margin-bottom: 15px;
+  border-radius: 43px;
+  text-transform: none;
+  font-size: $fs-bigger!important;
+  min-width: 0!important;
+  width: 100%;
+}
+
+//Sidebar panel
+.sidebar-panel {
+  box-shadow: $box-shadow;
+  margin-bottom: 15px;
+}
+.sidebar-panel-header {
+  padding: 5px 20px;
+  background: $color-primary;
+  color: $color-txt-light;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.sidebar-panel-body {
+  padding: 20px;
+  background: white;
 }
