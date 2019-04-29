@@ -6,7 +6,7 @@ body {
   margin: 0;
   color: $color-txt;
   background-color: $color-bg-gray;
-  font: $fw-normal $fs-normal 'Proxima Nova', sans-serif;
+  font: $fw-normal $fs-normal "Proxima Nova", sans-serif;
   line-height: 1.2;
 }
 
@@ -77,12 +77,13 @@ $header-height: 65px;
   }
 }
 .dashboard-tabs-tab {
-  display: inline-block;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .dashboard-tabs-tab p {
   margin-bottom: 0;
 }
-
 
 //Radio buttons
 .radio-button {
@@ -94,8 +95,8 @@ $header-height: 65px;
 .radio-button:hover input:checked ~ .bp3-control-indicator,
 .radio-button:hover input:checked ~ .bp3-control-indicator,
 .radio-button input:checked ~ .bp3-control-indicator {
-  background-color: $color-secondary!important;
-  box-shadow: none!important;
+  background-color: $color-secondary !important;
+  box-shadow: none !important;
   &:focus {
     outline: none;
   }
@@ -106,9 +107,8 @@ $header-height: 65px;
   .bp3-input {
     border-radius: 20px;
     padding: 0 25px;
-    border: 1px solid #D3DAE0;
+    border: 1px solid #d3dae0;
     box-shadow: none;
-    font: $fw-normal $fs-normal 'Proxima Nova', sans-serif;
+    font: $fw-normal $fs-normal "Proxima Nova", sans-serif;
   }
 }
-

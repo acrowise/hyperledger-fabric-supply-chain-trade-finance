@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Tab, Tabs, Icon } from '@blueprintjs/core';
+import { Tab, Tabs } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { Redirect } from 'react-router-dom';
 
@@ -66,12 +66,21 @@ const tabs = role => [
 
 const Title = ({ title, notification }) => (
   <div className="dashboard-tabs-tab">
+    <p>{title}</p>
     {notifications[notification] === title.toLowerCase() ? (
-      <Icon style={{ marginBottom: '9px' }} icon="symbol-circle" intent={'danger'} />
+      <div
+        style={{
+          marginLeft: '5px',
+          marginBottom: '7px',
+          borderRadius: '100%',
+          height: '8px',
+          width: '8px',
+          backgroundColor: '#69D7BC'
+        }}
+      />
     ) : (
       <></>
     )}
-    <p>{title}</p>
   </div>
 );
 
