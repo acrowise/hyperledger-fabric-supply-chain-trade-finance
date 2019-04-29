@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
-	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"strconv"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 
 //bid state constants (from 0 to 4)
 const (
-	stateBidUnknown  = iota
+	stateBidUnknown = iota
 	stateBidIssued
 	stateBidAccepted
 	stateBidCanceled
@@ -92,7 +92,7 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 
 	// checking invoice
 	invoice := Invoice{}
-	if err := invoice.FillFromCompositeKeyParts(args[3:4]); err != nil {
+	if err := invoice.FillFromCompositeKeyParts([]string{args[3]}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)
@@ -109,7 +109,7 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 		return errors.New(message)
 	}
 
-	if invoice.Value.State != stateInvoiceForSale{
+	if invoice.Value.State != stateInvoiceForSale {
 		message := fmt.Sprintf("invalid state of invoice")
 		Logger.Error(message)
 		return errors.New(message)

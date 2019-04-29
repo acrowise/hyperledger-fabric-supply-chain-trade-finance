@@ -1,12 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"encoding/json"
-	"time"
 	"github.com/satori/go.uuid"
+	"time"
 )
 
 type TradeFinanceChaincode struct {
@@ -36,6 +36,10 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	if function == "registerInvoice" {
 		// Supplier (or Buyer?) adds an invoice to Trade-Finance CC ledger
 		return cc.registerInvoice(stub, args)
+	} else if function == "acceptInvoice" {
+		return cc.acceptInvoice(stub, args)
+	} else if function == "rejectInvoice" {
+		return cc.rejectInvoice(stub, args)
 	} else if function == "placeInvoice" {
 		// Invoice owner places an invoice on the dashboard
 		return cc.placeInvoice(stub, args)
@@ -220,6 +224,17 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
+	allowedStates := map[int]bool{
+		stateInvoiceSigned:  true,
+		stateInvoiceRemoved: true,
+	}
+
+	if !allowedStates[invoice.Value.State] {
+		message := fmt.Sprintf("cannot place invoice with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting automatic values
 	invoice.Value.State = stateInvoiceForSale
 
@@ -306,6 +321,184 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 
 	//setting automatic values
 	invoice.Value.State = stateInvoiceRemoved
+
+	if bytes, err := json.Marshal(invoice); err == nil {
+		Logger.Debug("Invoice: " + string(bytes))
+	}
+
+	//updating state in ledger
+	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
+func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// args: invoice id
+	// check specified invoice existence
+	// check if caller is invoice owner
+	// check invoice trade status
+	// update invoice trade status
+	// save invoice
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking invoice exist
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &invoice, "") {
+		compositeKey, _ := invoice.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if invoice.Value.Debtor != creator {
+		message := fmt.Sprintf("only invoice debtor can accept an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if invoice.Value.State != stateInvoiceIssued {
+		message := fmt.Sprintf("cannot accept invoice with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting automatic values
+	invoice.Value.State = stateInvoiceSigned
+
+	if bytes, err := json.Marshal(invoice); err == nil {
+		Logger.Debug("Invoice: " + string(bytes))
+	}
+
+	//updating state in ledger
+	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
+func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// args: invoice id
+	// check specified invoice existence
+	// check if caller is invoice owner
+	// check invoice trade status
+	// update invoice trade status
+	// save invoice
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking invoice exist
+	invoice := Invoice{}
+	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &invoice, "") {
+		compositeKey, _ := invoice.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	if err := LoadFrom(stub, &invoice, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if invoice.Value.Owner != creator {
+		message := fmt.Sprintf("only invoice debtor can reject an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if invoice.Value.State != stateInvoiceIssued {
+		message := fmt.Sprintf("cannot reject invoice with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting automatic values
+	invoice.Value.State = stateInvoiceRejected
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -641,7 +834,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 
 	//changing invoice state
 	invoice := Invoice{}
-	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+	if err := invoice.FillFromCompositeKeyParts([]string{bidToUpdate.Value.InvoiceID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -708,14 +901,14 @@ func (cc *TradeFinanceChaincode) listBids(stub shim.ChaincodeStubInterface, args
 	return shim.Success(resultBytes)
 }
 
-//0		1	2	3
-//0		0	0	InvoiceID
+//0
+//InvoiceID
 func (cc *TradeFinanceChaincode) listBidsForInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	// checking invoice exist
 	invoice := Invoice{}
-	if err := invoice.FillFromCompositeKeyParts(args[3:4]); err != nil {
+	if err := invoice.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
