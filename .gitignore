@@ -15,6 +15,7 @@ fabric-rest-api.iws
 /www/artifacts/*.block
 /dockercompose/*.yaml
 /logs
-*/github.com/
+chaincode/go/github.com/
+artifacts-templates/api-configs/network.yaml
 
 .tmp
