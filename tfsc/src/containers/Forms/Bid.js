@@ -9,15 +9,15 @@ import { post } from '../../helper/api';
 import { INPUTS } from '../../constants';
 
 const PlaceBidForm = ({
-  dialogIsOpen, setDialogOpenState, invoiceId, role
+  dialogIsOpen, setDialogOpenState, invoiceId, role, rate = 0
 }) => {
-  const defaultFormState = { rate: 0, invoiceId, role };
+  const defaultFormState = { rate, invoiceId, role };
   const [formState, setFormState] = useState(defaultFormState);
-  const [newBid, placeBid] = post('placeBid', true)();
+  const [postRes, postAction] = post(`${dialogIsOpen.action}Bid`)();
 
   return (
-    <Overlay usePortal isOpen={dialogIsOpen}>
-      {newBid.pending ? <Spinner /> : <></>}
+    <Overlay usePortal isOpen={dialogIsOpen.isOpen}>
+      {postRes.pending ? <Spinner /> : <></>}
       <div
         style={{
           display: 'flex',
@@ -49,7 +49,10 @@ const PlaceBidForm = ({
               large
               intent="danger"
               onClick={() => {
-                setDialogOpenState(false);
+                setDialogOpenState({
+                  isOpen: false,
+                  action: null
+                });
                 setFormState(defaultFormState);
               }}
             >
@@ -59,11 +62,14 @@ const PlaceBidForm = ({
               large
               intent="primary"
               onClick={() => {
-                placeBid({
-                  fcn: 'placeBid',
+                postAction({
+                  fcn: `${dialogIsOpen.action}Bid`,
                   args: ['0', formState.rate.toString(), 'f', invoiceId]
                 }); // FIXME:  f- factor-id
-                setDialogOpenState(false);
+                setDialogOpenState({
+                  isOpen: false,
+                  action: null
+                });
                 setFormState(defaultFormState);
               }}
             >
@@ -77,9 +83,11 @@ const PlaceBidForm = ({
 };
 
 PlaceBidForm.propTypes = {
+  rate: PropTypes.number,
+  action: PropTypes.string,
   role: PropTypes.string,
   invoiceId: PropTypes.string,
-  dialogIsOpen: PropTypes.bool,
+  dialogIsOpen: PropTypes.object,
   setDialogOpenState: PropTypes.func
 };
 

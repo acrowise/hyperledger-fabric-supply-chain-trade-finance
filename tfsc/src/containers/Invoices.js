@@ -4,13 +4,16 @@ import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
-import PlaceBidForm from './Forms/PlaceBid';
+import BidForm from './Forms/Bid';
 
 import { post } from '../helper/api';
 import { STATUSES } from '../constants';
 
 const Invoices = ({ role, filter, search }) => {
-  const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState(false);
+  const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState({
+    isOpen: false,
+    action: null
+  });
 
   const [data, loading, setData] = useFetch('listInvoices');
   const [bids, bidsLoading, setBidsData] = useFetch('listBids');
@@ -101,8 +104,16 @@ const Invoices = ({ role, filter, search }) => {
             <th>Due Date</th>
             <th>Invoice Owner</th>
             <th>Sate</th>
-            {role === 'supplier' ? <th>Bid</th> : <></>}
-            {role === 'supplier' ? <th>Factor</th> : <></>}
+            {role === 'supplier' || role === 'factor-1' || role === 'factor-2' ? (
+              <th>Bid</th>
+            ) : (
+              <></>
+            )}
+            {role === 'supplier' || role === 'factor-1' || role === 'factor-2' ? (
+              <th>Factor</th>
+            ) : (
+              <></>
+            )}
             {role === 'buyer'
             || role === 'supplier'
             || role === 'factor-1'
@@ -135,7 +146,7 @@ const Invoices = ({ role, filter, search }) => {
                   <td style={{ paddingTop: '10px' }}>
                     {bids.map(i => (
                       <div style={{ paddingTop: '5px' }} key={i.bidId}>
-                        {i.factor}
+                        {i.factorID}
                       </div>
                     ))}
                   </td>
@@ -144,14 +155,16 @@ const Invoices = ({ role, filter, search }) => {
                 <></>
               )}
 
-              {role === 'supplier' && value.state === 4 && bids ? (
+              {role === 'supplier'
+              || role === 'factor-1'
+              || (role === 'factor-2' && value.state === 4 && bids) ? (
                 <>
-                  <td style={{ paddingTop: '10px' }}>{value.value}</td>
-                  <td style={{ paddingTop: '10px' }}>{value.factor}</td>
+                  <td style={{ paddingTop: '10px' }}>{bids.rate}</td>
+                  <td style={{ paddingTop: '10px' }}>{value.factorID}</td>
                 </>
-              ) : (
+                ) : (
                 <></>
-              )}
+                )}
 
               {role === 'supplier' && value.state === 3 && bids ? (
                 <td>
@@ -252,20 +265,35 @@ const Invoices = ({ role, filter, search }) => {
               {(role === 'factor-1' || role === 'factor-2') && value.state === 3 ? (
                 <td>
                   <div>
-                    <PlaceBidForm
+                    <BidForm
                       dialogIsOpen={invoiceBidDialogIsOpen}
                       setDialogOpenState={setInvoiceBidDialogOpenState}
                       invoiceId={key.id}
                       role={role}
+                      rate={value.rate}
                     />
                     <Button
                       style={{ marginRight: '5px' }}
                       intent="primary"
                       onClick={() => {
-                        setInvoiceBidDialogOpenState(true);
+                        setInvoiceBidDialogOpenState({
+                          isOpen: true,
+                          action: 'place'
+                        });
                       }}
                     >
                       Place Bid
+                    </Button>
+                    <Button
+                      intent="primary"
+                      onClick={() => {
+                        setInvoiceBidDialogOpenState({
+                          isOpen: true,
+                          action: 'edit'
+                        });
+                      }}
+                    >
+                      Edit Bid
                     </Button>
                   </div>
                 </td>
