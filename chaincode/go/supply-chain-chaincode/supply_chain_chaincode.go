@@ -14,6 +14,24 @@ type SupplyChainChaincode struct {
 func (cc *SupplyChainChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
 	logger.Debug("Init")
 
+	_, args := stub.GetFunctionAndParameters()
+
+	message := fmt.Sprintf("Received args: %s", []string(args))
+	logger.Debug(message)
+
+	config := Config{}
+	if err := config.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a config from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := UpdateOrInsertIn(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	return shim.Success(nil)
 }
 

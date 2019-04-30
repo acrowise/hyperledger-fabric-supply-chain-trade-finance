@@ -7,11 +7,11 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-var Logger = shim.NewLogger("TradeFinanceChaincode")
+var Logger = shim.NewLogger("SupplyChainChaincode")
 
 // Namespaces constants
 const (
-	ConfigIndex = "ConfigTF"
+	ConfigIndex = "ConfigSC"
 )
 
 // OrganizationalUnit constants

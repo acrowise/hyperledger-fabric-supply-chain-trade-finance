@@ -58,19 +58,21 @@ echo "Use 3rdParty Version: $THIRDPARTY_VERSION"
 CLI_TIMEOUT=10000
 
 CHAINCODE_VERSION="1.0"
-CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode
-CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode
+: ${CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode}
+: ${CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode}
 
 GOLANG_PACKAGES=(
 github.com/satori/go.uuid
 )
 
-# TODO: pass the contents of the collections_config.json as arg[0]
-CHAINCODE_TRADE_FINANCE_INIT='{"Args":["init","b-f-Deals,b-g-Deals,c-f-Deals,c-g-Deals"]}'
-CHAINCODE_SUPPLY_CHAIN_INIT='{"Args":["init",""]}'
-CHAINCODE_BILATERAL_INIT='{"Args":["init"]}'
-TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"
-SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"
+: ${TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"}
+: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
+: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+
+: ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT)}
+: ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT)}
+
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
 LITERAL_LEVELDB="leveldb"
