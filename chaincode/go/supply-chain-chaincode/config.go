@@ -16,10 +16,11 @@ const (
 
 // OrganizationalUnit constants
 const (
-	Buyer    = "buyer"
-	Supplier = "supplier"
-	Auditor  = "auditor"
-	Factor   = "factor"
+	Buyer           = "buyer"
+	Supplier        = "supplier"
+	Auditor         = "auditor"
+	Factor          = "factor"
+	TransportAgency = "transport_agency"
 )
 
 // Numerical constants

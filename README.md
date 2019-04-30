@@ -32,6 +32,11 @@ Network consortium consists of:
 - Peer organization org1 `a` 
 - Peer organization org2 `b` 
 - Peer organization org3 `c`
+- Peer organization org3 `d`
+- Peer organization org3 `e`
+- Peer organization org3 `f`
+- Peer organization org3 `g`
+- Peer organization org3 `h`
 
 They transact with each other on the following channel:
 - `common` involving all members and with chaincode `reference` deployed
@@ -51,9 +56,14 @@ Deploy docker containers of all member organizations to one host, for developmen
 
 After all containers are up, web interfaces will be at:
 
-- org1 [http://localhost:4000](http://localhost:4000/)
-- org2 [http://localhost:4001](http://localhost:4001/)
-- org3 [http://localhost:4002](http://localhost:4002/)
+- org1 [http://localhost:4001](http://localhost:4001/)
+- org2 [http://localhost:4002](http://localhost:4002/)
+- org3 [http://localhost:4003](http://localhost:4003/)
+- org4 [http://localhost:4004](http://localhost:4004/)
+- org5 [http://localhost:4005](http://localhost:4005/)
+- org6 [http://localhost:4006](http://localhost:4006/)
+- org7 [http://localhost:4007](http://localhost:4007/)
+- org8 [http://localhost:4008](http://localhost:4008/)
 
 
 
@@ -76,3 +86,8 @@ During setup the same script uses `cli` docker containers to create and join cha
 
 And finally it starts members' services via the generated `docker-compose.yaml` files.
  
+## Testing
+
+Use postman collections
+- supply-chain-chaincode [https://www.getpostman.com/collections/d35ed7890f4699795018]
+- trade-finance-chaincode [https://www.getpostman.com/collections/942834442b14876c9b44]
