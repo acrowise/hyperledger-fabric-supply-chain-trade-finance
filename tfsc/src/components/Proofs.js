@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
-import ProofDetail from './ProofDetail';
+import ProofDetail from './ProofDetail/ProofDetail';
 
 const Proofs = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
@@ -9,7 +9,7 @@ const Proofs = ({ data }) => {
   const [selectedProof, setSelectedProof] = useState(false);
 
   return (
-    <div>
+    <div className="sidebar-panel">
       <ProofDetail
         dialogIsOpen={dialogIsOpen}
         setDialogOpenState={setDialogOpenState}
@@ -19,13 +19,13 @@ const Proofs = ({ data }) => {
         onClick={() => {
           setExpanded(!expanded);
         }}
-        style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
+        className="sidebar-panel-header"
       >
-        <h3>Proofs</h3>
+        <h4>Proofs</h4>
         <Icon icon={expanded ? 'caret-up' : 'caret-down'} />
       </div>
       {expanded ? (
-        <div>
+        <div className="sidebar-panel-body">
           {data.map(proof => (
             <div
               onClick={() => {
@@ -33,7 +33,7 @@ const Proofs = ({ data }) => {
                 setSelectedProof(proof);
               }}
               key={proof.proofId}
-              style={{ display: 'flex', flexDirection: 'column' }}
+              style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
             >
               <p>ProofId: {proof.proofId}</p>
             </div>
