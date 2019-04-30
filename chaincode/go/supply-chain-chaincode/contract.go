@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ContractIndex = "Contract"
+	contractIndex = "Contract"
 )
 
 const (
@@ -167,7 +167,7 @@ func (entity *Contract) ToCompositeKey(stub shim.ChaincodeStubInterface) (string
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(ContractIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(contractIndex, compositeKeyParts)
 }
 
 func (entity *Contract) ToLedgerValue() ([]byte, error) {

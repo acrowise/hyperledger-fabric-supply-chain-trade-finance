@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ProofIndex = "Proof"
+	proofIndex = "Proof"
 )
 
 const (
@@ -106,7 +106,7 @@ func (entity *Proof) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, e
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(ProofIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(proofIndex, compositeKeyParts)
 }
 
 func (entity *Proof) ToLedgerValue() ([]byte, error) {

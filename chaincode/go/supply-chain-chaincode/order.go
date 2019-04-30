@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	OrderIndex = "Order"
+	orderIndex = "Order"
 )
 
 const (
@@ -159,7 +159,7 @@ func (entity *Order) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, e
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(OrderIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(orderIndex, compositeKeyParts)
 }
 
 func (entity *Order) ToLedgerValue() ([]byte, error) {

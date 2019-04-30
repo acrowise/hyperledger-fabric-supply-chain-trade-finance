@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ShipmentIndex = "Shipment"
+	shipmentIndex = "Shipment"
 )
 
 const (
@@ -155,7 +155,7 @@ func (entity *Shipment) ToCompositeKey(stub shim.ChaincodeStubInterface) (string
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(ShipmentIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(shipmentIndex, compositeKeyParts)
 }
 
 func (entity *Shipment) ToLedgerValue() ([]byte, error) {

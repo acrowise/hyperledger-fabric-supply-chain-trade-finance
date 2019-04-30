@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -91,6 +92,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	return pb.Response{Status: 400, Message: message}
 }
 
+//0		1			2			3		4			5		6			7		8
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: <order fields>
 	// check role == Buyer
@@ -102,18 +105,24 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(nil)
 }
 
+//0		1			2			3		4			5		6			7		8
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1			2			3		4			5		6			7		8
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1			2			3		4			5		6			7		8
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: order id
 	// check role == Supplier
@@ -128,12 +137,16 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
+//0		1			2			3		4			5			6		7
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1			2			3		4			5			6		7
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
@@ -146,6 +159,8 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	return shim.Success(nil)
 }
 
+//0		1			2
+//ID	SnapShot	State
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: auditor name/id/etc, contract id, fields included in proof (true/false for each of the contract's fields)
 	// check role == Supplier
@@ -158,18 +173,24 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
+//0		1			2
+//ID	SnapShot	State
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1			2		3
+//ID	Description	State	Documents
 func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
 func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: contract id, (optional) description, docs
 	// check role == Buyer
@@ -185,6 +206,8 @@ func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
+//0		1	2	3	4	5	6
+//ID    0	0	0	0	0	0
 func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: contract id, docs, (optional) description
 	// check role == Buyer
@@ -202,32 +225,142 @@ func (cc *SupplyChainChaincode) listOrders(stub shim.ChaincodeStubInterface, arg
 	// list all of the orders in common channel
 	// (optional) filter entries by status
 	Notifier(stub, NoticeRuningType)
+	orders := []Order{}
+	ordersBytes, err := Query(stub, orderIndex, []string{}, CreateOrder, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(ordersBytes, &orders); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(orders)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
 func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check role == Buyer or Supplier
 	// list all of the contracts for the caller from all collections
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer:    true,
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	contracts := []Contract{}
+	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(contractsBytes, &contracts); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(contracts)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
 func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check role == Auditor
 	// list all proofs for Auditor's name/id/etc
+	//checking role
 	Notifier(stub, NoticeRuningType)
+
+	allowedUnits := map[string]bool{
+		Auditor: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	proofs := []Proof{}
+	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(proofsBytes, &proofs); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(proofs)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
 func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: contract id
 	// list all Auditors' reports related to the contract
 	Notifier(stub, NoticeRuningType)
+
+	agencyReports := []AgencyReport{}
+	agencyReportsBytes, err := Query(stub, AgencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(agencyReportsBytes, &agencyReports); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(agencyReports)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
 	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
+	return shim.Success(resultBytes)
 }
 
 func main() {
