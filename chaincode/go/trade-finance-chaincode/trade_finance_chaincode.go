@@ -90,7 +90,6 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	// validate args, including owner/buyer coincidence with caller
 	// fill invoice from args
 	// save invoice
-	//TODO: add checking for contract exist
 	Notifier(stub, NoticeRuningType)
 
 	//checking role

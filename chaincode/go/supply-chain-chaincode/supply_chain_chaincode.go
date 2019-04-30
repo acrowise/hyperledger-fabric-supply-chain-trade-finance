@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -65,6 +66,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.verifyProof(stub, args)
 	} else if function == "submitReport" {
 		return cc.submitReport(stub, args)
+	} else if function == "registerInvoice" {
+		return cc.registerInvoice(stub, args)
 	} else if function == "acceptInvoice" {
 		return cc.acceptInvoice(stub, args)
 	} else if function == "rejectInvoice" {
@@ -86,7 +89,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
-		"acceptInvoice, rejectInvoice, " +
+		"registerInvoice, acceptInvoice, rejectInvoice, " +
 		"listOrders, listContracts, listProofs, listReports}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	logger.Debug(message)
@@ -540,6 +543,86 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 	return shim.Success(nil)
 }
 
+//0				1		2			3			4			5	6
+//ContractID    Debtor	Beneficiary	TotalDue	DueDate		0	Owner
+func (cc *SupplyChainChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// args: contract id, (optional) description, docs
+	// check role == Buyer
+	// check contract existence
+	// check contract status (to avoid logical conflict, e.g. accept contract rejected previously)
+	// add docs to Shipment (with description optionally)
+	// set contract status to "waiting for payment" (or some other final one)
+	// generate Invoice from contract field
+	// save Shipment, Contract to collection
+	// save Invoice to Trade Finance chaincode ledger
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking contract existing
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &contract, "") {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := LoadFrom(stub, &contract, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if contract.Value.State != stateContractSigned {
+		message := fmt.Sprintf("invalid state of contract")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//invoking another chaincode for registering invoice
+	fcnName := "registerInvoice"
+	chaincodeName := "trade-finance-chaincode"
+	channelName := "common"
+	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
+
+	for _, oneArg := range args {
+		argsByte = append(argsByte, []byte(oneArg))
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
+	if response.Status >= 400 {
+		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
+		return pb.Response{Status: 400, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
 //0		1	2	3	4	5	6
 //ID    0	0	0	0	0	0
 func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
@@ -568,7 +651,7 @@ func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, 
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		message := fmt.Sprintf("this organizational unit is not allowed to accept an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -618,7 +701,7 @@ func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, 
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		message := fmt.Sprintf("this organizational unit is not allowed to reject an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
