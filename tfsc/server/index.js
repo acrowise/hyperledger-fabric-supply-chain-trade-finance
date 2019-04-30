@@ -11,7 +11,9 @@ const upload = multer();
 
 const PORT = 3000;
 
-const ORDERS = [];
+const ORDERS = {
+  result: []
+};
 const INVOICES = {
   result: []
 };
@@ -29,14 +31,18 @@ const router = express.Router();
 
 router.use(cors());
 
+router.use((_, __, next) => {
+  setTimeout(() => {
+    next();
+  }, 850);
+});
+
 router.use(
   '/api',
   proxy({
     target: 'http://localhost:4002',
     changeOrigin: true,
     logLevel: 'debug'
-    // headers: { Connection: 'keep-alive' }
-    // onProxyReq
   })
 );
 
@@ -74,9 +80,7 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
 });
 
 router.get('/documents', (req, res) => {
-  setTimeout(() => {
-    res.json(DOCS);
-  }, 700);
+  res.json(DOCS);
 });
 
 router.post('/generateProof', (req, res) => {
@@ -92,18 +96,16 @@ router.post('/generateProof', (req, res) => {
 });
 
 router.post('/placeOrder', (req, res) => {
-  setTimeout(() => {
-    const id = uuid();
-    const order = Object.assign(req.body, {
-      orderId: id,
-      state: 'New',
-      type: 'place',
-      dateCreated: new Date().toISOString()
-    });
-    ORDERS.push(order);
-    res.send('ok');
-    clients.forEach(c => c.emit('notification', JSON.stringify(order)));
-  }, 500);
+  const id = uuid();
+  const order = Object.assign(req.body, {
+    orderId: id,
+    state: 'New',
+    type: 'place',
+    dateCreated: new Date().toISOString()
+  });
+  ORDERS.result.push(order);
+  res.send('ok');
+  clients.forEach(c => c.emit('notification', JSON.stringify(order)));
 });
 
 router.post('/requestShipment', (req, res) => {
@@ -165,7 +167,7 @@ router.post('/validateProof', (req, res) => {
 });
 
 router.post('/updateOrder', async (req, res) => {
-  const order = ORDERS.find(i => i.orderId === req.body.orderId);
+  const order = ORDERS.result.find(i => i.orderId === req.body.orderId);
 
   order.state = 'Accepted';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'updateOrder' }))));

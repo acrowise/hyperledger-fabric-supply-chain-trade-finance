@@ -13,6 +13,8 @@ import { INPUTS } from '../../constants';
 
 import { formReducer } from '../../reducers';
 
+import ActionCompleted from '../../components/ActionCompleted';
+
 const initialState = {
   shipFrom: '',
   shipTo: '',
@@ -24,8 +26,20 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, dispatch] = useReducer(formReducer, initialState);
   // const [formState, setFormState] = useState(defaultFormState);
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, requestShipment] = post('requestShipment')();
-  const [documentsRequest, uploadDocs] = post('uploadDocuments')();
+  const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
+  const [, uploadDocs] = post('uploadDocuments')();
+
+  if (!shipmentRequestRes.pending) {
+    if (shipmentRequestRes.complete) {
+      setTimeout(() => {
+        setDialogOpenState({
+          isOpen: false,
+          item: {}
+        });
+        reset();
+      }, 1500);
+    }
+  }
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen.state}>
@@ -38,81 +52,86 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
         }}
       >
         <Card style={{ width: '20vw' }}>
-          <Label>ContractId: {dialogIsOpen.item.contractId}</Label>
-          {INPUTS.TRANSPORT_REQUEST.map(({
-            label, type, placeholder, field
-          }) => (
-            <FormGroup key={label} label={label}>
-              <InputGroup
-                type={type}
-                placeholder={placeholder}
-                value={formState[field]}
-                onChange={({ target: { value } }) => dispatch({
-                  type: 'change',
-                  payload: {
-                    field,
-                    value
+          <ActionCompleted res={shipmentRequestRes} action="Shipment Requested" result="Accepted" />
+          {!shipmentRequestRes.pending
+          && !shipmentRequestRes.complete
+          && !shipmentRequestRes.data ? (
+            <>
+              <Label>ContractId: {dialogIsOpen.item.contractId}</Label>
+              {INPUTS.TRANSPORT_REQUEST.map(({
+                label, type, placeholder, field
+              }) => (
+                <FormGroup key={label} label={label}>
+                  <InputGroup
+                    type={type}
+                    placeholder={placeholder}
+                    value={formState[field]}
+                    onChange={({ target: { value } }) => dispatch({
+                      type: 'change',
+                      payload: {
+                        field,
+                        value
+                      }
+                    })
+                    }
+                  />
+                </FormGroup>
+              ))}
+              <Label>
+                Description
+                <TextArea
+                  growVertically={true}
+                  value={formState.description}
+                  onChange={({ target: { value } }) => dispatch({
+                    type: 'change',
+                    payload: {
+                      field: 'description',
+                      value
+                    }
+                  })
                   }
-                })
-                }
-              />
-            </FormGroup>
-          ))}
-          <Label>
-            Description
-            <TextArea
-              growVertically={true}
-              value={formState.description}
-              onChange={({ target: { value } }) => dispatch({
-                type: 'change',
-                payload: {
-                  field: 'description',
-                  value
-                }
-              })
-              }
-            />
-          </Label>
-          <FileUploader files={files} setFiles={setFiles} />
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              large
-              intent="danger"
-              onClick={() => {
-                setDialogOpenState({
-                  state: false,
-                  item: {}
-                });
-                dispatch({ type: 'reset', payload: initialState });
-                setFiles([]);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              large
-              intent="primary"
-              onClick={() => {
-                setDialogOpenState({
-                  state: false,
-                  item: {}
-                });
-                requestShipment(
-                  Object.assign({ contractId: dialogIsOpen.item.contractId }, formState)
-                );
-                dispatch({ type: 'reset', payload: initialState });
+                />
+              </Label>
+              <FileUploader files={files} setFiles={setFiles} />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <Button
+                  large
+                  intent="danger"
+                  onClick={() => {
+                    setDialogOpenState({
+                      state: false,
+                      item: {}
+                    });
+                    dispatch({ type: 'reset', payload: initialState });
+                    setFiles([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  large
+                  intent="primary"
+                  onClick={() => {
+                    requestShipment(
+                      Object.assign({ contractId: dialogIsOpen.item.contractId }, formState)
+                    );
+                    dispatch({ type: 'reset', payload: initialState });
 
-                const form = new FormData();
-                files.forEach((f) => {
-                  form.append('file', f);
-                });
-                uploadDocs(form);
-                setFiles([]);
-              }}
-            >
-              Request
-            </Button>
-          </div>
+                    const form = new FormData();
+                    files.forEach((f) => {
+                      form.append('file', f);
+                    });
+                    uploadDocs(form);
+                    setFiles([]);
+                  }}
+                >
+                  Request
+                </Button>
+              </div>
+            </>
+            ) : (
+            <></>
+            )}
         </Card>
       </div>
     </Overlay>
@@ -122,6 +141,6 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
 export default TransportRequestForm;
 
 TransportRequestForm.propTypes = {
-  dialogIsOpen: PropTypes.bool,
+  dialogIsOpen: PropTypes.object,
   setDialogOpenState: PropTypes.func
 };

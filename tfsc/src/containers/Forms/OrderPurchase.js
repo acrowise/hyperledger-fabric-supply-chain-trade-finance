@@ -1,7 +1,7 @@
 import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import {
-  Button, Overlay, FormGroup, InputGroup, Card, Spinner, Label
+  Button, Overlay, FormGroup, InputGroup, Card, Label
 } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
 
@@ -31,40 +31,20 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
         setDialogOpenState(false);
         reset();
       }, 1500);
-      // r();
     }
-    if (newOrder.error) {
-      // TODO:
-    }
-    // setTimeout(() => {
-    //   setDialogOpenState(false);
-    // }, 1500);
-
-    // r();
   }
 
   const handleOverlayClose = () => setDialogOpenState(false);
 
   return (
-    <Overlay
-      usePortal
-      canOutsideClickClose
-      isOpen={dialogIsOpen}
-      onClose={handleOverlayClose}
-    >
-      <div>
-        <Card style={{ width: '20vw' }}>
-          {newOrder.complete && newOrder.data ? (
-            <ActionCompleted action="New Order Purchased" result="Accepted" />
-          ) : (
-            <></>
-          )}
-          {newOrder.pending && !newOrder.complete ? <Spinner large intent="primary" /> : <></>}
-          {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
-            <>
+    <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
+      <Card style={{ width: '20vw' }}>
+        <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted" />
+        {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
+          <>
             {INPUTS.NEW_PURCHASE_ORDER.map(({
-                                              label, type, placeholder, field
-                                            }) => (
+              label, type, placeholder, field
+            }) => (
               <FormGroup key={label} label={label}>
                 <InputGroup
                   type={type}
@@ -112,12 +92,11 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 Order
               </Button>
             </div>
-            </>
-          ) : (
-            <></>
-          )}
-        </Card>
-      </div>
+          </>
+        ) : (
+          <></>
+        )}
+      </Card>
     </Overlay>
   );
 };

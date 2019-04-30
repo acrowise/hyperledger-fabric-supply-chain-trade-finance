@@ -14,27 +14,27 @@ import { TABLE_MAP } from '../constants';
 const Orders = ({ role, filter, search }) => {
   const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('orders');
-  const [updatedOrder, updateOrder] = post('updateOrder')();
+  const [, updateOrder] = post('updateOrder')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'place') {
-      const newState = data.concat(notification);
+      const newState = { result: data.result.concat(notification) };
       setData(newState);
     }
 
     if (notification.type === 'updateOrder') {
-      const newState = data.concat([]);
+      const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.orderId === notification.orderId);
       newState[itemToUpdateIndex] = notification;
-      setData(newState);
+      setData({ result: newState });
     }
   };
 
   useSocket('notification', onMessage);
 
-  let filteredData = data;
+  let filteredData = data.result;
 
   if (!loading) {
     if (filter) {

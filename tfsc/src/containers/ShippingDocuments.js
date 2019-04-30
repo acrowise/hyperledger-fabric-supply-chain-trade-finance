@@ -24,7 +24,7 @@ const ShippingDocuments = ({ role, content, setContent }) => {
 
     if (notification.type === 'shipmentConfirmed') {
       const newState = shipments.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.contractId === notification.contractId);
+      const itemToUpdateIndex = newState.findIndex(i => i.shipmentId === notification.shipmentId);
       newState[itemToUpdateIndex] = notification;
       setData(newState);
     }

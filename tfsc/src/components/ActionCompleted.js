@@ -1,19 +1,25 @@
 import React from 'react';
-import { Icon } from '@blueprintjs/core';
+import { Icon, Spinner } from '@blueprintjs/core';
 
-const ActionCompleted = ({ action, result }) => (
-  <div
-    style={{
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}
-  >
-    <Icon icon="tick" />
-    <p>{action}</p>
-    <p style={{ fontWeight: 'bolder', textTransform: 'uppercase' }}>{result}</p>
-  </div>
-);
-
+const ActionCompleted = ({ res, action, result }) => {
+  if (!res.pending && !res.complete && !res.data) {
+    return <></>;
+  }
+  return res.pending ? (
+    <Spinner large intent="primary" />
+  ) : (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <Icon icon={res.complete ? 'tick' : 'cross'} />
+      <p>{action}</p>
+      <p style={{ fontWeight: 'bolder', textTransform: 'uppercase' }}>{result}</p>
+    </div>
+  );
+};
 export default ActionCompleted;

@@ -1,17 +1,17 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
-  RadioGroup, Radio, Icon, InputGroup, Button
+  RadioGroup, Radio, InputGroup
 } from '@blueprintjs/core';
 // import PropTypes from 'prop-types';
 
 const fields = ['Price', 'Date', 'Status'];
 
-const Filter = (props) => {
+const Filter = ({ children, statuses }) => {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
 
-  const childrenWithProps = React.Children.map(props.children, child => React.cloneElement(child, {
+  const childrenWithProps = React.Children.map(children, child => React.cloneElement(child, {
     content,
     setContent,
     filter,
@@ -27,23 +27,14 @@ const Filter = (props) => {
           <RadioGroup
             inline
             selectedValue={filter}
-            onChange={({target}) => {
+            onChange={({ target }) => {
               setFilter(target.value);
             }}
             className="dashboard-panel-header-radiogroup"
           >
-            <Radio
-              label="All"
-              value={''}
-              className="radio-button"
-            />
-            {props.statuses.map(s => (
-              <Radio
-                key={s}
-                label={s}
-                value={s}
-                className="radio-button"
-              />
+            <Radio label="All" value={''} className="radio-button" />
+            {statuses.map(s => (
+              <Radio key={s} label={s} value={s} className="radio-button" />
             ))}
           </RadioGroup>
         </div>
@@ -53,7 +44,7 @@ const Filter = (props) => {
             placeholder="Search"
             value={search}
             className="search-input"
-            onChange={({target}) => {
+            onChange={({ target }) => {
               setSearch(target.value);
             }}
           />
@@ -63,10 +54,7 @@ const Filter = (props) => {
         <aside className="layout-aside">
           <h4>Filter by</h4>
           {fields.map(f => (
-            <div
-              key={f}
-              className="filter-select-wrap"
-            >
+            <div key={f} className="filter-select-wrap">
               <select className="filter-select">
                 <option selected>{f}</option>
               </select>
