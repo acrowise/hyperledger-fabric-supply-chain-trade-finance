@@ -67,10 +67,17 @@ GOLANG_PACKAGES=(
 github.com/satori/go.uuid
 )
 
+# Handle MacOS sed
+ARCH=$(uname -s | grep Darwin)
+SED_OPTS="-i"
+if [ "$ARCH" == "Darwin" ]; then
+    SED_OPTS="-it"
+fi
+
 : ${TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"}
-: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
-: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
 
 : ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT)}
 : ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT)}
@@ -134,13 +141,6 @@ function array_orgs_to_json() {
 
       JSON_ORG="\"[{${JSON_ORG:3}}]\"";  # remove the first three chars
 }
-
-# Handle MacOS sed
-ARCH=$(uname -s | grep Darwin)
-SED_OPTS="-i"
-if [ "$ARCH" == "Darwin" ]; then
-    SED_OPTS="-it"
-fi
 
 function setDockerVersions() {
     echo "set Docker image versions for $1"
