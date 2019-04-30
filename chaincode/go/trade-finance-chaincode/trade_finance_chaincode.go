@@ -851,8 +851,8 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	invoice.Value.State = stateInvoiceSold
-	invoice.Value.Owner = bid.Value.FactorID
-	invoice.Value.Beneficiary = bid.Value.FactorID
+	invoice.Value.Owner = bidToUpdate.Value.FactorID
+	invoice.Value.Beneficiary = bidToUpdate.Value.FactorID
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
