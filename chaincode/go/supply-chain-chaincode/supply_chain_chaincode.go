@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
+	"github.com/satori/go.uuid"
+	"time"
 )
 
 var logger = shim.NewLogger("SupplyChainChaincode")
@@ -92,8 +94,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0		1			2			3		4			5		6			7		8
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
+//0		1			2			3		4			5		6			7
+//0		ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID
 func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: <order fields>
 	// check role == Buyer
@@ -102,30 +104,264 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	// save order into the ledger
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place an order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	//filling from arguments
+	order := Order{}
+	if err := order.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill an order from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//generating new order ID and making Key
+	orderID := uuid.Must(uuid.NewV4()).String()
+	if err := order.FillFromCompositeKeyParts([]string{orderID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &order, "") {
+		compositeKey, _ := order.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("order with the key %s already exist", compositeKey))
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if order.Value.BuyerID != creator {
+		message := fmt.Sprintf("each buyer can place order only from itself")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting automatic values
+	order.Value.State = stateOrderNew
+	order.Value.Timestamp = time.Now().UTC().Unix()
+
+	//setting optional values
+	destination := args[4]
+	order.Value.Destination = destination
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(order); err == nil {
+		Logger.Debug("Order: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &order, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5		6			7		8
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
+//0		1			2			3		4			5		6			7
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	0
 func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to edit an order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking order exist
+	order := Order{}
+
+	if err := order.FillFromCompositeKeyParts(args[:orderKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := order.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill an order from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &order, "") {
+		compositeKey, _ := order.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	orderToUpdate := Order{}
+	orderToUpdate.Key = order.Key
+	if err := LoadFrom(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if orderToUpdate.Value.BuyerID != creator {
+		message := fmt.Sprintf("each buyer can edit only his order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	orderToUpdate.Value.ProductName = order.Value.ProductName
+	orderToUpdate.Value.Quantity = order.Value.Quantity
+	orderToUpdate.Value.Price = order.Value.Price
+	orderToUpdate.Value.DueDate = order.Value.DueDate
+	orderToUpdate.Value.PaymentDate = order.Value.PaymentDate
+
+	//setting optional values
+	destination := args[4]
+	orderToUpdate.Value.Destination = destination
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(orderToUpdate); err == nil {
+		Logger.Debug("Order: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5		6			7		8
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
+//0		1	2	3	4	5	6	7
+//ID	0	0	0	0	0	0	0
 func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to cancel an order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking order exist
+	order := Order{}
+	if err := order.FillFromCompositeKeyParts(args[:orderKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &order, "") {
+		compositeKey, _ := order.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	orderToUpdate := Order{}
+	orderToUpdate.Key = order.Key
+	if err := LoadFrom(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if orderToUpdate.Value.State != stateOrderNew {
+		message := fmt.Sprintf("unable cancel order with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if orderToUpdate.Value.BuyerID != creator {
+		message := fmt.Sprintf("each buyer can cancel only his order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	orderToUpdate.Value.State = stateOrderCanceled
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(orderToUpdate); err == nil {
+		Logger.Debug("Order: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5		6			7		8
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
+//0		1	2	3	4	5	6	7
+//ID	0	0	0	0	0	0	0
 func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: order id
 	// check role == Supplier
@@ -136,6 +372,111 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	// save order to common ledger
 	// save contract to Buyer-Supplier collection
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to cancel an order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking order exist
+	order := Order{}
+	if err := order.FillFromCompositeKeyParts(args[:orderKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &order, "") {
+		compositeKey, _ := order.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	orderToUpdate := Order{}
+	orderToUpdate.Key = order.Key
+	if err := LoadFrom(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if orderToUpdate.Value.State != stateOrderNew {
+		message := fmt.Sprintf("unable cancel order with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	//setting new values
+	orderToUpdate.Value.State = stateOrderAccepted
+
+	//creating contract
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{orderToUpdate.Key.ID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if ExistsIn(stub, &contract, "") {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("contract with the key %s already exist", compositeKey))
+	}
+
+	//setting contract fields
+	contract.Value.ConsignorName = creator
+	contract.Value.ConsigneeName = orderToUpdate.Value.BuyerID
+	contract.Value.TotalDue = orderToUpdate.Value.Price
+	contract.Value.Quantity = orderToUpdate.Value.Quantity
+	contract.Value.Destination = orderToUpdate.Value.Destination
+	contract.Value.DueDate = orderToUpdate.Value.DueDate
+	contract.Value.PaymentDate = orderToUpdate.Value.PaymentDate
+	contract.Value.State = stateContractSigned
+	contract.Value.Timestamp = time.Now().UTC().Unix()
+
+	if bytes, err := json.Marshal(contract); err == nil {
+		Logger.Debug("Contract: " + string(bytes))
+	}
+
+	//saving contract to ledger
+	if err := UpdateOrInsertIn(stub, &contract, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//updating order's state in ledger
+	if bytes, err := json.Marshal(orderToUpdate); err == nil {
+		Logger.Debug("Order: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)

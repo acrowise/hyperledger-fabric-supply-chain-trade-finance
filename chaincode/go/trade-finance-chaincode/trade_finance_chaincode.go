@@ -552,22 +552,22 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
-	//checking bid exist
+	//filling from arguments
 	bid := Bid{}
-	//generating new bid ID and making Key
-	if err := bid.FillFromCompositeKeyParts([]string{uuid.Must(uuid.NewV4()).String()}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
 	if err := bid.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill a bid from arguments: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	bid.Key.ID = uuid.Must(uuid.NewV4()).String() //generating new ID for bid
+	//generating new bid ID and making Key
+	bidID := uuid.Must(uuid.NewV4()).String()
+	if err := bid.FillFromCompositeKeyParts([]string{bidID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if ExistsIn(stub, &bid, "") {
 		compositeKey, _ := bid.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("bid with the key %s already exist", compositeKey))

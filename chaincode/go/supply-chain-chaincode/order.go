@@ -15,7 +15,7 @@ const (
 
 const (
 	orderKeyFieldsNumber      = 1
-	orderBasicArgumentsNumber = 8
+	orderBasicArgumentsNumber = 7
 )
 
 //order state constants (from 0 to 3)
@@ -66,8 +66,8 @@ func CreateOrder() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5		6			7		8
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
+//0		1			2			3		4			5		6			7
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID
 func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < orderBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", orderBasicArgumentsNumber))
@@ -77,6 +77,7 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	if len(productName) == 0 {
 		return errors.New(fmt.Sprintf("productName must be not empty"))
 	}
+	entity.Value.ProductName = productName
 
 	//checking quantity
 	quantity, err := strconv.Atoi(args[2])
@@ -117,15 +118,13 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	}
 	entity.Value.PaymentDate = int64(paymentDate)
 
-	//checking state
-	state, err := strconv.Atoi(args[8])
-	if err != nil {
-		return errors.New(fmt.Sprintf("order state is invalid: %s (must be int)", args[8]))
+	//TODO: checking buyer by CA
+	buyer := args[7]
+	if buyer == "" {
+		message := fmt.Sprintf("buyer must be not empty")
+		return errors.New(message)
 	}
-	if !Contains(orderStateLegal, state) {
-		return errors.New(fmt.Sprintf("order state is invalid: %d (must be from 0 to %d)", state, len(orderStateLegal)))
-	}
-	entity.Value.State = state
+	entity.Value.BuyerID = buyer
 
 	return nil
 }

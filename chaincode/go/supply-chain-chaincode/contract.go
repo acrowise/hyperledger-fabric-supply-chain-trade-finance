@@ -15,7 +15,7 @@ const (
 
 const (
 	contractKeyFieldsNumber      = 1
-	contractBasicArgumentsNumber = 8
+	contractBasicArgumentsNumber = 7
 )
 
 //contract state constants (from 0 to 2)
@@ -63,8 +63,8 @@ func CreateContract() LedgerData {
 }
 
 //argument order
-//0		1				2				3			4			5			6		7			8
-//ID	ConsignorName	ConsigneeName	TotalDue	Qauntity	Destination	DueDate	PaymentDate	State
+//0		1				2				3			4			5			6		7
+//ID	ConsignorName	ConsigneeName	TotalDue	Qauntity	Destination	DueDate	PaymentDate
 func (entity *Contract) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < contractBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", contractBasicArgumentsNumber))
@@ -124,16 +124,6 @@ func (entity *Contract) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New("paymentDate must be larger than zero")
 	}
 	entity.Value.PaymentDate = int64(paymentDate)
-
-	//checking state
-	state, err := strconv.Atoi(args[8])
-	if err != nil {
-		return errors.New(fmt.Sprintf("contract state is invalid: %s (must be int)", args[8]))
-	}
-	if !Contains(contractStateLegal, state) {
-		return errors.New(fmt.Sprintf("contract state is invalid: %d (must be from 0 to %d)", state, len(contractStateLegal)))
-	}
-	entity.Value.State = state
 
 	return nil
 }

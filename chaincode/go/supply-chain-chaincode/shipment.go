@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
-	"strconv"
 )
 
 const (
@@ -15,7 +14,7 @@ const (
 
 const (
 	shipmentKeyFieldsNumber      = 1
-	shipmentBasicArgumentsNumber = 7
+	shipmentBasicArgumentsNumber = 6
 )
 
 //shipment state constants (from 0 to 4)
@@ -68,8 +67,8 @@ func CreateShipment() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5			6		7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
+//0		1			2			3		4			5			6
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description	Documents
 func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < shipmentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", shipmentBasicArgumentsNumber))
@@ -112,16 +111,6 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 	entity.Value.Transport = transport
-
-	//checking state
-	state, err := strconv.Atoi(args[6])
-	if err != nil {
-		return errors.New(fmt.Sprintf("shipment state is invalid: %s (must be int)", args[8]))
-	}
-	if !Contains(shipmentStateLegal, state) {
-		return errors.New(fmt.Sprintf("shipment state is invalid: %d (must be from 0 to %d)", state, len(shipmentStateLegal)))
-	}
-	entity.Value.State = state
 
 	return nil
 }

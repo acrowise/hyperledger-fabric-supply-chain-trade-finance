@@ -106,42 +106,6 @@ DEFAULT_API_EXTRA_HOSTS3="extra_hosts:[newline]      - orderer.$DOMAIN:$IP_ORDER
 
 GID=$(id -g)
 
-function array_orgs_to_json() {
-      local arr=("$@");
-      local len=${#arr[@]}
-
-      if [[ ${len} -eq 0 ]]; then
-        >&2 echo "Error: Length of input array needs to be at least 2.";
-         return 1;
-      fi
-
-      if [[ $((len%2)) -eq 1 ]]; then
-         >&2 echo "Error: Length of input array needs to be even (key/value pairs).";
-         return 1;
-      fi
-
-      local foo=0;
-      for i in "${arr[@]}"; do
-          local char="},{"
-          if [ $((++foo%2)) -eq 0 ]; then
-               char=":";
-          fi
-
-          local first="${i:0:1}";  # read first charc
-
-          local app="\\\"$i\\\""
-
-          if [[ "$first" == "^" ]]; then
-            app="${i:1}"  # remove first char
-          fi
-
-          JSON_ORG="$JSON_ORG$char$app";
-
-      done
-
-      JSON_ORG="\"[{${JSON_ORG:3}}]\"";  # remove the first three chars
-}
-
 function setDockerVersions() {
     echo "set Docker image versions for $1"
     sed $SED_OPTS -e "s/FABRIC_VERSION/$FABRIC_VERSION/g" -e "s/THIRDPARTY_VERSION/$THIRDPARTY_VERSION/g" -e "s/FABRIC_REST_VERSION/$FABRIC_REST_VERSION/g" $1
