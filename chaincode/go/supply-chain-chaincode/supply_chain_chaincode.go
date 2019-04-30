@@ -82,6 +82,8 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	// validate order fields
 	// compose order
 	// save order into the ledger
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -94,6 +96,8 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	// update order status
 	// save order to common ledger
 	// save contract to Buyer-Supplier collection
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -104,6 +108,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	// check contract existence
 	// generate proof
 	// save proof to Buyer-Supplier collection
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -116,6 +122,8 @@ func (cc *SupplyChainChaincode) acceptContract(stub shim.ChaincodeStubInterface,
 	// if Auditor:
 	//   compose an acceptance details struct (docs, accepted/rejected, reason...)
 	//   store info in the Buyer-Supplier collection
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -128,18 +136,24 @@ func (cc *SupplyChainChaincode) rejectContract(stub shim.ChaincodeStubInterface,
 	// if Auditor:
 	//   compose an acceptance details struct (docs, accepted/rejected, reason...)
 	//   store info in the Buyer-Supplier collection
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *SupplyChainChaincode) listOrders(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// list all of the orders in common channel
 	// (optional) filter entries by status
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check role == Buyer or Supplier
 	// list all of the contracts for the caller from all collections
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
@@ -149,12 +163,16 @@ func (cc *SupplyChainChaincode) getProofForContract(stub shim.ChaincodeStubInter
 	// check proof for contract id and Auditor's name/id/etc existence
 	// validate proof
 	// return proof
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *SupplyChainChaincode) listAcceptances(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: contract id
 	// list all acceptance details structs bound to the contract
+	Notifier(stub, NoticeRuningType)
+	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
