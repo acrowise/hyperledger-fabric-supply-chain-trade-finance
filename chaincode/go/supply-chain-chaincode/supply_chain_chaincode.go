@@ -1,11 +1,14 @@
 package main
 
 import (
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/idemix"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/satori/go.uuid"
+	"strconv"
 	"time"
 )
 
@@ -518,6 +521,120 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	// check contract existence
 	// generate proof
 	// save proof to Buyer-Supplier collection
+
+	// checking proof exist
+	proof := Proof{}
+	if err := proof.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a proof from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &proof, "") {
+		compositeKey, _ := proof.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("proof with the key %s already exists", compositeKey))
+	}
+
+	// setting automatic values
+	proof.Key.ID = uuid.Must(uuid.NewV4()).String()
+	proof.Value.State = stateProofGenerated
+	proof.Value.Timestamp = time.Now().UTC().Unix()
+
+	// idemix
+	rng, err := idemix.GetRand()
+	AttributeNames := []string{"Attr1", "Attr2", "Attr3", "Attr4", "Attr5"}
+	attrs := make([]*FP256BN.BIG, len(AttributeNames))
+	for i := range AttributeNames {
+		h := sha256.New()
+		h.Write([]byte("hello world " + strconv.Itoa(i)))
+		attrs[i] = FP256BN.FromBytes(h.Sum(nil))
+	}
+
+	// create a new key pair
+	key, err := idemix.NewIssuerKey(AttributeNames, rng)
+	if err != nil {
+		message := fmt.Sprintf("Issuer key generation should have succeeded but gave error \"%s\"", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// check that the key is valid
+	err = key.GetIpk().Check()
+	if err != nil {
+		message := fmt.Sprintf("Issuer public key should be valid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// issuance
+	sk := idemix.RandModOrder(rng)
+	ni := idemix.RandModOrder(rng)
+	m := idemix.NewCredRequest(sk, idemix.BigToBytes(ni), key.Ipk, rng)
+
+	cred, err := idemix.NewCredential(key, m, attrs, rng)
+
+	// generate a revocation key pair
+	revocationKey, err := idemix.GenerateLongTermRevocationKey()
+
+	// create CRI that contains no revocation mechanism
+	epoch := 0
+	cri, err := idemix.CreateCRI(revocationKey, []*FP256BN.BIG{}, epoch, idemix.ALG_NO_REVOCATION, rng)
+	if err != nil {
+		message := fmt.Sprintf("Create CRI return error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch), idemix.RevocationAlgorithm(cri.RevocationAlg))
+	if err != nil {
+		message := fmt.Sprintf("Verify Epoch PK return error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// make sure that epoch pk is not valid in future epoch
+	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch)+1, idemix.RevocationAlgorithm(cri.RevocationAlg))
+	if err != nil {
+		message := fmt.Sprintf("Verify Epoch PK in future epoch return error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// signing selective disclosure
+	Nym, RandNym := idemix.MakeNym(sk, key.Ipk, rng)
+	disclosure := []byte{0, 1, 1, 1, 0}
+	msg := []byte{1, 2, 3, 4, 5}
+	rhindex := 4
+	sig, err := idemix.NewSignature(cred, sk, Nym, RandNym, key.Ipk, disclosure, msg, rhindex, cri, rng)
+	if err != nil {
+		message := fmt.Sprintf("Idemix NewSignature return error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	attrs[0] = FP256BN.NewBIGint(1111)
+	attrs[4] = FP256BN.NewBIGint(1111)
+
+	proof.Value.SnapShot = sig
+	proof.Value.DataForVerification.Disclosure = disclosure
+	proof.Value.DataForVerification.Ipk = key.Ipk
+	proof.Value.DataForVerification.Msg = msg
+	proof.Value.DataForVerification.AttributeValues = attrs
+	proof.Value.DataForVerification.RhIndex = rhindex
+	proof.Value.DataForVerification.RevPk = &revocationKey.PublicKey
+	proof.Value.DataForVerification.Epoch = epoch
+
+	// updating state un ledger
+	if bytes, err := json.Marshal(proof); err == nil {
+		Logger.Debug("proof: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &proof, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeRuningType)
 
 	Notifier(stub, NoticeSuccessType)

@@ -1,11 +1,13 @@
 package main
 
 import (
+	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/satori/go.uuid"
+	"github.com/hyperledger/fabric/idemix"
 	"strconv"
 )
 
@@ -42,9 +44,20 @@ type ProofKey struct {
 }
 
 type ProofValue struct {
-	SnapShot  string `json:"snapShot"`
-	State     int    `json:"state"`
-	Timestamp int64  `json:"timestamp"`
+	SnapShot            *idemix.Signature        `json:"snapShot"`
+	DataForVerification ProofDataForVerification `json:"dataForVerification"`
+	State               int                      `json:"state"`
+	Timestamp           int64                    `json:"timestamp"`
+}
+
+type ProofDataForVerification struct {
+	Disclosure      []byte                  `json:"disclosure"`
+	Ipk             *idemix.IssuerPublicKey `json:"ipk"`
+	Msg             []byte                  `json:"msg"`
+	AttributeValues []*FP256BN.BIG          `json:"attributeValues"`
+	RhIndex         int                     `json:"rhIndex"`
+	RevPk           *ecdsa.PublicKey        `json:"revPk"`
+	Epoch           int                     `json:"epoch"`
 }
 
 type Proof struct {
