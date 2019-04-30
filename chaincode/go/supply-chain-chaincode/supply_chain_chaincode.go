@@ -101,6 +101,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	// compose order
 	// save order into the ledger
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -109,6 +110,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 //ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -117,6 +119,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 //ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID	State
 func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -133,6 +136,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	// save order to common ledger
 	// save contract to Buyer-Supplier collection
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -141,6 +145,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 //ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -149,12 +154,14 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 //ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -169,6 +176,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	// generate proof
 	// save proof to Buyer-Supplier collection
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -177,6 +185,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 //ID	SnapShot	State
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -185,6 +194,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 //ID	Description	State	Documents
 func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -202,6 +212,41 @@ func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, 
 	// save Shipment, Contract to collection
 	// save Invoice to Trade Finance chaincode ledger
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	fcnName := "acceptInvoice"
+	chaincodeName := "trade-finance-chaincode"
+	channelName := "common"
+	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
+
+	for _, oneArg := range args {
+		argsByte = append(argsByte, []byte(oneArg))
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
+	if response.Status >= 400 {
+		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
+		return pb.Response{Status: 400, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -217,6 +262,41 @@ func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, 
 	// set contract status to "rejected" (or some other final one)
 	// save Shipment, Contract to collection
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	fcnName := "rejectInvoice"
+	chaincodeName := "trade-finance-chaincode"
+	channelName := "common"
+	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
+
+	for _, oneArg := range args {
+		argsByte = append(argsByte, []byte(oneArg))
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
+	if response.Status >= 400 {
+		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
+		return pb.Response{Status: 400, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
