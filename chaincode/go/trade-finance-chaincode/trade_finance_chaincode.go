@@ -18,7 +18,11 @@ func (cc *TradeFinanceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respo
 	_, args := stub.GetFunctionAndParameters()
 
 	config := Config{}
-	config.FillFromArguments(stub, args)
+	if err := config.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a config from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	if err := UpdateOrInsertIn(stub, &config, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
@@ -111,7 +115,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	//checking invoice exist
 	invoice := Invoice{}
 	if err := invoice.FillFromArguments(stub, args); err != nil {
-		message := fmt.Sprintf("cannot fill a invoice from arguments: %s", err.Error())
+		message := fmt.Sprintf("cannot fill an invoice from arguments: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -847,8 +851,8 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	invoice.Value.State = stateInvoiceSold
-	invoice.Value.Owner = bid.Value.FactorID
-	invoice.Value.Beneficiary = bid.Value.FactorID
+	invoice.Value.Owner = bidToUpdate.Value.FactorID
+	invoice.Value.Beneficiary = bidToUpdate.Value.FactorID
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
