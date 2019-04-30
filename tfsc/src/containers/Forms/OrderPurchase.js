@@ -38,13 +38,17 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
 
   return (
     <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
-      <Card style={{ width: '20vw' }}>
+      <Card className="modal" style={{ width: '550px' }}>
         <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted" />
         {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
           <>
+          <div className="modal-header">
+            New order
+          </div>
+          <div className="modal-body">
             {INPUTS.NEW_PURCHASE_ORDER.map(({
-              label, type, placeholder, field
-            }) => (
+                                              label, type, placeholder, field
+                                            }) => (
               <FormGroup key={label} label={label}>
                 <InputGroup
                   type={type}
@@ -80,18 +84,20 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 placeholder={'D/M/YYYY'}
               />
             </Label>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Button
-                large
-                intent="primary"
-                onClick={() => {
-                  dispatch({ type: 'reset', payload: initialState });
-                  placeOrder(formState);
-                }}
-              >
-                Order
-              </Button>
-            </div>
+          </div>
+          <div className="modal-footer">
+            <Button
+              large
+              intent="primary"
+              className="btn-modal"
+              onClick={() => {
+                dispatch({ type: 'reset', payload: initialState });
+                placeOrder(formState);
+              }}
+            >
+              Order
+            </Button>
+          </div>
           </>
         ) : (
           <></>
