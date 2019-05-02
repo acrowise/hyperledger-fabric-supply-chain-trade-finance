@@ -595,8 +595,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 
 	// make sure that epoch pk is not valid in future epoch
 	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch)+1, idemix.RevocationAlgorithm(cri.RevocationAlg))
-	if err != nil {
-		message := fmt.Sprintf("Verify Epoch PK in future epoch return error: %s", err.Error())
+	if err == nil {
+		message := fmt.Sprintf("Error: Epoch pk is valid in future epoch")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
