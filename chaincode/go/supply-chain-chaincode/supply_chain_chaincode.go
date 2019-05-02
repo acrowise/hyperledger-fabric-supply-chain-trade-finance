@@ -587,8 +587,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	}
 
 	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch), idemix.RevocationAlgorithm(cri.RevocationAlg))
-	if err != nil {
-		message := fmt.Sprintf("Verify Epoch PK return error: %s", err.Error())
+	if err == nil {
+		message := fmt.Sprintf("Error: Epoch pk is valid in future epoch")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -649,8 +649,8 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 
 	// checking proof exist
 	proof := Proof{}
-	if err := proof.FillFromArguments(stub, args); err != nil {
-		message := fmt.Sprintf("cannot fill a proof from arguments: %s", err.Error())
+	if err := proof.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
