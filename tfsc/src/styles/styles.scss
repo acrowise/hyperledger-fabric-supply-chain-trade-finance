@@ -25,6 +25,10 @@ body {
   line-height: 1.2;
 }
 
+.nowrap {
+  white-space: nowrap;
+}
+
 //Layout
 .container {
   padding: 0 50px;
@@ -274,6 +278,12 @@ $header-height: 65px;
 // Modal
 .modal {
   padding: 0!important;
+}
+
+.modal.bp3-overlay-content {
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
 }
 
 .modal-header {

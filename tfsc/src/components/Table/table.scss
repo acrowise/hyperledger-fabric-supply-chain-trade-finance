@@ -3,10 +3,6 @@
   padding: 10px 20px 65px;
   box-shadow: $box-shadow;
   background: white;
-  //&:before {
-  //  content: "";
-  //  background-color:;
-  //}
 }
 .table {
   width: 100%;
@@ -14,8 +10,7 @@
   border-collapse: collapse;
 
   tbody tr:hover {
-    box-shadow: $box-shadow;
-    position: relative;
+    background-color: #D3F3E8;
   }
 
   tbody tr.no-data-cell {
