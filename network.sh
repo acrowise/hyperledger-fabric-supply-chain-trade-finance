@@ -20,11 +20,13 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${ORG5:="e"} #Second auditor
 : ${ORG6:="f"} #First factor
 : ${ORG7:="g"} #Second factor
+: ${ORG8:="h"} #Transport agency
 
 : ${BUYER:="buyer"}
 : ${SUPPLIER:="supplier"}
 : ${AUDITOR:="auditor"}
 : ${FACTOR:="factor"}
+: ${TRANSPORT_AGENCY:="transport_agency"}
 
 : ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
 : ${PEERS_PEER_TMPL:="peers_peer"}
@@ -65,10 +67,17 @@ GOLANG_PACKAGES=(
 github.com/satori/go.uuid
 )
 
+# Handle MacOS sed
+ARCH=$(uname -s | grep Darwin)
+SED_OPTS="-i"
+if [ "$ARCH" == "Darwin" ]; then
+    SED_OPTS="-it"
+fi
+
 : ${TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"}
-: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
-: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
 
 : ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT)}
 : ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT)}
@@ -96,49 +105,6 @@ DEFAULT_API_EXTRA_HOSTS2="extra_hosts:[newline]      - orderer.$DOMAIN:$IP_ORDER
 DEFAULT_API_EXTRA_HOSTS3="extra_hosts:[newline]      - orderer.$DOMAIN:$IP_ORDERER[newline]      - peer0.$ORG1.$DOMAIN:$IP1[newline]      - peer0.$ORG2.$DOMAIN:$IP2[newline]      - peer1.$ORG1.$DOMAIN:$IP1[newline]      - peer1.$ORG2.$DOMAIN:$IP2"
 
 GID=$(id -g)
-
-function array_orgs_to_json() {
-      local arr=("$@");
-      local len=${#arr[@]}
-
-      if [[ ${len} -eq 0 ]]; then
-        >&2 echo "Error: Length of input array needs to be at least 2.";
-         return 1;
-      fi
-
-      if [[ $((len%2)) -eq 1 ]]; then
-         >&2 echo "Error: Length of input array needs to be even (key/value pairs).";
-         return 1;
-      fi
-
-      local foo=0;
-      for i in "${arr[@]}"; do
-          local char="},{"
-          if [ $((++foo%2)) -eq 0 ]; then
-               char=":";
-          fi
-
-          local first="${i:0:1}";  # read first charc
-
-          local app="\\\"$i\\\""
-
-          if [[ "$first" == "^" ]]; then
-            app="${i:1}"  # remove first char
-          fi
-
-          JSON_ORG="$JSON_ORG$char$app";
-
-      done
-
-      JSON_ORG="\"[{${JSON_ORG:3}}]\"";  # remove the first three chars
-}
-
-# Handle MacOS sed
-ARCH=$(uname -s | grep Darwin)
-SED_OPTS="-i"
-if [ "$ARCH" == "Darwin" ]; then
-    SED_OPTS="-it"
-fi
 
 function setDockerVersions() {
     echo "set Docker image versions for $1"
@@ -229,6 +195,7 @@ function generateOrdererDockerCompose() {
         -e "s/ORG5/$ORG5/g" \
         -e "s/ORG6/$ORG6/g" \
         -e "s/ORG7/$ORG7/g" \
+        -e "s/ORG8/$ORG8/g" \
         ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
 
 
@@ -257,6 +224,7 @@ function generateOrdererArtifacts() {
             -e "s/ORG5/$ORG5/g" \
             -e "s/ORG6/$ORG6/g" \
             -e "s/ORG7/$ORG7/g" \
+            -e "s/ORG8/$ORG8/g" \
             $TEMPLATES_ARTIFACTS_FOLDER/configtxtemplate.yaml > $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
     fi
     createChannels=("common")
@@ -285,7 +253,7 @@ function generateOrdererArtifacts() {
         echo "Generating channel config transaction for $channel_name"
         docker exec -e FABRIC_CFG_PATH=/etc/hyperledger/artifacts "cli.$DOMAIN" configtxgen -profile "$channel_name" -outputCreateChannelTx "./channel/$channel_name.tx" -channelID "$channel_name"
 
-        for myorg in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+        for myorg in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
         do
             echo "Generating anchor peers update for ${myorg}"
             docker-compose --file $GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${myorg}.yaml up -d "cli.$myorg.$DOMAIN"
@@ -758,7 +726,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   #Building $JSON_ORG
   #array_orgs_to_json "${ARRAY_ORG[@]}"
 
-  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
     dockerComposeUp ${org}
     sleep 2
@@ -768,7 +736,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   echo "=== Got ipfs first node id: $IPFS_FIRST_NODE"
 
-  for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+  for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
     installPackages ${org}
     installAll ${org} # install chaincode
@@ -789,7 +757,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   createJoinInstantiate ${ORG1} common ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_SUPPLY_CHAIN_INIT} ${SUPPLY_CHAIN_COLLECTION_CONFIG}
   instantiateChaincode ${ORG1} common ${CHAINCODE_TRADE_FINANCE_NAME} ${CHAINCODE_TRADE_FINANCE_INIT} ${TRADE_FINANCE_COLLECTION_CONFIG}
 
- for org in ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+ for org in ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
     joinChannel $org common
   done
@@ -824,7 +792,7 @@ elif [ "${MODE}" == "generate" ]; then
   setDockerVersions $file_base_intercept
 
   echo "===Generating api-network-config"
-  make_network_template ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+  make_network_template ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
 
   #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
   generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984         ${BUYER}
@@ -834,6 +802,7 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984        ${AUDITOR}
   generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984        ${FACTOR}
   generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984        ${FACTOR}
+  generatePeerArtifacts ${ORG8} 4008     14054   14051      14053            14056      14058           14001      14984        ${TRANSPORT_AGENCY}
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts
 
