@@ -1,92 +1,77 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
-import HorizontalTimeline from 'react-horizontal-timeline';
 
 import './timeline.scss';
 
 import Table from '../Table/Table';
 
-// class Timeline extends Component {
-//
-//   state = { value: 0, previous: 0 };
-//
-//   const VALUES = [ '2017-01-2', '2017-01-12', '2017-01-20'];
-//
-//   render() {
-//     return (
-//       <div>
-//         {/* Bounding box for the Timeline */}
-//         <div style={{ width: '60%', height: '100px', margin: '0 auto' }}>
-//           <HorizontalTimeline
-//             index={this.state.value}
-//             indexClick={(index) => {
-//               this.setState({ value: index, previous: this.state.value });
-//             }}
-//             values={ VALUES } />
-//         </div>
-//         <div className='text-center'>
-//           {/* any arbitrary component can go here */}
-//           {this.state.value}
-//         </div>
-//       </div>
-//     )
-//   }
-// }
-
 const TimelineItem = ({
   id, date, isSelected, timelineItemClickHandler
-}) => (
-  <div className={classNames('timeline-item', { 'timeline-item__selected': isSelected })}>
+}) => <div
+    className={classNames('timeline-item', { 'timeline-item--selected': isSelected })}
+  >
     <div
       className="timeline-item-node"
-      onClick={() => {
-        timelineItemClickHandler(id);
-        console.log(id, isSelected);
-      }}
+      onClick={() => timelineItemClickHandler(id)}
     >
       <i className="timeline-item-dot" />
       <div className="timeline-item-text">{date}</div>
     </div>
-  </div>
+  </div>;
+
+const TimelineDetails = ({ event, selectedId }) => (
+  selectedId && event.id === selectedId && <h2>{event.details.text}</h2> || null
 );
 
 const Timeline = ({ events }) => {
   const [selectedId, setSelected] = useState(events[0].id);
 
   return (
-    <>
+    <div className="timeline-wrap">
       <div className="timeline">
-        <div className="timeline-past">
-          {events
-            && events.map(event => (
-              <TimelineItem
-                id={event.id}
-                key={event.id}
-                date={event.date}
-                timelineItemClickHandler={setSelected}
-                isSelected={event.id === selectedId}
-              />
-            ))}
-        </div>
-
-        <div className="timeline-future">
-          <div className="timeline-item">
-            <div className="timeline-item-node" />
+        <div className="timeline-start">
+          <div className="timeline-start-text">
+            10 april 2019
+          </div>
+          <div className="timeline-item-bottom-text">
+            <div>Amsterdam,</div>
+            <div>Netherlands</div>
           </div>
         </div>
-      </div>
+        <div className="timeline-finish">
+          <div className="timeline-finish-text">
+            30 may 2019
+          </div>
+          <div className="timeline-item-bottom-text">
+            <div>Athens,</div>
+            <div>Greece</div>
+          </div>
+        </div>
 
-      <Table
-        fields={{
-          date: 'Date:',
-          actor: 'Actor:',
-          action: 'Action:',
-          documents: 'Documents:'
-        }}
-        data={[events.find(i => i.id === selectedId)]}
-      />
-    </>
+        <div className="timeline-past">
+          {events && events.map(event => (
+            <TimelineItem
+              id={event.id}
+              key={event.id}
+              date={event.date}
+              timelineItemClickHandler={setSelected}
+              isSelected={event.id === selectedId}
+            />
+          ))}
+        </div>
+        <div className="timeline-future" />
+      </div>
+      <div className="timeline-details">
+        {events && events.map(event => (
+          <TimelineDetails
+            key={event.id}
+            event={event}
+            selectedId={selectedId}
+          />
+        ))}
+      </div>
+    </div>
   );
 };
 

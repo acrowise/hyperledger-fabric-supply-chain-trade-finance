@@ -72,7 +72,7 @@ const Invoices = ({ role, filter, search }) => {
       actions={item => (
         <div>
           {role === 'buyer' && item.state === 1 ? (
-            <div>
+            <div className="nowrap">
               <Button
                 style={{ marginRight: '5px' }}
                 intent="primary"

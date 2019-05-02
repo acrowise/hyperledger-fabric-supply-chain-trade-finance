@@ -7,44 +7,66 @@ import GenerateProofForm from './Forms/GenerateProof';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
 import Proofs from '../components/Proofs';
 import Timeline from '../components/Timeline/Timeline';
+import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 
 const EVENTS = [
   {
     id: 1,
     date: '10 april 2019',
-    actor: 'Buyer',
-    action: 'Order Created',
-    documents: ''
+    details: {
+      text: 'Details 1 Details 1 Details 1 Details 1 Details 1 Details 1 Details 1 Details 1'
+    }
   },
   {
     id: 2,
     date: '20 april 2019',
-    actor: 'Supplier',
-    action: 'Order Accepted',
-    documents: ''
+    details: {
+      text: 'Details 2 Details 2 Details 2 Details 2 Details 2 Details 2 Details 2 Details 2'
+    }
   },
   {
     id: 3,
     date: '23 april 2019',
-    actor: 'Supplier',
-    action: 'New Shipment Requested',
-    documents: 'Shipment Documents'
+    details: {
+      text: 'Details 3 Details 3 Details 3 Details 3 Details 3 Details 3 v Details 3'
+    }
   },
   {
     id: 4,
     date: '25 april 2019',
-    actor: 'Transporter',
-    action: 'Shipment Accepted',
-    documents: 'Act of Hangover'
+    details: {
+      text: 'Details 4 Details 4Details 4 Details 4 Details 4 Details 4 Details 4 Details 4'
+    }
   },
   {
     id: 5,
     date: '28 april 2019',
-    actor: 'Supplier',
-    action: 'Proof Generated',
-    documents: ''
+    details: {
+      text: 'Details 5 Details 5 Details 5 Details 5 Details 5 Details 5 Details 5'
+    }
   }
 ];
+
+const HISTORY = [
+  {
+    id: 'VGUIX234',
+    date: '10 april 2019',
+    action: 'Create Shipment',
+    type: 'Commercial Invoices'
+  },
+  {
+    id: 'VGUIX235',
+    date: '10 april 2019',
+    action: 'Create Shipment',
+    type: 'Commercial Invoices'
+  },
+  {
+    id: 'VGUIX236',
+    date: '10 april 2019',
+    action: 'Create Shipment',
+    type: 'Commercial Invoices'
+  },
+]
 
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
@@ -128,7 +150,8 @@ const ShipmentDetailPage = (props) => {
             </table>
           </div>
 
-          <Timeline events={EVENTS} />
+          <Timeline events={EVENTS}/>
+          <CollapsiblePanel history={HISTORY}/>
         </div>
 
         <div className="layout-aside">

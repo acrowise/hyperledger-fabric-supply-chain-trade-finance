@@ -34,60 +34,62 @@ const Nav = ({ role, logout }) => {
             <img src={logo} alt="Altoros" className="header-logo" />
           </Navbar.Heading>
         </Navbar.Group>
-        <Navbar.Group align={Alignment.RIGHT}>
-          <Popover
-            onClose={() => {
-              setNewNotification(0);
-              setShowNotifications(false);
-            }}
-            isOpen={showNotifications}
-            content={<Notifications />}
-            target={
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                <Button
-                  className="bp3-minimal"
-                  style={{ textTransform: 'capitalize' }}
-                  onClick={() => {
-                    setShowNotifications(true);
+        {role && (
+          <Navbar.Group align={Alignment.RIGHT}>
+            <Popover
+              onClose={() => {
+                setNewNotification(0);
+                setShowNotifications(false);
+              }}
+              isOpen={showNotifications}
+              content={<Notifications />}
+              target={
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center'
                   }}
                 >
-                  Notifications
-                </Button>
-                {hasNewNotifications !== 0 ? (
-                  <div
-                    style={{
-                      borderRadius: '100%',
-                      height: '1.5em',
-                      width: '1.5em',
-                      textAlign: 'center',
-                      backgroundColor: '#69D7BC'
+                  <Button
+                    className="bp3-minimal"
+                    style={{ textTransform: 'capitalize' }}
+                    onClick={() => {
+                      setShowNotifications(true);
                     }}
                   >
-                    <p
+                    Notifications
+                  </Button>
+                  {hasNewNotifications !== 0 ? (
+                    <div
                       style={{
-                        color: 'white',
-                        marginTop: '0.2em'
+                        borderRadius: '100%',
+                        height: '1.5em',
+                        width: '1.5em',
+                        textAlign: 'center',
+                        backgroundColor: '#69D7BC'
                       }}
                     >
-                      {hasNewNotifications}
-                    </p>
-                  </div>
-                ) : (
-                  <></>
-                )}
-              </div>
-            }
-          />
+                      <p
+                        style={{
+                          color: 'white',
+                          marginTop: '0.2em'
+                        }}
+                      >
+                        {hasNewNotifications}
+                      </p>
+                    </div>
+                  ) : (
+                    <></>
+                  )}
+                </div>
+              }
+            />
 
-          <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
-            {role}
-          </Button>
-        </Navbar.Group>
+            <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
+              {role}
+            </Button>
+          </Navbar.Group>
+        )}
       </div>
     </Navbar>
   );
