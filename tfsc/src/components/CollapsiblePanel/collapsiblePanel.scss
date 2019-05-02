@@ -1,0 +1,37 @@
+@import "../../styles/variables";
+
+
+.collapsible-panel {
+  box-shadow: $box-shadow;
+}
+
+.collapsible-panel-header {
+  padding: 4px 30px;
+  background-color: $color-secondary;
+  color: white;
+  user-select: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.collapsible-panel-body {
+  padding: 20px;
+  background-color: white;
+}
+
+.history-table {
+  width: 100%;
+  font-size: $fs-bigger;
+
+  td {
+    padding: 10px;
+  }
+}
+
+.history-table-bullet {
+  color: $color-secondary;
+}
+

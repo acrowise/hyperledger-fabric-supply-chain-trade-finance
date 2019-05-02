@@ -48,7 +48,6 @@
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-dropzone": "^10.1.4",
-    "react-horizontal-timeline": "^1.5.3",
     "react-hot-loader": "^4.8.4",
     "react-router-dom": "^5.0.0",
     "socket.io": "^2.2.0",

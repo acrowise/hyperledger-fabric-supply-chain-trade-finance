@@ -1,15 +1,16 @@
 @import "../../styles/variables";
 
 .timeline {
+  margin: 50px 20px;
   display: flex;
   height: 2px;
+  position: relative;
 }
 
 .timeline-past {
   background-color: $color-secondary;
   flex: 0 0 70%;
   max-width: 70%;
-
   display: flex;
 }
 
@@ -17,20 +18,47 @@
   background-color: $color-primary;
   flex: 0 0 30%;
   max-width: 30%;
-
   display: flex;
 }
 
 .timeline-item {
   position: relative;
   flex: 1;
-  cursor: pointer;
 }
 
+.timeline-start,
+.timeline-finish {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  position: absolute;
+  top: -15px;
+}
+
+.timeline-start {
+  background-color: $color-secondary;
+  left: 0;
+}
+.timeline-finish {
+  background-color: $color-primary;
+  right: 0;
+}
+.timeline-start-text,
+.timeline-finish-text {
+  position: absolute;
+  width: 90px;
+  font-size: $fs-smaller;
+  top: -25px;
+}
+.timeline-finish-text {
+  text-align: right;
+  right: -10px;
+}
 .timeline-item-node {
   position: absolute;
   right: 0;
   top: -7px;
+  cursor: pointer;
 }
 .timeline-item-dot {
   position: absolute;
@@ -51,7 +79,7 @@
   }
 }
 
-.timeline-item__selected .timeline-item-dot {
+.timeline-item--selected .timeline-item-dot {
   transform: scale(1.5);
   right: 0;
   cursor: default;
@@ -70,5 +98,11 @@
   text-align: center;
   position: absolute;
   top: -22px;
-  transform: translateX(-50%);
+  transform: translateX(-58%);
+}
+
+.timeline-item-bottom-text {
+  position: absolute;
+  width: 90px;
+  top: 40px;
 }
