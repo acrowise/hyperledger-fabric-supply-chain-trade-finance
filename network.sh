@@ -63,8 +63,12 @@ CHAINCODE_VERSION="1.0"
 : ${CHAINCODE_TRADE_FINANCE_NAME=trade-finance-chaincode}
 : ${CHAINCODE_SUPPLY_CHAIN_NAME=supply-chain-chaincode}
 
+# required golang packages
 GOLANG_PACKAGES=(
+github.com/kardianos/govendor
 github.com/satori/go.uuid
+github.com/hyperledger/fabric/idemix
+github.com/hyperledger/fabric-amcl/amcl/FP256BN
 )
 
 # Handle MacOS sed
@@ -75,9 +79,9 @@ if [ "$ARCH" == "Darwin" ]; then
 fi
 
 : ${TRADE_FINANCE_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json"}
-: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${TRADE_FINANCE_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_TRADE_FINANCE_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
-: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed $SED_OPTS 's/"/\\"/g' | tr -d ' \t\n\r')}
+: ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
 
 : ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT)}
 : ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT)}
@@ -484,13 +488,26 @@ function installPackage() {
     org=$1
     pkg=$2
 
+    if [ ! -d "/opt/gopath/src/$pkg" ]; then
+        f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
+        info "installing package $pkg to peers of $org using $f"
+        echo "Getting package $pkg for org $org"
+        echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"go get $pkg"
+        docker exec "cli.$org.$DOMAIN" bash -c "go get $pkg"
+    else
+        echo "Package $pkg for org $org already exists"
+    fi
+}
+
+function makeVendor() {
+    org=$1
+    cc=$2
+
     f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
 
-    info "installing package $pkg to peers of $org using $f"
+    info "making vendor for chaincode $cc to peers of $org using $f"
 
-    echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"go get $pkg"
-
-    docker exec "cli.$org.$DOMAIN" bash -c "go get $pkg"
+    docker exec "cli.$org.$DOMAIN" bash -c "cd /opt/gopath/src/$cc && govendor init && govendor add +external"
 }
 
 function dockerComposeUp () {
@@ -739,6 +756,9 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
     installPackages ${org}
+
+    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
+
     installAll ${org} # install chaincode
 
     # configure ipfs
