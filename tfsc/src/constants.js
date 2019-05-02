@@ -183,6 +183,12 @@ export const TABLE_MAP = {
     state: 'Status'
   },
   INVOICES: {
-
+    id: 'Invoice ID',
+    debtor: 'Debtor',
+    beneficiary: 'Beneficiary',
+    totalDue: 'Total',
+    dueDate: 'Due Date',
+    state: 'Status',
+    owner: 'Owner'
   }
 };
