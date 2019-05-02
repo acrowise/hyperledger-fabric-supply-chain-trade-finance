@@ -8,6 +8,7 @@ import (
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/idemix"
+	"github.com/satori/go.uuid"
 	"strconv"
 )
 
