@@ -57,7 +57,47 @@ $header-height: 65px;
   margin-top: 6px;
 }
 
+// Login
+.login {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.role-list {
+  display: inline-flex;
+  flex-flow: row wrap;
+}
+.role-item {
+  margin: 10px 60px 10px 0;
+  text-align: center;
+  color: $color-secondary;
+  cursor: pointer;
+
+  &:last-child {
+    margin-right: 0;
+  }
+
+  .role-icon__circle {
+    stroke: $color-secondary;
+    transition: fill .2s ease-in-out, stroke .2s ease-in-out;
+    fill: rgba(211,243,232, 0);
+  }
+
+  &:hover {
+    .role-icon__circle {
+      fill: rgba(211,243,232, 1);
+      stroke: $color-secondary-dark;
+    }
+  }
+}
+
+.role-item-txt {
+  margin-top: 5px;
+}
+
 //Dashboard
+.login,
 .dashboard {
   padding-top: $header-height;
 }
