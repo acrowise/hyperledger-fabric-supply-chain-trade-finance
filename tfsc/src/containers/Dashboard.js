@@ -47,7 +47,7 @@ const tabs = role => [
     )
   },
   {
-    name: 'Shipping Documents',
+    name: 'Shipments',
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
       <Filter statuses={[]}>

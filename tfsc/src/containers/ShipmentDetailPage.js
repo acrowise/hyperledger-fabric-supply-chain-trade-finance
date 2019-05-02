@@ -12,22 +12,37 @@ const EVENTS = [
   {
     id: 1,
     date: '10 april 2019',
+    actor: 'Buyer',
+    action: 'Order Created',
+    documents: ''
   },
   {
     id: 2,
     date: '20 april 2019',
+    actor: 'Supplier',
+    action: 'Order Accepted',
+    documents: ''
   },
   {
     id: 3,
     date: '23 april 2019',
+    actor: 'Supplier',
+    action: 'New Shipment Requested',
+    documents: 'Shipment Documents'
   },
   {
     id: 4,
     date: '25 april 2019',
+    actor: 'Transporter',
+    action: 'Shipment Accepted',
+    documents: 'Act of Hangover'
   },
   {
     id: 5,
     date: '28 april 2019',
+    actor: 'Supplier',
+    action: 'Proof Generated',
+    documents: ''
   }
 ];
 
@@ -64,52 +79,56 @@ const ShipmentDetailPage = (props) => {
         setDialogOpenState={setCdDialogOpenState}
         shipment={props}
       />
-      <div
-        style={{ display: 'flex', flexDirection: 'row' }}
-      >
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Icon icon="arrow-left" />
         <p>Back</p>
       </div>
-      <Button
-        onClick={() => {
-          setCdDialogOpenState(true);
-        }}
-      >
-        Confirm Delivery
-      </Button>
-      <Button>Add Document</Button>
 
       <div className="layout-container">
         <div className="layout-main">
           <h3>Shipment Number: FDFJK53</h3>
+          {props.role === 'buyer' ? (
+            <div>
+              <Button
+                onClick={() => {
+                  setCdDialogOpenState(true);
+                }}
+              >
+                Confirm Delivery
+              </Button>
+              <Button>Cancel Delivery</Button>
+            </div>
+          ) : (
+            <></>
+          )}
           <div className="table-wrap">
             <table className="table">
               <thead>
-              <tr>
-                <th>Ship From</th>
-                <th>Ship To</th>
-                <th>Quantity</th>
-                <th>Due Date</th>
-                <th>Transporter</th>
-                <th>Vehicle/Transport</th>
-                <th>Status</th>
-              </tr>
+                <tr>
+                  <th>Ship From</th>
+                  <th>Ship To</th>
+                  <th>Quantity</th>
+                  <th>Due Date</th>
+                  <th>Transporter</th>
+                  <th>Vehicle/Transport</th>
+                  <th>Status</th>
+                </tr>
               </thead>
               <tbody>
-              <tr>
-                <td>{props.shipFrom}</td>
-                <td>{props.shipTo}</td>
-                <td>1000</td>
-                <td>{new Date().toISOString()}</td>
-                <td>Company Name</td>
-                <td>Air</td>
-                <td>{props.state}</td>
-              </tr>
+                <tr>
+                  <td>{props.shipFrom}</td>
+                  <td>{props.shipTo}</td>
+                  <td>1000</td>
+                  <td>{new Date().toISOString()}</td>
+                  <td>Company Name</td>
+                  <td>Air</td>
+                  <td>{props.state}</td>
+                </tr>
               </tbody>
             </table>
           </div>
 
-          <Timeline events={EVENTS}/>
+          <Timeline events={EVENTS} />
         </div>
 
         <div className="layout-aside">
@@ -122,8 +141,7 @@ const ShipmentDetailPage = (props) => {
               intent="primary"
               className="btn-generate-proof"
             >
-              Generate Proof
-              &nbsp;&nbsp;&nbsp;
+              Generate Proof &nbsp;&nbsp;&nbsp;
               <Icon icon="confirm" />
             </Button>
           )}
@@ -141,10 +159,7 @@ const ShipmentDetailPage = (props) => {
                 <div>Loading...</div>
               ) : (
                 data.map(d => (
-                  <div
-                    key={data}
-                    style={{ display: 'flex', flexDirection: 'row' }}
-                  >
+                  <div key={data} style={{ display: 'flex', flexDirection: 'row' }}>
                     <Icon icon="document" />
                     <div style={{ marginLeft: '10px' }}>{d}</div>
                   </div>

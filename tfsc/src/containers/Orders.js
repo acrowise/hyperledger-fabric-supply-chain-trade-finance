@@ -57,7 +57,7 @@ const Orders = ({ role, filter, search }) => {
             setDialogOpenState(true);
           }}
         >
-          New Order
+          New Purchase Order
         </Button>
       ) : (
         <></>
@@ -83,16 +83,6 @@ const Orders = ({ role, filter, search }) => {
         ))
         }
       />
-      {role === 'buyer' && (
-        <Button
-          icon="add"
-          onClick={() => {
-            setDialogOpenState(true);
-          }}
-        >
-          New Order
-        </Button>
-      )}
     </div>
   );
 };

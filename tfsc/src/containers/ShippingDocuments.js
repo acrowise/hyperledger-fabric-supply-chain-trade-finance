@@ -42,6 +42,7 @@ const ShippingDocuments = ({ role, content, setContent }) => {
       showShipmentDetail={showShipmentDetail}
       setContent={setContent}
       {...shipment}
+      role={role}
     />
   ) : (
     <div>

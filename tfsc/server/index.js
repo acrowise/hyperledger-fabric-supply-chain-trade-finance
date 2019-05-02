@@ -9,7 +9,8 @@ const uuid = require('uuid/v4');
 
 const upload = multer();
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
+const API_PORT = process.env.API_PORT || 4001;
 
 const ORDERS = {
   result: []
@@ -55,7 +56,7 @@ router.use((_, __, next) => {
 router.use(
   '/api',
   proxy({
-    target: 'http://localhost:4002',
+    target: `http://localhost:${API_PORT}`,
     changeOrigin: true,
     logLevel: 'debug'
   })
