@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import {
-  RadioGroup, Radio, InputGroup
-} from '@blueprintjs/core';
+import { RadioGroup, Radio, InputGroup } from '@blueprintjs/core';
 // import PropTypes from 'prop-types';
 
 const fields = ['Price', 'Date', 'Status'];
 
-const Filter = ({ children, statuses }) => {
+const Filter = ({ children, statuses, actionComponent }) => {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
@@ -48,6 +46,7 @@ const Filter = ({ children, statuses }) => {
               setSearch(target.value);
             }}
           />
+          {actionComponent || <></>}
         </div>
       </div>
       <div className="dashboard-panel-body layout-container">

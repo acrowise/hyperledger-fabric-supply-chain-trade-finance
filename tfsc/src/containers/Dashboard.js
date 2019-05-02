@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Tab, Tabs } from '@blueprintjs/core';
+import { Tab, Tabs, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { Redirect } from 'react-router-dom';
 
@@ -15,15 +15,41 @@ import Filter from '../components/Filter';
 import Reports from './Reports';
 import Bids from './Bids';
 
+import OrderPurchaseForm from './Forms/OrderPurchase';
+
 import { AuthConsumer } from '../context/auth';
 import { notifications } from '../mocks';
+
+const NewPurchaseOrder = ({ role }) => {
+  const [dialogIsOpen, setDialogOpenState] = useState(false);
+
+  return role === 'buyer' ? (
+    <>
+      <OrderPurchaseForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
+      <Button
+        intent="primary"
+        className="btn-modal"
+        onClick={() => {
+          setDialogOpenState(true);
+        }}
+      >
+        New Purchase Order
+      </Button>
+    </>
+  ) : (
+    <></>
+  );
+};
 
 const tabs = role => [
   {
     name: 'Orders',
     actors: ['buyer', 'supplier'],
     panel: (
-      <Filter statuses={['New', 'Accepted', 'Cancelled']}>
+      <Filter
+        statuses={['New', 'Accepted', 'Cancelled']}
+        actionComponent={<NewPurchaseOrder role={role} />}
+      >
         <Orders role={role} />
       </Filter>
     )

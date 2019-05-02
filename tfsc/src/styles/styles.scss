@@ -84,13 +84,13 @@ $header-height: 65px;
 
   .role-icon__circle {
     stroke: $color-secondary;
-    transition: fill .2s ease-in-out, stroke .2s ease-in-out;
-    fill: rgba(211,243,232, 0);
+    transition: fill 0.2s ease-in-out, stroke 0.2s ease-in-out;
+    fill: rgba(211, 243, 232, 0);
   }
 
   &:hover {
     .role-icon__circle {
-      fill: rgba(211,243,232, 1);
+      fill: rgba(211, 243, 232, 1);
       stroke: $color-secondary-dark;
     }
   }
@@ -217,33 +217,33 @@ $header-height: 65px;
   background-size: 14px;
   background-position: right 15px center;
   &::-moz-focus-inner {
-    border: 0!important;
+    border: 0 !important;
   }
 }
 
 //Buttons
 .bp3-button {
-  box-shadow: none!important;
-  min-height: 38px!important;
+  box-shadow: none !important;
+  min-height: 38px !important;
   //min-width: 234px!important;
   text-transform: uppercase;
-  font-size: $fs-normal!important;
+  font-size: $fs-normal !important;
   border-radius: 20px;
 }
 .bp3-button.bp3-intent-primary {
   background-color: $color-secondary;
   border-color: $color-secondary;
   &:hover {
-    background-color: #3FBEA5;
+    background-color: #3fbea5;
   }
   &:disabled {
-    background-color: #D3F3E8;
+    background-color: #d3f3e8;
   }
 }
 .table .bp3-button {
   padding-left: 15px;
   padding-right: 15px;
-  min-height: 25px!important;
+  min-height: 25px !important;
   font-size: $fs-smaller;
 }
 
@@ -252,8 +252,8 @@ $header-height: 65px;
   margin-bottom: 15px;
   border-radius: 43px;
   text-transform: none;
-  font-size: $fs-bigger!important;
-  min-width: 0!important;
+  font-size: $fs-bigger !important;
+  min-width: 0 !important;
   width: 100%;
 }
 
@@ -277,13 +277,13 @@ $header-height: 65px;
 
 // Modal
 .modal {
-  padding: 0!important;
+  padding: 0 !important;
 }
 
 .modal.bp3-overlay-content {
   left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
+  transform: translate(-50%, -50%);
 }
 
 .modal-header {
@@ -311,6 +311,6 @@ $header-height: 65px;
 //Forms
 .bp3-input {
   border-radius: 1px;
-  border:1px solid $color-border;
+  border: 1px solid $color-border;
   box-shadow: none;
 }

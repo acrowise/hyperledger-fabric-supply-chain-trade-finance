@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 import { useFetch } from '../hooks';
-
-import OrderPurchaseForm from './Forms/OrderPurchase';
 
 import { post } from '../helper/api';
 
@@ -12,7 +10,6 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP } from '../constants';
 
 const Orders = ({ role, filter, search }) => {
-  const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('orders');
   const [, updateOrder] = post('updateOrder')();
 
@@ -49,19 +46,6 @@ const Orders = ({ role, filter, search }) => {
     <>Loading...</>
   ) : (
     <div>
-      <OrderPurchaseForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
-      {role === 'buyer' ? (
-        <Button
-          icon="add"
-          onClick={() => {
-            setDialogOpenState(true);
-          }}
-        >
-          New Purchase Order
-        </Button>
-      ) : (
-        <></>
-      )}
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}

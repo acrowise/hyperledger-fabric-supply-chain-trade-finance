@@ -42,62 +42,60 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
         <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted" />
         {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
           <>
-          <div className="modal-header">
-            New order
-          </div>
-          <div className="modal-body">
-            {INPUTS.NEW_PURCHASE_ORDER.map(({
-                                              label, type, placeholder, field
-                                            }) => (
-              <FormGroup key={label} label={label}>
-                <InputGroup
-                  type={type}
-                  placeholder={placeholder}
-                  value={formState[field]}
-                  onChange={({ target: { value } }) => dispatch({
-                    type: 'change',
-                    payload: {
-                      field,
-                      value
+            <div className="modal-header">New order</div>
+            <div className="modal-body">
+              {INPUTS.NEW_PURCHASE_ORDER.map(({
+                label, type, placeholder, field
+              }) => (
+                <FormGroup key={label} label={label}>
+                  <InputGroup
+                    type={type}
+                    placeholder={placeholder}
+                    value={formState[field]}
+                    onChange={({ target: { value } }) => dispatch({
+                      type: 'change',
+                      payload: {
+                        field,
+                        value
+                      }
+                    })
                     }
-                  })
-                  }
+                  />
+                </FormGroup>
+              ))}
+              <Label>
+                Due Date
+                <DateInput
+                  value={formState.dueDate}
+                  formatDate={date => date.toLocaleDateString()}
+                  onChange={(date) => {
+                    dispatch({
+                      type: 'change',
+                      payload: {
+                        field: 'dueDate',
+                        value: date
+                      }
+                    });
+                  }}
+                  timePrecision={undefined}
+                  parseDate={str => new Date(str)}
+                  placeholder={'D/M/YYYY'}
                 />
-              </FormGroup>
-            ))}
-            <Label>
-              Due Date
-              <DateInput
-                value={formState.dueDate}
-                formatDate={date => date.toLocaleDateString()}
-                onChange={(date) => {
-                  dispatch({
-                    type: 'change',
-                    payload: {
-                      field: 'dueDate',
-                      value: date
-                    }
-                  });
+              </Label>
+            </div>
+            <div className="modal-footer">
+              <Button
+                large
+                intent="primary"
+                className="btn-modal"
+                onClick={() => {
+                  dispatch({ type: 'reset', payload: initialState });
+                  placeOrder(formState);
                 }}
-                timePrecision={undefined}
-                parseDate={str => new Date(str)}
-                placeholder={'D/M/YYYY'}
-              />
-            </Label>
-          </div>
-          <div className="modal-footer">
-            <Button
-              large
-              intent="primary"
-              className="btn-modal"
-              onClick={() => {
-                dispatch({ type: 'reset', payload: initialState });
-                placeOrder(formState);
-              }}
-            >
-              Order
-            </Button>
-          </div>
+              >
+                Order
+              </Button>
+            </div>
           </>
         ) : (
           <></>
