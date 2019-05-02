@@ -624,7 +624,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Value.DataForVerification.RevPk = &revocationKey.PublicKey
 	proof.Value.DataForVerification.Epoch = epoch
 
-	// updating state un ledger
+	// updating state in ledger
 	if bytes, err := json.Marshal(proof); err == nil {
 		Logger.Debug("proof: " + string(bytes))
 	}
@@ -645,6 +645,60 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 //ID	SnapShot	State
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	// checking proof exist
+	proof := Proof{}
+	if err := proof.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a proof from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &proof, "") {
+		compositeKey, _ := proof.ToCompositeKey(stub)
+		message := fmt.Sprintf("proof with the key %s doesn't exist", compositeKey)
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := LoadFrom(stub, &proof, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if proof.Value.State != stateProofGenerated {
+		message := fmt.Sprintf("invalid state of proof")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	err := proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
+		proof.Value.DataForVerification.Ipk,
+		proof.Value.DataForVerification.Msg,
+		proof.Value.DataForVerification.AttributeValues,
+		proof.Value.DataForVerification.RhIndex,
+		proof.Value.DataForVerification.RevPk,
+		proof.Value.DataForVerification.Epoch)
+
+	if err != nil {
+		message := fmt.Sprintf("Signature verification was failed. Error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	proof.Value.State = stateProofValidated
+
+	// updating state in ledger
+	if bytes, err := json.Marshal(proof); err == nil {
+		Logger.Debug("proof: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &proof, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
