@@ -14,8 +14,23 @@ const PORT = 3000;
 const ORDERS = {
   result: []
 };
+const testInvoicId = uuid();
 const INVOICES = {
-  result: []
+  result: [
+    {
+      key: {
+        id: testInvoicId
+      },
+      value: {
+        debtor: 'a',
+        beneficiary: 'b',
+        totalDue: '123',
+        dueDate: '12.12.19',
+        owner: 'b',
+        state: 1
+      }
+    }
+  ]
 };
 const BIDS = {
   result: []
@@ -216,7 +231,7 @@ router.post('/updateOrder', async (req, res) => {
 router.post('/placeInvoiceForTrade', (req, res) => {
   res.send('ok');
 
-  const invoice = INVOICES.result.find(i => i.key.id === req.body.invoiceId);
+  const invoice = INVOICES.result.find(i => i.key.id === req.body.args[0]);
 
   invoice.value.state = 3;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoiceForTrade' }))));
@@ -225,41 +240,34 @@ router.post('/placeInvoiceForTrade', (req, res) => {
 router.post('/placeBid', (req, res) => {
   res.send('ok');
   const id = nanoid();
-  const invoice = INVOICES.find(i => i.invoiceId === req.body.invoiceId);
 
-  if (!invoice.bids) {
-    invoice.bids = {};
-  }
-  invoice.bids[id] = {
-    factor: req.body.role,
-    value: req.body.value
+  const bid = {
+    id,
+    factor: req.body.args[2],
+    rate: req.body.args[1],
+    invoiceID: req.body.args[3]
   };
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeBid' }))));
+  BIDS.result.push(bid);
+
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'placeBid' }))));
 });
 
 router.post('/acceptBid', (req, res) => {
   res.send('ok');
-  const id = nanoid();
-  const invoice = INVOICES.find(i => i.invoiceId === req.body.invoiceId);
+  const bid = BIDS.result.find(i => i.id === req.body.id);
 
-  if (!invoice.bids) {
-    invoice.bids = {};
-  }
-  invoice.bids[req.body.role] = req.body.value;
-  invoice.state = 'Closed';
-  invoice.factor = req.body.factor;
-  invoice.value = req.body.value;
+  bid.state = 'Closed';
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'acceptBid', id }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'acceptBid' }))));
 });
 
 router.post('/acceptInvoice', (req, res) => {
   res.send('ok');
 
-  const invoice = INVOICES.find(i => i.invoiceId === req.body.invoiceId);
+  const invoice = INVOICES.result.find(i => i.key.id === req.body.args[0]);
 
-  invoice.state = 'Accepted';
+  invoice.value.state = 2;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'acceptInvoice' }))));
 });
 

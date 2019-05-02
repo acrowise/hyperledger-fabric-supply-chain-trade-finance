@@ -173,5 +173,16 @@ export const TABLE_MAP = {
     shipTo: 'To',
     tarnsport: 'Transport',
     state: 'Status'
+  },
+  BIDS: {
+    invoiceId: 'Invoice ID',
+    debtor: 'Debtor',
+    factor: 'Factor ID',
+    rate: 'Rate',
+    totalDue: 'Total',
+    state: 'Status'
+  },
+  INVOICES: {
+
   }
 };

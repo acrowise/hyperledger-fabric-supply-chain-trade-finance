@@ -16,7 +16,6 @@ const Invoices = ({ role, filter, search }) => {
   });
 
   const [data, loading, setData] = useFetch('listInvoices');
-  const [bids, bidsLoading, setBidsData] = useFetch('listBids');
 
   // BUYER
   const [acceptedInvoiceRes, acceptInvoice] = post('acceptInvoice')();
@@ -24,37 +23,24 @@ const Invoices = ({ role, filter, search }) => {
 
   const [forSaleInvoiceRes, placeForTradeInvoice] = post('placeInvoiceForTrade')();
   const [removeInvoiceRes, removeInvoice] = post('removeInvoice')();
-  const [acceptedBidRes, acceptBid] = post('acceptBid')();
-  const [cancelBidRes, cancelBid] = post('cancelBid')();
+  // const [acceptedBidRes, acceptBid] = post('acceptBid')();
+  // const [cancelBidRes, cancelBid] = post('cancelBid')();
 
   // FACTOR
-  const [editBidRes, editBid] = post('editBid')();
+  // const [editBidRes, editBid] = post('editBid')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'acceptInvoice' || notification.type === 'placeInvoiceForTrade') {
-      const newState = data.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.invoiceId === notification.invoiceId);
-      newState[itemToUpdateIndex].state = notification.state;
-      setData(newState);
-      return;
+      const newState = data.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
+      newState[itemToUpdateIndex].value.state = notification.value.state;
+      setData({ result: newState });
     }
 
-    if (
-      notification.type === 'placeInvoiceForTrade'
-      || notification.type === 'acceptBid'
-      || notification.type === 'placeBid'
-    ) {
-      const newState = data.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.invoiceId === notification.invoiceId);
-      newState[itemToUpdateIndex] = notification;
-      setData(newState);
-      return;
-    }
     if (notification.type === 'placeInvoice') {
-      console.log('placeInvoice', notification);
-      setData(data.concat(notification));
+      setData({ result: data.result.concat(notification) });
     }
   };
 
@@ -67,30 +53,28 @@ const Invoices = ({ role, filter, search }) => {
 
   if (filter) {
     dataToDisplay = dataToDisplay.concat([]);
-    console.log('filter1', filter);
     if (filter) {
-      console.log('filter11');
       dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.value.state] === filter);
     }
   }
 
-  if (bids.result) {
-    if (dataToDisplay.length > 0) {
-      const a = dataToDisplay.concat([]);
-      bids.result.forEach((bid) => {
-        const invoice = a.find(i => i.key.id === bid.value.invoiceID);
-        if (invoice) {
-          if (!invoice.bids) {
-            invoice.bids = [];
-          }
-          invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
-        }
-      });
-      dataToDisplay = a;
-    }
-  }
+  // if (bids.result) {
+  //   if (dataToDisplay.length > 0) {
+  //     const a = dataToDisplay.concat([]);
+  //     bids.result.forEach((bid) => {
+  //       const invoice = a.find(i => i.key.id === bid.value.invoiceID);
+  //       if (invoice) {
+  //         if (!invoice.bids) {
+  //           invoice.bids = [];
+  //         }
+  //         invoice.bids.push(Object.assign({}, bid.value, { bidId: bid.key.id }));
+  //       }
+  //     });
+  //     dataToDisplay = a;
+  //   }
+  // }
 
-  return loading && bidsLoading ? (
+  return loading ? (
     <>Loading...</>
   ) : (
     <div className="table-wrap">
@@ -104,7 +88,7 @@ const Invoices = ({ role, filter, search }) => {
             <th>Due Date</th>
             <th>Invoice Owner</th>
             <th>Sate</th>
-            {role === 'supplier' || role === 'factor-1' || role === 'factor-2' ? (
+            {/* {role === 'supplier' || role === 'factor-1' || role === 'factor-2' ? (
               <th>Bid</th>
             ) : (
               <></>
@@ -113,7 +97,7 @@ const Invoices = ({ role, filter, search }) => {
               <th>Factor</th>
             ) : (
               <></>
-            )}
+            )} */}
             {role === 'buyer'
             || role === 'supplier'
             || role === 'factor-1'
@@ -125,7 +109,7 @@ const Invoices = ({ role, filter, search }) => {
           </tr>
         </thead>
         <tbody>
-          {dataToDisplay.map(({ key, value, bids }) => (
+          {dataToDisplay.map(({ key, value }) => (
             <tr key={key.id}>
               <td>{key.id}</td>
               <td>{value.debtor}</td>
@@ -134,7 +118,7 @@ const Invoices = ({ role, filter, search }) => {
               <td>{value.dueDate}</td>
               <td>{value.owner}</td>
               <td>{STATUSES.INVOICE[value.state]}</td>
-              {role === 'supplier' && value.state === 3 && bids ? (
+              {/* {role === 'supplier' && value.state === 3 && bids ? (
                 <>
                   <td style={{ paddingTop: '10px' }}>
                     {bids.map(i => (
@@ -153,9 +137,9 @@ const Invoices = ({ role, filter, search }) => {
                 </>
               ) : (
                 <></>
-              )}
+              )} */}
 
-              {role === 'supplier'
+              {/* {role === 'supplier'
               || role === 'factor-1'
               || (role === 'factor-2' && value.state === 4 && bids) ? (
                 <>
@@ -164,9 +148,9 @@ const Invoices = ({ role, filter, search }) => {
                 </>
                 ) : (
                 <></>
-                )}
+                )} */}
 
-              {role === 'supplier' && value.state === 3 && bids ? (
+              {/* {role === 'supplier' && value.state === 3 && bids ? (
                 <td>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {bids.map(i => (
@@ -179,10 +163,10 @@ const Invoices = ({ role, filter, search }) => {
                           //   fcn: 'acceptBid',
                           //   args: [i.bidId, '0', '0', '0']
                           // });
-                          acceptBid({
-                            fcn: 'acceptBid',
-                            args: [i.bidId, '0', '0', '0']
-                          });
+                          // acceptBid({
+                          //   fcn: 'acceptBid',
+                          //   args: [i.bidId, '0', '0', '0']
+                          // });
                         }}
                       >
                         Accept Bid
@@ -192,7 +176,7 @@ const Invoices = ({ role, filter, search }) => {
                 </td>
               ) : (
                 <></>
-              )}
+              )} */}
               {role === 'buyer' && value.state === 1 ? (
                 <td>
                   <div>

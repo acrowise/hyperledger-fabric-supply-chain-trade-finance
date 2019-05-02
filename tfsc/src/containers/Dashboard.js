@@ -12,6 +12,8 @@ import Contracts from './Contracts';
 import ShippingDocuments from './ShippingDocuments';
 import Proofs from './Proofs';
 import Filter from '../components/Filter';
+import Reports from './Reports';
+import Bids from './Bids';
 
 import { AuthConsumer } from '../context/auth';
 import { notifications } from '../mocks';
@@ -59,6 +61,24 @@ const tabs = role => [
     panel: (
       <Filter statuses={[]}>
         <Proofs role={role} />
+      </Filter>
+    )
+  },
+  {
+    name: 'Reports',
+    actors: ['ggcb', 'uscts'],
+    panel: (
+      <Filter statuses={['Generated', 'Validated']}>
+        <Reports role={role} />
+      </Filter>
+    )
+  },
+  {
+    name: 'Bids',
+    actors: ['factor-1', 'factor-2'],
+    panel: (
+      <Filter statuses={['Accepted']}>
+        <Bids role={role} />
       </Filter>
     )
   }
