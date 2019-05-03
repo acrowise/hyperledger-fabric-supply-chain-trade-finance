@@ -10,8 +10,8 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP } from '../constants';
 
 const Orders = ({ role, filter, search }) => {
-  const [data, loading, setData] = useFetch('orders');
-  const [, updateOrder] = post('updateOrder')();
+  const [data, loading, setData] = useFetch('listOrders');
+  const [, acceptOrder] = post('acceptOrder')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -21,7 +21,7 @@ const Orders = ({ role, filter, search }) => {
       setData(newState);
     }
 
-    if (notification.type === 'updateOrder') {
+    if (notification.type === 'acceptOrder') {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.orderId === notification.orderId);
       newState[itemToUpdateIndex] = notification;
@@ -53,7 +53,7 @@ const Orders = ({ role, filter, search }) => {
             <div>
               <Button
                 onClick={() => {
-                  updateOrder({ orderId: item.orderId });
+                  acceptOrder({ fcn: 'acceptOrder', args: [item.orderId, '0', '0', '0', '0', '0', '0', '0'] });
                 }}
                 style={{ marginRight: '5px' }}
                 intent="primary"

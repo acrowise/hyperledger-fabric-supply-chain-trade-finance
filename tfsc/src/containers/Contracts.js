@@ -11,7 +11,7 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP } from '../constants';
 
 const Contracts = ({ role }) => {
-  const [data, loading, setData] = useFetch('contracts');
+  const [data, loading, setData] = useFetch('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
     state: false,
     item: {}

@@ -168,10 +168,9 @@ export const TABLE_MAP = {
     state: 'State'
   },
   PROOFS: {
-    contractId: 'Contract ID',
-    shipFrom: 'From',
-    shipTo: 'To',
-    tarnsport: 'Transport',
+    shipmentId: 'Shipment ID',
+    proofId: 'Proof ID',
+    reportId: 'Report ID',
     state: 'Status'
   },
   BIDS: {
@@ -190,5 +189,11 @@ export const TABLE_MAP = {
     dueDate: 'Due Date',
     state: 'Status',
     owner: 'Owner'
+  },
+  REPORTS: {
+    shipmentId: 'Shipment ID',
+    proofId: 'Proof ID',
+    reportId: 'Report ID',
+    state: 'Status'
   }
 };

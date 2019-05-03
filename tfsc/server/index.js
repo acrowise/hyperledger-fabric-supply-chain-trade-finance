@@ -40,6 +40,22 @@ const CONTRACTS = [];
 const SHIPMENTS = [];
 const PROOFS = [];
 const DOCS = [];
+const REPORTS = {
+  result: [
+    {
+      reportId: 'FDDSA',
+      shipmentId: 'GSNJF',
+      ProofId: 'MCDSEDF',
+      state: 'Generated'
+    },
+    {
+      reportId: 'ASDADSA',
+      shipmentId: 'LLDSF',
+      ProofId: 'KDSAD',
+      state: 'Validated'
+    }
+  ]
+};
 
 const clients = [];
 const app = express();
@@ -64,7 +80,7 @@ router.use(
 
 router.use(bodyParser.json());
 
-router.get('/proofs', (_, res) => {
+router.get('/listProofs', (_, res) => {
   res.json(PROOFS);
 });
 
@@ -72,11 +88,11 @@ router.get('/shipments', (_, res) => {
   res.json(SHIPMENTS);
 });
 
-router.get('/contracts', (_, res) => {
+router.get('/listContracts', (_, res) => {
   res.json(CONTRACTS);
 });
 
-router.get('/orders', (_, res) => {
+router.get('/listOrders', (_, res) => {
   res.json(ORDERS);
 });
 
@@ -86,6 +102,10 @@ router.get('/listInvoices', (_, res) => {
 
 router.get('/listBids', (_, res) => {
   res.json(BIDS);
+});
+
+router.get('/listReports', (_, res) => {
+  res.json(REPORTS);
 });
 
 router.post('/uploadDocuments', upload.array('file'), (req, res) => {
@@ -189,8 +209,8 @@ router.post('/validateProof', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'validateProof' }))));
 });
 
-router.post('/updateOrder', async (req, res) => {
-  const order = ORDERS.result.find(i => i.orderId === req.body.orderId);
+router.post('/acceptOrder', async (req, res) => {
+  const order = ORDERS.result.find(i => i.orderId === req.body.args[0]);
 
   order.state = 'Accepted';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'updateOrder' }))));

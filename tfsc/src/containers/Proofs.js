@@ -11,7 +11,7 @@ import { TABLE_MAP } from '../constants';
 
 const Proofs = ({ role }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
-  const [proofs, loading, setData] = useFetch('proofs');
+  const [proofs, loading, setData] = useFetch('listProofs');
 
   const [selectedProof, setSelectedProof] = useState({});
   const onNotification = (message) => {

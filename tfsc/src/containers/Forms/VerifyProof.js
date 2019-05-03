@@ -9,8 +9,8 @@ import FileUploader from '../../components/FileUploader';
 
 const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
   const [files, setFiles] = useState([]);
-  const [shipmentRequest, validateProof] = post('validateProof')();
-  const [documentsRequest, uploadDocs] = post('uploadDocuments')();
+  const [, validateProof] = post('validateProof')();
+  const [, uploadDocs] = post('uploadDocuments')();
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
@@ -24,17 +24,12 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
       >
         <Card style={{ width: '20vw' }}>
           <p>Upload Bill of Lading</p>
+          <p>ContractId: {proof.contractId}</p>
+          <p>Consignor: {proof.consignor}</p>
+          <p>Consignee: {proof.consignee}</p>
+          <p>Shipment number: {proof.shipmentId}</p>
           <FileUploader files={files} setFiles={setFiles} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              large
-              intent="danger"
-              onClick={() => {
-                setDialogOpenState(false);
-              }}
-            >
-              Cancel
-            </Button>
             <Button
               large
               intent="primary"
@@ -49,7 +44,16 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
                 uploadDocs(form);
               }}
             >
-              Validate
+              Trade permitted
+            </Button>
+            <Button
+              large
+              intent="danger"
+              onClick={() => {
+                setDialogOpenState(false);
+              }}
+            >
+              Trade prohibited
             </Button>
           </div>
         </Card>

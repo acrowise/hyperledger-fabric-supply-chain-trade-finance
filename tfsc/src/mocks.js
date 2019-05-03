@@ -1,7 +1,7 @@
 export const notifications = {
   generateProof: 'proofs',
   place: 'orders',
-  updateOrder: 'orders',
+  acceptOrder: 'orders',
   shipmentRequested: 'shipping documents',
   shipmentConfirmed: 'shipping documents',
   validateProof: 'proofs',
