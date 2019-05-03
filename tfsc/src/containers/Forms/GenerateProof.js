@@ -102,16 +102,17 @@ const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
             </div>
           </div>
           <div className="modal-footer">
-            {/*<Button*/}
-            {/*large*/}
-            {/*intent="danger"*/}
-            {/*onClick={() => {*/}
-            {/*setDialogOpenState(false);*/}
-            {/*dispatch({ type: 'reset', payload: initialState });*/}
-            {/*}}*/}
-            {/*>*/}
-            {/*Cancel*/}
-            {/*</Button>*/}
+            <Button
+              large
+              intent="none"
+              className="btn-modal btn-default"
+              onClick={() => {
+                setDialogOpenState(false);
+                dispatch({ type: 'reset', payload: initialState });
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               large
               intent="primary"
