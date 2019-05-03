@@ -44,21 +44,23 @@ const Proofs = ({ role }) => {
       <Table
         fields={TABLE_MAP.PROOFS}
         data={proofs}
-        actions={item => (
-          <div>
-            <Button
-              onClick={() => {
-                setSelectedProof(item);
-                setVpDialogOpenState(true);
-              }}
-              style={{ marginRight: '5px' }}
-              intent="primary"
-            >
-              Accept
-            </Button>
-            <Button intent="danger">Decline</Button>
-          </div>
-        )}
+        actions={item => (item.state === 'Generated' ? (
+            <div>
+              <Button
+                onClick={() => {
+                  setSelectedProof(item);
+                  setVpDialogOpenState(true);
+                }}
+                style={{ marginRight: '5px' }}
+                intent="primary"
+              >
+                Verify Commertial Trade
+              </Button>
+            </div>
+        ) : (
+            <></>
+        ))
+        }
       />
     </div>
   );

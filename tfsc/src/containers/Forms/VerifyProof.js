@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Overlay, Card } from '@blueprintjs/core';
+import {
+  Button, Overlay, Card, Label, TextArea
+} from '@blueprintjs/core';
 
 import { post } from '../../helper/api';
 
@@ -28,6 +30,21 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
           <p>Consignor: {proof.consignor}</p>
           <p>Consignee: {proof.consignee}</p>
           <p>Shipment number: {proof.shipmentId}</p>
+          {proof.documents ? proof.documents.map(i => <p key={i}>{i}</p>) : <></>}
+          <Label>
+            Description
+            <TextArea
+              growVertically={true}
+              // onChange={({ target: { value } }) => dispatch({
+              //   type: 'change',
+              //   payload: {
+              //     field: 'description',
+              //     value
+              //   }
+              // })
+              // }
+            />
+          </Label>
           <FileUploader files={files} setFiles={setFiles} />
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button

@@ -56,7 +56,7 @@ const tabs = role => [
   },
   {
     name: 'Contracts',
-    actors: ['buyer', 'supplier', 'ggcb', 'uscts'],
+    actors: ['buyer', 'supplier'],
     panel: (
       <Filter statuses={['Signed', 'Completed']}>
         <Contracts role={role} />
