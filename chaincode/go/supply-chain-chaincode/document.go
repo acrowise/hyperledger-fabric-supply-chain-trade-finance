@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 
 const (
 	documentKeyFieldsNumber      = 1
-	documentBasicArgumentsNumber = 5
+	documentBasicArgumentsNumber = 4
 )
 
 type DocumentKey struct {
@@ -22,9 +23,8 @@ type DocumentKey struct {
 }
 
 type DocumentValue struct {
-	EntityType          string `json:"entityType"`
+	EntityType          int    `json:"entityType"`
 	EntityID            string `json:"entityID"`
-	DocumentHash        string `json:"documentHash"`
 	DocumentDescription string `json:"documentDescription"`
 	DocumentType        int    `json:"documentType"`
 	Timestamp           int64  `json:"timestamp"`
@@ -40,12 +40,45 @@ func CreateDocument() LedgerData {
 }
 
 //argument order
-//0		1			2			3				4					5
-//ID	EntityType	EntityID	DocumentHash	DocumentDescription	DocumentType
+//0		1			2			3					4
+//ID	EntityType	EntityID	DocumentDescription	DocumentType
 func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < documentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))
 	}
+	if err := entity.FillFromCompositeKeyParts(args[:documentKeyFieldsNumber]); err != nil {
+		return err
+	}
+	//checking entityType
+	allowedEntityTypes := map[int]bool{
+		TypeAgencyReport: true,
+		TypeShipment:     true,
+	}
+	entityType, err := strconv.Atoi(args[1])
+	if err != nil {
+		return errors.New(fmt.Sprintf("entityType is invalid: %s (must be int)", args[1]))
+	}
+	if !allowedEntityTypes[entityType] {
+		return errors.New(fmt.Sprintf("unacceptable type of entity"))
+	}
+	entity.Value.EntityType = entityType
+
+	//checking documentType
+	allowedDocumentTypes := map[int]bool{
+		DocTypeJPG: true,
+		DocTypePNG: true,
+		DocTypeXLS: true,
+		DocTypePDF: true,
+		DocTypeCSV: true,
+	}
+	documentType, err := strconv.Atoi(args[5])
+	if err != nil {
+		return errors.New(fmt.Sprintf("documentType is invalid: %s (must be int)", args[4]))
+	}
+	if !allowedDocumentTypes[documentType] {
+		return errors.New(fmt.Sprintf("unacceptable type of document"))
+	}
+	entity.Value.DocumentType = documentType
 
 	return nil
 }
