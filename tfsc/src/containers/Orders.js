@@ -54,7 +54,7 @@ const Orders = ({ role, filter, search }) => {
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
         actions={item => (role === 'supplier' && item.state === 1 ? (
-            <div>
+            <div className="nowrap">
               <Button
                 onClick={() => {
                   acceptOrder({
@@ -67,7 +67,7 @@ const Orders = ({ role, filter, search }) => {
               >
                 Accept
               </Button>
-              <Button intent="danger">Decline</Button>
+              <Button intent="danger">Decline!</Button>
             </div>
         ) : (
             <></>

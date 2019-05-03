@@ -103,9 +103,13 @@ const ShipmentDetailPage = (props) => {
         setDialogOpenState={setCsDialogOpenState}
         shipment={props}
       />
-      <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
+      <GenerateProofForm
+        dialogIsOpen={gpDialogIsOpen}
+        setDialogOpenState={setGpDialogOpenState}
+      />
       <ConfirmDeliveryForm
-        dialogIsOpen={cdDialogIsOpen}
+        // dialogIsOpen={cdDialogIsOpen}
+        dialogIsOpen={true}
         setDialogOpenState={setCdDialogOpenState}
         shipment={props}
       />

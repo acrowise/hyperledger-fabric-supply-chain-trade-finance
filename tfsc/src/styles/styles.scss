@@ -33,6 +33,36 @@ body {
 .container {
   padding: 0 50px;
 }
+
+.row {
+  display: flex;
+  margin-right: -15px;
+  margin-left: -15px;
+  flex-wrap: wrap;
+}
+
+.col-4,
+.col-6,
+.col-8 {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.col-4 {
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+}
+
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.col-8 {
+  flex: 0 0 66.666667%;
+  max-width: 66.666667%;
+}
+
 .layout-container {
   display: flex;
   margin: 0 -10px;
@@ -57,6 +87,7 @@ $header-height: 65px;
   box-shadow: none;
   height: $header-height;
 }
+
 .header-logo {
   margin-top: 6px;
 }
@@ -68,10 +99,12 @@ $header-height: 65px;
   align-items: center;
   justify-content: center;
 }
+
 .role-list {
   display: inline-flex;
   flex-flow: row wrap;
 }
+
 .role-item {
   margin: 10px 60px 10px 0;
   text-align: center;
@@ -136,11 +169,13 @@ $header-height: 65px;
     line-height: 52px;
   }
 }
+
 .dashboard-tabs-tab {
   display: flex;
   justify-content: center;
   align-items: center;
 }
+
 .dashboard-tabs-tab p {
   margin-bottom: 0;
 }
@@ -153,11 +188,17 @@ $header-height: 65px;
   display: flex;
   align-items: center;
 }
+
 .dashboard-header-col-3 {
   flex: 3;
 }
+
 .dashboard-header-col-2 {
   flex: 2;
+}
+
+.dashboard-header-col-btn{
+  padding-left: 30px;
 }
 
 //Radio buttons
@@ -165,11 +206,13 @@ $header-height: 65px;
   font-size: $fs-normal;
   margin-right: 0 !important;
   margin-bottom: 0;
-  padding-right: 70px;
+  padding-right: 50px;
 }
+
 .radio-button input:focus ~ .bp3-control-indicator {
   outline: none;
 }
+
 .radio-button:hover input:checked ~ .bp3-control-indicator,
 .radio-button:hover input:checked ~ .bp3-control-indicator,
 .radio-button input:checked ~ .bp3-control-indicator {
@@ -200,6 +243,7 @@ $header-height: 65px;
     margin-top: 10px;
   }
 }
+
 .filter-select {
   padding: 15px;
   background-color: white;
@@ -230,6 +274,7 @@ $header-height: 65px;
   font-size: $fs-normal !important;
   border-radius: 20px;
 }
+
 .bp3-button.bp3-intent-primary {
   background-color: $color-secondary;
   border-color: $color-secondary;
@@ -240,6 +285,7 @@ $header-height: 65px;
     background-color: #d3f3e8;
   }
 }
+
 .table .bp3-button {
   padding-left: 15px;
   padding-right: 15px;
@@ -257,11 +303,18 @@ $header-height: 65px;
   width: 100%;
 }
 
+.btn-new-order {
+  padding: 14px 40px;
+  text-transform: none;
+  border-radius: 25px;
+}
+
 //Sidebar panel
 .sidebar-panel {
   box-shadow: $box-shadow;
   margin-bottom: 15px;
 }
+
 .sidebar-panel-header {
   padding: 5px 20px;
   background: $color-primary;
@@ -270,6 +323,7 @@ $header-height: 65px;
   justify-content: space-between;
   align-items: center;
 }
+
 .sidebar-panel-body {
   padding: 20px;
   background: white;
@@ -293,9 +347,11 @@ $header-height: 65px;
   color: $color-txt-light;
   text-align: center;
 }
+
 .modal-body {
   padding: 30px;
 }
+
 .modal-footer {
   display: flex;
   justify-content: center;

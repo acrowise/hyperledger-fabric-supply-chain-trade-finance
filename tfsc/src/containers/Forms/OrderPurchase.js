@@ -39,50 +39,76 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
 
   return (
     <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
-      <Card className="modal" style={{ width: '550px' }}>
+      <Card className="modal" style={{ width: '720px' }}>
         <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted" />
         {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
           <>
-            <div className="modal-header">New order</div>
+            <div className="modal-header">New Purchase Order</div>
             <div className="modal-body">
-              {INPUTS.NEW_PURCHASE_ORDER.map(({
-                label, type, placeholder, field
-              }) => (
-                <FormGroup key={label} label={label}>
-                  <InputGroup
-                    type={type}
-                    placeholder={placeholder}
-                    value={formState[field]}
-                    onChange={({ target: { value } }) => dispatch({
-                      type: 'change',
-                      payload: {
-                        field,
-                        value
+              <div className="row">
+                {INPUTS.NEW_PURCHASE_ORDER.map(({
+                  label, type, placeholder, field
+                }) => (
+                  <FormGroup className="col-6" key={label} label={label}>
+                    <InputGroup
+                      type={type}
+                      placeholder={placeholder}
+                      value={formState[field]}
+                      onChange={({ target: { value } }) => dispatch({
+                        type: 'change',
+                        payload: {
+                          field,
+                          value
+                        }
+                      })
                       }
-                    })
-                    }
-                  />
-                </FormGroup>
-              ))}
-              <Label>
-                Due Date
-                <DateInput
-                  value={formState.dueDate}
-                  formatDate={date => date.toLocaleDateString()}
-                  onChange={(date) => {
-                    dispatch({
-                      type: 'change',
-                      payload: {
-                        field: 'dueDate',
-                        value: date
-                      }
-                    });
-                  }}
-                  timePrecision={undefined}
-                  parseDate={str => new Date(str)}
-                  placeholder={'D/M/YYYY'}
-                />
-              </Label>
+                    />
+                  </FormGroup>
+                ))}
+
+                <div className="col-6">
+                  <div className="row">
+                    <Label className="col-6">
+                      Due Date
+                      <DateInput
+                        value={formState.dueDate}
+                        formatDate={date => date.toLocaleDateString()}
+                        onChange={(date) => {
+                          dispatch({
+                            type: 'change',
+                            payload: {
+                              field: 'dueDate',
+                              value: date
+                            }
+                          });
+                        }}
+                        timePrecision={undefined}
+                        parseDate={str => new Date(str)}
+                        placeholder={'D/M/YYYY'}
+                      />
+                    </Label>
+                    <Label className="col-6">
+                      Payment Date
+                      <DateInput
+                        value={formState.paymentDate}
+                        formatDate={date => date.toLocaleDateString()}
+                        onChange={(date) => {
+                          dispatch({
+                            type: 'change',
+                            payload: {
+                              field: 'paymentDate',
+                              value: date
+                            }
+                          });
+                        }}
+                        timePrecision={undefined}
+                        parseDate={str => new Date(str)}
+                        placeholder={'D/M/YYYY'}
+                      />
+                    </Label>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="modal-footer">
               <Button
@@ -95,11 +121,11 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     args: [
                       '0',
                       formState.productName,
-                      formState.quantity.toString(),
-                      formState.price.toString(),
+                      formState.quantity,
+                      formState.price,
                       formState.destination,
-                      formState.dueDate.getTime().toString(),
-                      formState.paymentDate.getTime().toString(), // TODO: PaymentDate
+                      formState.dueDate.getTime(),
+                      formState.paymentDate.getTime(), // TODO: PaymentDate
                       'a' // TODO: buyer Id
                     ]
                   });

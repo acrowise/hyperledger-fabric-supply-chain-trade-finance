@@ -48,17 +48,18 @@ export const INPUTS = {
       field: 'productName'
     },
     {
-      label: 'Price',
-      placeholder: 'Placeholder text',
-      type: 'number',
-      field: 'price'
-    },
-    {
       label: 'Quantity',
       placeholder: 'Placeholder text',
       type: 'number',
       field: 'quantity'
     },
+    {
+      label: 'Price',
+      placeholder: 'Placeholder text',
+      type: 'number',
+      field: 'price'
+    },
+
     {
       label: 'Destination',
       placeholder: 'Placeholder text',

@@ -28,7 +28,7 @@ const NewPurchaseOrder = ({ role }) => {
       <OrderPurchaseForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
       <Button
         intent="primary"
-        className="btn-modal"
+        className="btn-new-order"
         onClick={() => {
           setDialogOpenState(true);
         }}

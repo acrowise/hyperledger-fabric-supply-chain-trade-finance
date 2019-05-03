@@ -1,15 +1,15 @@
-import React, { useReducer } from 'react';
+import React, {useReducer} from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, Checkbox, Card, MenuItem
 } from '@blueprintjs/core';
-import { Select } from '@blueprintjs/select';
+import {Select} from '@blueprintjs/select';
 
-import { post } from '../../helper/api';
-import { formReducer } from '../../reducers';
-import { INPUTS, REVIEWERS } from '../../constants';
+import {post} from '../../helper/api';
+import {formReducer} from '../../reducers';
+import {INPUTS, REVIEWERS} from '../../constants';
 
-const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
+const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
   const initialState = {
     contractId: false,
     consignorName: false,
@@ -35,65 +35,94 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
           paddingTop: '15vh'
         }}
       >
-        <Card style={{ width: '20vw' }}>
-          {INPUTS.GENERATE_PROOF.map(({ label, field }) => (
-            <Checkbox
-              key={label}
-              label={label}
-              value={formState[field]}
-              onChange={() => dispatch({
-                type: 'change',
-                payload: {
-                  field,
-                  value: !formState[field]
-                }
-              })
-              }
-            />
-          ))}
-          <Select
-            onItemSelect={(value) => {
-              dispatch({
-                type: 'change',
-                payload: {
-                  field: 'reviewer',
-                  value
-                }
-              });
+        <Card className="modal" style={{width: '720px'}}>
+          <div className="modal-header">
+            Confirm Shipment
+          </div>
+          <div
+            className="modal-body"
+            style={{
+              paddingLeft: '60px'
             }}
-            itemRenderer={(item, { handleClick }) => (
-              <MenuItem text={item.title} onClick={handleClick} />
-            )}
-            items={REVIEWERS}
-            filterable={false}
-            popoverProps={{ minimal: true }}
           >
-            <Button
-              text={(formState.reviewer && formState.reviewer.title) || 'Select Reviewer'}
-              rightIcon="double-caret-vertical"
-            />
-          </Select>
-          <div style={{ paddingTop: '30px', display: 'flex', justifyContent: 'space-between' }}>
-            <Button
-              large
-              intent="danger"
-              onClick={() => {
-                setDialogOpenState(false);
-                dispatch({ type: 'reset', payload: initialState });
-              }}
-            >
-              Cancel
-            </Button>
+            <div className="row">
+              <div className="col-8">
+                <div className="row">
+                  {INPUTS.GENERATE_PROOF.map(({label, field}) => (
+                    <Checkbox
+                      key={label}
+                      label={label}
+                      className="col-6"
+                      value={formState[field]}
+                      onChange={() => dispatch({
+                        type: 'change',
+                        payload: {
+                          field,
+                          value: !formState[field]
+                        }
+                      })
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="col-4">
+                <Select
+                  onItemSelect={(value) => {
+                    dispatch({
+                      type: 'change',
+                      payload: {
+                        field: 'reviewer',
+                        value
+                      }
+                    });
+                  }}
+                  itemRenderer={(item, {handleClick}) => (
+                    <MenuItem text={item.title} onClick={handleClick}/>
+                  )}
+                  items={REVIEWERS}
+                  filterable={false}
+                  popoverProps={{minimal: true}}
+                >
+                  <Button
+                    style={{
+                      padding: '15px',
+                      backgroundColor: 'white',
+                      border: '1px solid #D3DAE0',
+                      color: '#1B263C',
+                      font: '300 14px "Proxima Nova", sans-serif',
+                      borderRadius: 2,
+                      cursor: 'pointer'
+                    }}
+                    text={(formState.reviewer && formState.reviewer.title) || 'Select Reviewer'}
+                    rightIcon="double-caret-vertical"
+                  />
+                </Select>
+              </div>
+            </div>
+          </div>
+          <div className="modal-footer">
+            {/*<Button*/}
+            {/*large*/}
+            {/*intent="danger"*/}
+            {/*onClick={() => {*/}
+            {/*setDialogOpenState(false);*/}
+            {/*dispatch({ type: 'reset', payload: initialState });*/}
+            {/*}}*/}
+            {/*>*/}
+            {/*Cancel*/}
+            {/*</Button>*/}
             <Button
               large
               intent="primary"
+              className="btn-modal"
               onClick={() => {
                 setDialogOpenState(false);
                 generateProof(formState);
-                dispatch({ type: 'reset', payload: initialState });
+                dispatch({type: 'reset', payload: initialState});
               }}
             >
-              Generate
+              Submit
             </Button>
           </div>
         </Card>

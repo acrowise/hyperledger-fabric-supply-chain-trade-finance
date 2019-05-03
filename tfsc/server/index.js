@@ -36,21 +36,27 @@ const INVOICES = {
 const BIDS = {
   result: []
 };
-const CONTRACTS = [
-  {
-    contractId: 'contract-id',
-    consignorName: 'Buyer',
-    consigneeName: 'Supplier',
-    totalDue: 'totalDue',
-    quantity: 'quantity',
-    dueDate: new Date().getTime(),
-    state: 'New',
-    destination: 'destination',
-    dateCreated: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    documents: 'documents hashes'
-  }
-];
+const CONTRACTS = {
+  result: [
+    {
+      key: {
+        id: 'contract-id'
+      },
+      value: {
+        consignorName: 'Buyer',
+        consigneeName: 'Supplier',
+        totalDue: 'totalDue',
+        quantity: 'quantity',
+        dueDate: new Date().getTime(),
+        state: 'New',
+        destination: 'destination',
+        dateCreated: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+        documents: 'documents hashes'
+      }
+    }
+  ]
+};
 const SHIPMENTS = [
   {
     shipmentId: 'test-shipment-id',
