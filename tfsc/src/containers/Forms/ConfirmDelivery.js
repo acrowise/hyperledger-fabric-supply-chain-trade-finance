@@ -47,7 +47,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 setFiles([]);
               }}
             >
-              Confirm Shipment
+              Confirm Delivery
             </Button>
           </div>
         </Card>

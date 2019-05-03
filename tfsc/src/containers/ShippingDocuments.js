@@ -5,7 +5,6 @@ import { Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
 
-import ConfirmShipmentForm from './Forms/ConfirmShipment';
 import ShipmentDetailPage from './ShipmentDetailPage';
 
 import Table from '../components/Table/Table';
@@ -15,7 +14,6 @@ import { TABLE_MAP } from '../constants';
 const ShippingDocuments = ({ role, content, setContent }) => {
   const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
-  const [confirmDialogIsOpen, setConfirmDialogOpenState] = useState(false);
 
   const [shipments, loading, setData] = useFetch('shipments');
 
@@ -46,36 +44,12 @@ const ShippingDocuments = ({ role, content, setContent }) => {
     />
   ) : (
     <div>
-      <ConfirmShipmentForm
-        dialogIsOpen={confirmDialogIsOpen}
-        setDialogOpenState={setConfirmDialogOpenState}
-        shipment={selectedShipment}
-      />
       <Table
         fields={TABLE_MAP.SHIPMENTS}
         data={shipments}
         onSelect={(item) => {
           setContent(item);
         }}
-        actions={item => (
-          <div>
-            {role === 'transporter' && item.state === 'Requested' ? (
-              <Button
-                onClick={(e) => {
-                  setSelectedShipment(item);
-                  setConfirmDialogOpenState(true);
-                  e.stopPropagation();
-                }}
-                style={{ marginRight: '5px' }}
-                intent="primary"
-              >
-                Confirm
-              </Button>
-            ) : (
-              <></>
-            )}
-          </div>
-        )}
       />
     </div>
   );

@@ -9,6 +9,8 @@ import Proofs from '../components/Proofs';
 import Timeline from '../components/Timeline/Timeline';
 import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 
+import ConfirmShipmentForm from './Forms/ConfirmShipment';
+
 const EVENTS = [
   {
     id: 1,
@@ -65,15 +67,16 @@ const HISTORY = [
     date: '10 april 2019',
     action: 'Create Shipment',
     type: 'Commercial Invoices'
-  },
-]
+  }
+];
 
 const ShipmentDetailPage = (props) => {
   const [data, loading] = useFetch('documents');
   const [proofs, loadingProofs, setData] = useFetch('proofs');
-  // const [docViewerDialogIsOpen, setDocViewerDialogOpenState] = useState(false);
+
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
+  const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -95,6 +98,11 @@ const ShipmentDetailPage = (props) => {
 
   return (
     <div>
+      <ConfirmShipmentForm
+        dialogIsOpen={csDialogIsOpen}
+        setDialogOpenState={setCsDialogOpenState}
+        shipment={props}
+      />
       <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
       <ConfirmDeliveryForm
         dialogIsOpen={cdDialogIsOpen}
@@ -119,6 +127,19 @@ const ShipmentDetailPage = (props) => {
                 Confirm Delivery
               </Button>
               <Button>Cancel Delivery</Button>
+            </div>
+          ) : (
+            <></>
+          )}
+          {props.role === 'transporter' && props.state === 'Requested' ? (
+            <div>
+              <Button
+                onClick={() => {
+                  setCsDialogOpenState(true);
+                }}
+              >
+                Confirm Shipment
+              </Button>
             </div>
           ) : (
             <></>
@@ -150,8 +171,8 @@ const ShipmentDetailPage = (props) => {
             </table>
           </div>
 
-          <Timeline events={EVENTS}/>
-          <CollapsiblePanel history={HISTORY}/>
+          <Timeline events={EVENTS} />
+          <CollapsiblePanel history={HISTORY} />
         </div>
 
         <div className="layout-aside">
