@@ -18,8 +18,9 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
     productName: '',
     quantity: 0,
     price: 0,
-    destinationPort: '',
-    dueDate: new Date()
+    destination: '',
+    dueDate: new Date(),
+    paymentDate: new Date()
   };
   const [formState, dispatch] = useReducer(formReducer, initialState);
 
@@ -89,8 +90,20 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 intent="primary"
                 className="btn-modal"
                 onClick={() => {
+                  placeOrder({
+                    fcn: 'placeOrder',
+                    args: [
+                      '0',
+                      formState.productName,
+                      formState.quantity,
+                      formState.price,
+                      formState.destination,
+                      formState.dueDate.getTime(),
+                      formState.paymentDate.getTime(), // TODO: PaymentDate
+                      'a' // TODO: buyer Id
+                    ]
+                  });
                   dispatch({ type: 'reset', payload: initialState });
-                  placeOrder(formState);
                 }}
               >
                 Order

@@ -55,10 +55,10 @@ export const INPUTS = {
       field: 'quantity'
     },
     {
-      label: 'Destination Port',
+      label: 'Destination',
       placeholder: 'Placeholder text',
       type: 'text',
-      field: 'destinationPort'
+      field: 'destination'
     }
   ],
   TRANSPORT_REQUEST: [
@@ -153,7 +153,7 @@ export const TABLE_MAP = {
     dateCreated: 'Date Created',
     lastUpdated: 'Last Updated',
     dueDate: 'Due Date',
-    destinationPort: 'Destination',
+    destination: 'Destination',
     quantity: 'Quantity',
     state: 'Satus'
   },
@@ -162,7 +162,7 @@ export const TABLE_MAP = {
     productName: 'Name',
     quantity: 'Quantity',
     price: 'Price',
-    destinationPort: 'Destination Port',
+    destination: 'Destination',
     dueDate: 'Due Date',
     dateCreated: 'Date Created',
     state: 'State'

@@ -113,12 +113,19 @@ router.post('/generateProof', (req, res) => {
 
 router.post('/placeOrder', (req, res) => {
   const id = uuid();
-  const order = Object.assign(req.body, {
+  const order = {
     orderId: id,
     state: 'New',
     type: 'place',
-    dateCreated: new Date().toISOString()
-  });
+    dateCreated: new Date().toISOString(),
+    productName: req.body.args[0],
+    quantity: req.body.args[1],
+    price: req.body.args[2],
+    destination: req.body.args[3],
+    dueDate: req.body.args[4],
+    paymentDate: req.body.args[5],
+    buyerId: req.body.args[6]
+  };
   ORDERS.result.push(order);
   res.send('ok');
   clients.forEach(c => c.emit('notification', JSON.stringify(order)));
@@ -195,7 +202,7 @@ router.post('/updateOrder', async (req, res) => {
     quantity: order.quantity,
     dueDate: new Date().getTime(),
     state: 'New',
-    destinationPort: order.destinationPort,
+    destination: order.destination,
     dateCreated: new Date().toISOString(),
     lastUpdated: new Date().toISOString(),
     documents: 'documents hashes'
