@@ -36,8 +36,36 @@ const INVOICES = {
 const BIDS = {
   result: []
 };
-const CONTRACTS = [];
-const SHIPMENTS = [];
+const CONTRACTS = [
+  {
+    contractId: 'contract-id',
+    consignorName: 'Buyer',
+    consigneeName: 'Supplier',
+    totalDue: 'totalDue',
+    quantity: 'quantity',
+    dueDate: new Date().getTime(),
+    state: 'New',
+    destination: 'destination',
+    dateCreated: new Date().toISOString(),
+    lastUpdated: new Date().toISOString(),
+    documents: 'documents hashes'
+  }
+];
+const SHIPMENTS = [
+  {
+    shipmentId: 'test-shipment-id',
+    contractId: 'contract-id',
+    state: 'Requested',
+    documents: [
+      'Packing list',
+      'Phytosanitory certificate',
+      'Commercial Invoices',
+      'Certificate of origin',
+      'Bill of Landing',
+      'Export License'
+    ]
+  }
+];
 const PROOFS = [];
 const DOCS = [];
 const REPORTS = {
