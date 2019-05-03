@@ -46,6 +46,8 @@ const Filter = ({ children, statuses, actionComponent }) => {
               setSearch(target.value);
             }}
           />
+        </div>
+        <div className="dashboard-header-col-btn">
           {actionComponent || <></>}
         </div>
       </div>
