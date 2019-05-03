@@ -23,6 +23,23 @@ const (
 	TransportAgency = "transport_agency"
 )
 
+// Type entity with documents
+const (
+	TypeUnknown = iota
+	TypeShipment
+	TypeAgencyReport
+)
+
+// Type of documents
+const (
+	DocTypeUnknown = iota
+	DocTypeJPG
+	DocTypePNG
+	DocTypeXLS
+	DocTypePDF
+	DocTypeCSV
+)
+
 // Numerical constants
 const (
 	configKeyFieldsNumber      = 0

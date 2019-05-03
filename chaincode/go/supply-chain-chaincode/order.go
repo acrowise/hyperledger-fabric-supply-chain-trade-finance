@@ -73,8 +73,8 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", orderBasicArgumentsNumber))
 	}
 	//checking productName
-	productName := args[0]
-	if len(productName) == 0 {
+	productName := args[1]
+	if productName == "" {
 		return errors.New(fmt.Sprintf("productName must be not empty"))
 	}
 	entity.Value.ProductName = productName

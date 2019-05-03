@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -183,6 +184,17 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = order.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -277,6 +289,17 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -358,6 +381,17 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -484,14 +518,38 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6		7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
+//0		1			2			3		4			5
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	shipment := Shipment{}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = shipmentIndex
+	event.Value.EntityID = shipment.Key.ID
+	err := event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -502,12 +560,38 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	shipment := Shipment{}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = shipmentIndex
+	event.Value.EntityID = shipment.Key.ID
+	err := event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	document := Document{}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = documentIndex
+	event.Value.EntityID = document.Key.ID
+	err := event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -522,6 +606,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	// check contract existence
 	// generate proof
 	// save proof to Buyer-Supplier collection
+
+	Notifier(stub, NoticeRuningType)
 
 	// checking proof exist
 	proof := Proof{}
@@ -636,7 +722,16 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	Notifier(stub, NoticeRuningType)
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = proofIndex
+	event.Value.EntityID = proof.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -701,6 +796,17 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = proofIndex
+	event.Value.EntityID = proof.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -709,6 +815,19 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 //ID	Description	State	Documents
 func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	agencyReport := AgencyReport{}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = agencyReportIndex
+	event.Value.EntityID = agencyReport.Key.ID
+	err := event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -1018,7 +1137,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	agencyReports := []AgencyReport{}
-	agencyReportsBytes, err := Query(stub, AgencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter, []string{})
+	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter, []string{})
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1036,6 +1155,40 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(resultBytes)
+}
+
+func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
+	eventPrefix, _ := stub.GetFunctionAndParameters()
+	eventID := uuid.Must(uuid.NewV4()).String()
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+	event.Value.Creator = creator
+	event.Value.Timestamp = time.Now().UTC().Unix()
+
+	bytes, err := json.Marshal(event)
+	if err != nil {
+		message := fmt.Sprintf("Error marshaling: %s", err.Error())
+		return errors.New(message)
+	}
+	if err = stub.SetEvent(eventIndex+"."+eventPrefix+"."+eventID, bytes); err != nil {
+		message := fmt.Sprintf("Error setting event: %s", err.Error())
+		return errors.New(message)
+	}
+
+	Logger.Debug("PutState")
+	if err = stub.PutState(eventIndex+"."+eventPrefix+"."+eventID, bytes); err != nil {
+		return err
+	}
+
+	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+
+	return nil
 }
 
 func main() {

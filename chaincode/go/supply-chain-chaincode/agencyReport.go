@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	AgencyReportIndex = "AgencyReport"
+	agencyReportIndex = "AgencyReport"
 )
 
 const (
@@ -58,8 +58,8 @@ func CreateAgencyReport() LedgerData {
 }
 
 //argument order
-//0		1			2		3
-//ID	Description	State	Documents
+//0		1			2
+//ID	Description	State
 func (entity *AgencyReport) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < agencyReportBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", agencyReportBasicArgumentsNumber))
@@ -107,7 +107,7 @@ func (entity *AgencyReport) ToCompositeKey(stub shim.ChaincodeStubInterface) (st
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(AgencyReportIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(agencyReportIndex, compositeKeyParts)
 }
 
 func (entity *AgencyReport) ToLedgerValue() ([]byte, error) {
