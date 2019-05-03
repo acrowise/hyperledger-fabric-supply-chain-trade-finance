@@ -52,15 +52,16 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 <FileUploader files={files} setFiles={setFiles} />
               </div>
               <div className="modal-footer">
-                {/*<Button*/}
-                  {/*large*/}
-                  {/*intent="danger"*/}
-                  {/*onClick={() => {*/}
-                    {/*setDialogOpenState(false);*/}
-                  {/*}}*/}
-                {/*>*/}
-                  {/*Cancel*/}
-                {/*</Button>*/}
+                <Button
+                  large
+                  intent="none"
+                  className="btn-modal btn-default"
+                  onClick={() => {
+                    setDialogOpenState(false);
+                  }}
+                >
+                  Cancel
+                </Button>
                 <Button
                   large
                   intent="primary"

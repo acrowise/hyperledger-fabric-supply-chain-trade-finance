@@ -55,6 +55,14 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
           <div className="modal-footer">
             <Button
               large
+              intent="none"
+              className="btn-modal btn-default"
+              onClick={setDialogOpenState(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              large
               className="btn-modal"
               intent="primary"
               onClick={() => {

@@ -37,7 +37,8 @@ const Proofs = ({ role }) => {
   return (
     <div>
       <VerifyProof
-        dialogIsOpen={vpDialogIsOpen}
+        // dialogIsOpen={vpDialogIsOpen}
+        dialogIsOpen={true}
         setDialogOpenState={setVpDialogOpenState}
         proof={selectedProof}
       />

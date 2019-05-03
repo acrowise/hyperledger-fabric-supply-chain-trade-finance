@@ -108,8 +108,7 @@ const ShipmentDetailPage = (props) => {
         setDialogOpenState={setGpDialogOpenState}
       />
       <ConfirmDeliveryForm
-        // dialogIsOpen={cdDialogIsOpen}
-        dialogIsOpen={true}
+        dialogIsOpen={cdDialogIsOpen}
         setDialogOpenState={setCdDialogOpenState}
         shipment={props}
       />
