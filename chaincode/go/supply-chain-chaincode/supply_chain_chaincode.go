@@ -87,6 +87,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	} else if function == "listReports" {
 		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
+	} else if function == "getEventPayload" {
+		return cc.getEventPayload(stub, args)
 	}
 	// (optional) add other query functions
 
@@ -94,7 +96,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
 		"registerInvoice, acceptInvoice, rejectInvoice, " +
-		"listOrders, listContracts, listProofs, listReports}"
+		"listOrders, listContracts, listProofs, listReports, getEventPayload}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	logger.Debug(message)
 
@@ -1157,9 +1159,45 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(resultBytes)
 }
 
+func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	event := Event{}
+	if err := event.FillFromCompositeKeyParts(args[:eventKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return pb.Response{Status: 404, Message: message}
+	}
+
+	if !ExistsIn(stub, &event, "") {
+		compositeKey, _ := event.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("event with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	result, err := json.Marshal(event)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	Logger.Debug("Result: " + string(result))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(result)
+}
+
 func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
-	eventPrefix, _ := stub.GetFunctionAndParameters()
+	eventAction, _ := stub.GetFunctionAndParameters()
 	eventID := uuid.Must(uuid.NewV4()).String()
+
+	if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return errors.New(message)
+	}
 
 	creator, err := GetCreatorOrganization(stub)
 	if err != nil {
@@ -1167,6 +1205,14 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 		Logger.Error(message)
 		return errors.New(message)
 	}
+
+	config := Config{}
+	if err := LoadFrom(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+
+		return errors.New(message)
+	}
+
 	event.Value.Creator = creator
 	event.Value.Timestamp = time.Now().UTC().Unix()
 
@@ -1175,13 +1221,21 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 		message := fmt.Sprintf("Error marshaling: %s", err.Error())
 		return errors.New(message)
 	}
-	if err = stub.SetEvent(eventIndex+"."+eventPrefix+"."+eventID, bytes); err != nil {
+	eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
+	if err = stub.SetEvent(eventName, bytes); err != nil {
 		message := fmt.Sprintf("Error setting event: %s", err.Error())
+		return errors.New(message)
+	}
+	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
+
+	if err := UpdateOrInsertIn(stub, event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
 		return errors.New(message)
 	}
 
 	Logger.Debug("PutState")
-	if err = stub.PutState(eventIndex+"."+eventPrefix+"."+eventID, bytes); err != nil {
+	if err = stub.PutState(eventIndex+"."+eventAction+"."+eventID, bytes); err != nil {
 		return err
 	}
 

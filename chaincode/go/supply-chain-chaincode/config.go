@@ -43,7 +43,7 @@ const (
 // Numerical constants
 const (
 	configKeyFieldsNumber      = 0
-	configBasicArgumentsNumber = 1
+	configBasicArgumentsNumber = 2
 )
 
 type Config struct {
@@ -55,7 +55,8 @@ type ConfigKey struct {
 }
 
 type ConfigValue struct {
-	Collections []Collection `json:"collections"`
+	Collections   []Collection `json:"collections"`
+	ChaincodeName string       `json:"chaincodeName"`
 }
 
 type Collection struct {
@@ -83,7 +84,15 @@ func (data *Config) FillFromArguments(stub shim.ChaincodeStubInterface, args []s
 		return errors.New(fmt.Sprintf("cannot unmarshaling collections : %s", err.Error()))
 	}
 
+	// setting chaincode name
+	if len(args[1]) == 0 {
+		return errors.New(fmt.Sprintf("arg[1] must be not empty"))
+	}
+
+	chaincodeName := args[1]
+
 	data.Value.Collections = collections
+	data.Value.ChaincodeName = chaincodeName
 
 	return nil
 }
