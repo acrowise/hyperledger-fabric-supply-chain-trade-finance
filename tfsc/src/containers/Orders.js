@@ -42,6 +42,10 @@ const Orders = ({ role, filter, search }) => {
     }
   }
 
+  if (filteredData) {
+    filteredData = filteredData.map(i => Object.assign({}, { id: i.key.id }, i.value));
+  }
+
   return loading ? (
     <>Loading...</>
   ) : (
@@ -49,11 +53,14 @@ const Orders = ({ role, filter, search }) => {
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
-        actions={item => (role === 'supplier' && item.state === 'New' ? (
+        actions={item => (role === 'supplier' && item.state === 1 ? (
             <div>
               <Button
                 onClick={() => {
-                  acceptOrder({ fcn: 'acceptOrder', args: [item.orderId, '0', '0', '0', '0', '0', '0', '0'] });
+                  acceptOrder({
+                    fcn: 'acceptOrder',
+                    args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                  });
                 }}
                 style={{ marginRight: '5px' }}
                 intent="primary"

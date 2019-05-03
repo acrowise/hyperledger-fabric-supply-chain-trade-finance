@@ -95,11 +95,11 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     args: [
                       '0',
                       formState.productName,
-                      formState.quantity,
-                      formState.price,
+                      formState.quantity.toString(),
+                      formState.price.toString(),
                       formState.destination,
-                      formState.dueDate.getTime(),
-                      formState.paymentDate.getTime(), // TODO: PaymentDate
+                      formState.dueDate.getTime().toString(),
+                      formState.paymentDate.getTime().toString(), // TODO: PaymentDate
                       'a' // TODO: buyer Id
                     ]
                   });

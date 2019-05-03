@@ -24,6 +24,11 @@ export const actors = [
 ];
 
 export const STATUSES = {
+  ORDER: {
+    0: 'New',
+    1: 'Accepted',
+    2: 'Cancelled'
+  },
   INVOICE: {
     0: 'Unknown',
     1: 'Issued',
@@ -146,11 +151,11 @@ export const TABLE_MAP = {
     state: 'Status'
   },
   CONTRACTS: {
-    contractId: 'Contract ID',
+    id: 'Contract ID',
     consignorName: 'Consignor',
     consigneeName: 'Consignee',
     totalDue: 'Total Due',
-    dateCreated: 'Date Created',
+    paymentDate: 'Payment Date',
     lastUpdated: 'Last Updated',
     dueDate: 'Due Date',
     destination: 'Destination',
@@ -158,13 +163,13 @@ export const TABLE_MAP = {
     state: 'Satus'
   },
   ORDERS: {
-    orderId: 'Order ID',
+    id: 'Order ID',
     productName: 'Name',
     quantity: 'Quantity',
     price: 'Price',
     destination: 'Destination',
     dueDate: 'Due Date',
-    dateCreated: 'Date Created',
+    paymentDate: 'Payment Date',
     state: 'State'
   },
   PROOFS: {

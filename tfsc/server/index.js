@@ -10,7 +10,7 @@ const uuid = require('uuid/v4');
 const upload = multer();
 
 const PORT = process.env.PORT || 3000;
-const API_PORT = process.env.API_PORT || 4001;
+const API_PORT = process.env.API_PORT || 4002;
 
 const ORDERS = {
   result: []
@@ -66,7 +66,28 @@ const SHIPMENTS = [
     ]
   }
 ];
-const PROOFS = [];
+const PROOFS = [
+  {
+    reportId: 'FDDSA',
+    shipmentId: 'GSNJF',
+    ProofId: 'MCDSEDF',
+    state: 'Generated',
+    contractId: 'contract-id',
+    consignore: 'Buyer',
+    consignee: 'Supplier',
+    documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+  },
+  {
+    reportId: 'ASDADSA',
+    shipmentId: 'LLDSF',
+    ProofId: 'KDSAD',
+    state: 'Validated',
+    contractId: 'contract-id',
+    consignore: 'Buyer',
+    consignee: 'Supplier',
+    documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+  }
+];
 const DOCS = [];
 const REPORTS = {
   result: [
@@ -162,17 +183,21 @@ router.post('/generateProof', (req, res) => {
 router.post('/placeOrder', (req, res) => {
   const id = uuid();
   const order = {
-    orderId: id,
-    state: 'New',
-    type: 'place',
-    dateCreated: new Date().toISOString(),
-    productName: req.body.args[0],
-    quantity: req.body.args[1],
-    price: req.body.args[2],
-    destination: req.body.args[3],
-    dueDate: req.body.args[4],
-    paymentDate: req.body.args[5],
-    buyerId: req.body.args[6]
+    key: {
+      id
+    },
+    value: {
+      state: 1,
+      dateCreated: new Date().toISOString(),
+      productName: req.body.args[0],
+      quantity: req.body.args[1],
+      price: req.body.args[2],
+      destination: req.body.args[3],
+      dueDate: req.body.args[4],
+      paymentDate: req.body.args[5],
+      buyerId: req.body.args[6]
+    },
+    type: 'place'
   };
   ORDERS.result.push(order);
   res.send('ok');
@@ -238,7 +263,7 @@ router.post('/validateProof', (req, res) => {
 });
 
 router.post('/acceptOrder', async (req, res) => {
-  const order = ORDERS.result.find(i => i.orderId === req.body.args[0]);
+  const order = ORDERS.result.find(i => i.id === req.body.args[0]);
 
   order.state = 'Accepted';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'updateOrder' }))));

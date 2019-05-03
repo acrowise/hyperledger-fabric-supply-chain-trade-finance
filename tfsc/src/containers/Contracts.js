@@ -20,14 +20,22 @@ const Contracts = ({ role }) => {
   const onMessage = (message) => {
     const notification = JSON.parse(message);
     if (notification.type === 'contractCreated') {
-      const newState = data.concat(notification);
+      const newState = data.result.concat(notification);
       setData(newState);
     }
   };
 
   useSocket('notification', onMessage);
 
-  return (
+  let dataToDisplay = data.result;
+
+  if (dataToDisplay) {
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, { id: i.key.id }, i.value));
+  }
+
+  return loading ? (
+    <>Loading...</>
+  ) : (
     <div>
       <TransportRequestForm
         dialogIsOpen={tsrDialogIsOpen}
@@ -35,7 +43,7 @@ const Contracts = ({ role }) => {
       />
       <Table
         fields={TABLE_MAP.CONTRACTS}
-        data={data}
+        data={dataToDisplay}
         actions={item => (role === 'supplier' ? (
             <div>
               <Button

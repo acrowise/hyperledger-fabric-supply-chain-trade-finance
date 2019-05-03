@@ -32,7 +32,7 @@ const Table = ({
                   }}
                   key={j.toString()}
                 >
-                  {j === 'dueDate' || j === 'dateCreated' || j === 'lastUpdated'
+                  {j === 'dueDate' || j === 'paymentDate' || j === 'timestamp'
                     ? new Date(item[j]).toLocaleDateString()
                     : item[j]}
                 </td>
