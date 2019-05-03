@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Overlay, Card } from '@blueprintjs/core';
+import { Button, Overlay, Card, TextArea, FormGroup } from '@blueprintjs/core';
 
 import FileUploader from '../../components/FileUploader';
 
@@ -22,18 +22,40 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
           paddingTop: '15vh'
         }}
       >
-        <Card style={{ width: '20vw' }}>
-          <p>ShipmentId: {shipment.shipmentId}</p>
-          <p>ContractId: {shipment.contractId}</p>
-          <p>From: {shipment.shipFrom}</p>
-          <p>To: {shipment.shipTo}</p>
-          <p>Transport: {shipment.transport}</p>
-          <p>Description: {shipment.description}</p>
-          <p>Upload Bill of Lading</p>
-          <FileUploader files={files} setFiles={setFiles} />
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Card className="modal" style={{ width: '600px' }}>
+          <div className="modal-header">
+            Upload Act of Handover
+          </div>
+
+          {/*<p>ShipmentId: {shipment.shipmentId}</p>*/}
+          {/*<p>ContractId: {shipment.contractId}</p>*/}
+          {/*<p>From: {shipment.shipFrom}</p>*/}
+          {/*<p>To: {shipment.shipTo}</p>*/}
+          {/*<p>Transport: {shipment.transport}</p>*/}
+          {/*<p>Description: {shipment.description}</p>*/}
+
+          <div className="modal-body">
+            <FileUploader
+              withPreview
+              files={files}
+              setFiles={setFiles}
+            />
+
+            <FormGroup
+              label="Details"
+            >
+              <TextArea
+                growVertically={true}
+                large={true}
+                value={shipment.description}
+              />
+            </FormGroup>
+
+          </div>
+          <div className="modal-footer">
             <Button
               large
+              className="btn-modal"
               intent="primary"
               onClick={() => {
                 setDialogOpenState(false);
@@ -47,7 +69,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 setFiles([]);
               }}
             >
-              Confirm Delivery
+              Submit
             </Button>
           </div>
         </Card>

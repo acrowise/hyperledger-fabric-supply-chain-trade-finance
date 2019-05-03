@@ -41,11 +41,26 @@ body {
   flex-wrap: wrap;
 }
 
+.col-4,
+.col-6,
+.col-8 {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+
+.col-4 {
+  flex: 0 0 33.333333%;
+  max-width: 33.333333%;
+}
+
 .col-6 {
   flex: 0 0 50%;
   max-width: 50%;
-  padding-right: 15px;
-  padding-left: 15px;
+}
+
+.col-8 {
+  flex: 0 0 66.666667%;
+  max-width: 66.666667%;
 }
 
 .layout-container {
