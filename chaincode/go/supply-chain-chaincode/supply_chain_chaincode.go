@@ -1063,18 +1063,72 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1			2		3
-//ID	Description	State	Documents
+//0		1
+//ID	Description
 func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Auditor: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to submit a report")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//filling from arguments
 	agencyReport := AgencyReport{}
+	if err := agencyReport.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a report from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//generating new report ID and making Key
+	reportID := uuid.Must(uuid.NewV4()).String()
+	if err := agencyReport.FillFromCompositeKeyParts([]string{reportID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &agencyReport, "") {
+		compositeKey, _ := agencyReport.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
+	}
+
+	//setting automatic values
+	agencyReport.Value.State = stateAgencyReportAccepted
+	agencyReport.Value.Description = args[1]
+	agencyReport.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(agencyReport); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &agencyReport, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = agencyReportIndex
 	event.Value.EntityID = agencyReport.Key.ID
-	err := event.emitState(stub)
+	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)

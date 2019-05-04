@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
-	"strconv"
 )
 
 const (
@@ -64,17 +63,6 @@ func (entity *AgencyReport) FillFromArguments(stub shim.ChaincodeStubInterface, 
 	if len(args) < agencyReportBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", agencyReportBasicArgumentsNumber))
 	}
-
-	//checking state
-	state, err := strconv.Atoi(args[6])
-	if err != nil {
-		return errors.New(fmt.Sprintf("shipment state is invalid: %s (must be int)", args[8]))
-	}
-	if !Contains(agencyReportStateLegal, state) {
-		return errors.New(fmt.Sprintf("shipment state is invalid: %d (must be from 0 to %d)", state, len(agencyReportStateLegal)))
-	}
-	entity.Value.State = state
-
 	return nil
 }
 
