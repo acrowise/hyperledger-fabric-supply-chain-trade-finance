@@ -14,7 +14,7 @@ const (
 
 const (
 	shipmentKeyFieldsNumber      = 1
-	shipmentBasicArgumentsNumber = 6
+	shipmentBasicArgumentsNumber = 5
 )
 
 //shipment state constants (from 0 to 4)

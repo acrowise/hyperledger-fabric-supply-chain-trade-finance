@@ -562,13 +562,67 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to request a shipment")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//filling from arguments
 	shipment := Shipment{}
+	if err := shipment.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a shipment from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//generating new shipment ID and making Key
+	shipmentID := uuid.Must(uuid.NewV4()).String()
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &shipment, "") {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s already exist", compositeKey))
+	}
+
+	//setting automatic values
+	shipment.Value.State = stateShipmentRequested
+	shipment.Value.Description = args[5]
+	shipment.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipment); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipment, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
-	err := event.emitState(stub)
+	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
@@ -633,18 +687,40 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
+	//generating new document ID and making Key
+	documentID := uuid.Must(uuid.NewV4()).String()
+	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if ExistsIn(stub, &document, "") {
 		compositeKey, _ := document.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("document with the key %s already exists", compositeKey))
 	}
 
+	//additional checking
+	documentHash := args[3]
+	checkingResult, err := existsDocumentByHash(stub, documentHash)
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+	if checkingResult {
+		message := fmt.Sprintf("document with hash %s already exists", documentHash)
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	//setting additional values
-	//TODO: add check entity exists
 	document.Value.EntityID = args[2]
-	document.Value.DocumentDescription = args[3]
+	document.Value.DocumentHash = documentHash
+	document.Value.DocumentDescription = args[4]
 	document.Value.Timestamp = time.Now().UTC().Unix()
 
-	//updating state un ledger
+	//updating state in ledger
 	if bytes, err := json.Marshal(document); err == nil {
 		Logger.Debug("Document: " + string(bytes))
 	}
@@ -668,8 +744,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			Logger.Error(message)
 			return shim.Error(message)
 		}
-		//TODO: add check already exists document
-		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
 		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -687,8 +762,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			Logger.Error(message)
 			return shim.Error(message)
 		}
-		//TODO: add check already exists document
-		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
 		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -1253,6 +1327,30 @@ func (cc *SupplyChainChaincode) getDocument(stub shim.ChaincodeStubInterface, ar
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(result)
+}
+
+func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) (bool, error) {
+
+	filterByDocumentHash := func(data LedgerData) bool {
+		entity, ok := data.(*Document)
+		if ok && entity.Value.DocumentHash == documentHash {
+			return true
+		}
+
+		return false
+	}
+
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByDocumentHash, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return false, errors.New(message)
+	}
+	if documentsBytes != nil {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
