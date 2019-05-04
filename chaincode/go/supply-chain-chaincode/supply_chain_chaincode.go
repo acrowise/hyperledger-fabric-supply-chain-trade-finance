@@ -806,7 +806,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			Logger.Error(message)
 			return shim.Error(message)
 		}
-		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
 		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -824,7 +824,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			Logger.Error(message)
 			return shim.Error(message)
 		}
-		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
 		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
