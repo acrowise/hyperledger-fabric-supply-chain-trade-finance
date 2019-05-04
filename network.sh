@@ -46,7 +46,7 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${THIRDPARTY_VERSION:="0.4.14"}
 : ${FABRIC_REST_VERSION:="0.13.0"}
 
-IPFS_SECRET=$(cat /dev/urandom | tr -dc 'a-f0-9' | fold -w 64 | head -n 1)
+IPFS_SECRET=$(openssl rand -hex 32)
 
 echo "Use Fabric-Starter home: $FABRIC_STARTER_HOME"
 echo "Use docker compose template folder: $TEMPLATES_DOCKER_COMPOSE_FOLDER"
