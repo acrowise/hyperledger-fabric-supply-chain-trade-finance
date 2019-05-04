@@ -85,6 +85,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	} else if function == "listReports" {
 		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
+	} else if function == "listShipments" {
+		return cc.listShipments(stub, args)
 	} else if function == "getDocument" {
 		return cc.getDocument(stub, args)
 	} else if function == "getEventPayload" {
@@ -96,7 +98,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
 		"acceptInvoice, rejectInvoice, " +
-		"listOrders, listContracts, listProofs, listReports, getEventPayload, getDocument}"
+		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	logger.Debug(message)
 
@@ -1267,6 +1269,30 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(resultBytes)
 }
 
+func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	shipments := []Shipment{}
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(shipmentsBytes, &shipments); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(shipments)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
 func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1340,13 +1366,21 @@ func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string)
 		return false
 	}
 
+	documents := []Document{}
 	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByDocumentHash, []string{})
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
 		return false, errors.New(message)
 	}
-	if documentsBytes != nil {
+
+	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+		message := fmt.Sprintf("unable to unmarshal documents query result: %s", err.Error())
+		Logger.Error(message)
+		return false, errors.New(message)
+	}
+
+	if len(documents) != 0 {
 		return true, nil
 	}
 
