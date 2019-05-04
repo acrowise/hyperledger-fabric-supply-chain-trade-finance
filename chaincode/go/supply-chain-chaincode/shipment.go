@@ -14,7 +14,7 @@ const (
 
 const (
 	shipmentKeyFieldsNumber      = 1
-	shipmentBasicArgumentsNumber = 6
+	shipmentBasicArgumentsNumber = 5
 )
 
 //shipment state constants (from 0 to 4)
@@ -67,8 +67,8 @@ func CreateShipment() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5			6
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	Documents
+//0		1			2			3		4			5
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description
 func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < shipmentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", shipmentBasicArgumentsNumber))

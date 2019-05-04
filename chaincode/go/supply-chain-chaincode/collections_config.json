@@ -1,16 +1,16 @@
 [
-	{
-		"name":"a-b-d-e-f-g-h-Contract",
-		"policy":"OR('aMSP.member','bMSP.member','dMSP.member','eMSP.member','fMSP.member','gMSP.member','hMSP.member')",
-		"requiredPeerCount":0,
-		"maxPeerCount":7,
-		"blockToLive":0
-	},
-	{
-		"name":"a-c-d-e-f-g-h-Contract",
-		"policy":"OR('aMSP.member','cMSP.member','dMSP.member','eMSP.member','fMSP.member','gMSP.member','hMSP.member')",
-		"requiredPeerCount":0,
-		"maxPeerCount":7,
-		"blockToLive":0
-	}
+  {
+    "name": "a-b-d-e-f-g-h-Contract",
+    "policy": "OR('aMSP.member','bMSP.member','dMSP.member','eMSP.member','fMSP.member','gMSP.member','hMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 7,
+    "blockToLive": 0
+  },
+  {
+    "name": "a-c-d-e-f-g-h-Contract",
+    "policy": "OR('aMSP.member','cMSP.member','dMSP.member','eMSP.member','fMSP.member','gMSP.member','hMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 7,
+    "blockToLive": 0
+  }
 ]

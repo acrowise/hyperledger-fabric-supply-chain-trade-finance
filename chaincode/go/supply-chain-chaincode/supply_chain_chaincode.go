@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
@@ -69,8 +70,6 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.verifyProof(stub, args)
 	} else if function == "submitReport" {
 		return cc.submitReport(stub, args)
-	} else if function == "registerInvoice" {
-		return cc.registerInvoice(stub, args)
 	} else if function == "acceptInvoice" {
 		return cc.acceptInvoice(stub, args)
 	} else if function == "rejectInvoice" {
@@ -86,14 +85,20 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	} else if function == "listReports" {
 		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
+	} else if function == "listShipments" {
+		return cc.listShipments(stub, args)
+	} else if function == "getDocument" {
+		return cc.getDocument(stub, args)
+	} else if function == "getEventPayload" {
+		return cc.getEventPayload(stub, args)
 	}
 	// (optional) add other query functions
 
 	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
-		"registerInvoice, acceptInvoice, rejectInvoice, " +
-		"listOrders, listContracts, listProofs, listReports}"
+		"acceptInvoice, rejectInvoice, " +
+		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	logger.Debug(message)
 
@@ -179,6 +184,17 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 
 	if err := UpdateOrInsertIn(stub, &order, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = order.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -277,6 +293,17 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -358,6 +385,17 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -473,6 +511,28 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//invoking another chaincode for registering invoice
+	fcnName := "registerInvoice"
+	chaincodeName := "trade-finance-chaincode"
+	channelName := "common"
+	invoiceID := contract.Key.ID
+	invoiceDebtor := contract.Value.ConsigneeName
+	invoiceBeneficiary := contract.Value.ConsignorName
+	invoiceTotalDue := fmt.Sprintf("%f", contract.Value.TotalDue)
+	invoiceDueDate := fmt.Sprintf("%d", contract.Value.DueDate)
+
+	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoiceDueDate), []byte("0"), []byte(creator)}
+
+	for _, oneArg := range args {
+		argsByte = append(argsByte, []byte(oneArg))
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
+	if response.Status >= 400 {
+		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
+		return pb.Response{Status: 400, Message: message}
+	}
+
 	//updating order's state in ledger
 	if bytes, err := json.Marshal(orderToUpdate); err == nil {
 		Logger.Debug("Order: " + string(bytes))
@@ -484,23 +544,174 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = orderIndex
+	event.Value.EntityID = orderToUpdate.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6		7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
+//0		1			2			3		4			5
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to request a shipment")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//filling from arguments
+	shipment := Shipment{}
+	if err := shipment.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill a shipment from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//generating new shipment ID and making Key
+	shipmentID := uuid.Must(uuid.NewV4()).String()
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &shipment, "") {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s already exist", compositeKey))
+	}
+
+	//setting automatic values
+	shipment.Value.State = stateShipmentRequested
+	shipment.Value.Description = args[5]
+	shipment.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipment); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipment, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = shipmentIndex
+	event.Value.EntityID = shipment.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6		7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
+//0		1	2	3	4	5
+//ID	0	0	0	0	0
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking shipment exist
+	shipment := Shipment{}
+	if err := shipment.FillFromCompositeKeyParts(args[:shipmentKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &shipment, "") {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	shipmentToUpdate := Shipment{}
+	shipmentToUpdate.Key = shipment.Key
+	if err := LoadFrom(stub, &shipmentToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if shipmentToUpdate.Value.State != stateShipmentRequested {
+		message := fmt.Sprintf("unable confirm shipment with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	shipmentToUpdate.Value.State = stateShipmentConfirmed
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = shipmentIndex
+	event.Value.EntityID = shipment.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -508,6 +719,131 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	allowedUnits := map[string]bool{
+		Supplier: true,
+		Buyer:    true,
+		Auditor:  true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to upload a document")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking document exist
+	document := Document{}
+	if err := document.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill an document from arguments: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//generating new document ID and making Key
+	documentID := uuid.Must(uuid.NewV4()).String()
+	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &document, "") {
+		compositeKey, _ := document.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("document with the key %s already exists", compositeKey))
+	}
+
+	//additional checking
+	documentHash := args[3]
+	checkingResult, err := existsDocumentByHash(stub, documentHash)
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+	if checkingResult {
+		message := fmt.Sprintf("document with hash %s already exists", documentHash)
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//setting additional values
+	document.Value.EntityID = args[2]
+	document.Value.DocumentHash = documentHash
+	document.Value.DocumentDescription = args[4]
+	document.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(document); err == nil {
+		Logger.Debug("Document: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &document, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	switch document.Value.EntityType {
+	case TypeShipment:
+		entityType := Shipment{}
+		entityType.Key.ID = document.Value.EntityID
+		if !ExistsIn(stub, &entityType, "") {
+			compositeKey, _ := entityType.ToCompositeKey(stub)
+			return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
+		}
+		if err := LoadFrom(stub, &entityType, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
+		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+	case TypeAgencyReport:
+		entityType := AgencyReport{}
+		entityType.Key.ID = document.Value.EntityID
+		if !ExistsIn(stub, &entityType, "") {
+			compositeKey, _ := entityType.ToCompositeKey(stub)
+			return shim.Error(fmt.Sprintf("agencyReport with the key %s doesn't exist", compositeKey))
+		}
+		if err := LoadFrom(stub, &entityType, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Value.DocumentHash)
+		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+	default:
+		break
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = documentIndex
+	event.Value.EntityID = document.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -522,6 +858,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	// check contract existence
 	// generate proof
 	// save proof to Buyer-Supplier collection
+
+	Notifier(stub, NoticeRuningType)
 
 	// checking proof exist
 	proof := Proof{}
@@ -636,7 +974,16 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	Notifier(stub, NoticeRuningType)
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = proofIndex
+	event.Value.EntityID = proof.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
@@ -701,6 +1048,17 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = proofIndex
+	event.Value.EntityID = proof.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -710,84 +1068,17 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
-	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
-}
+	agencyReport := AgencyReport{}
 
-//0				1		2			3			4			5	6
-//ContractID    Debtor	Beneficiary	TotalDue	DueDate		0	Owner
-func (cc *SupplyChainChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id, (optional) description, docs
-	// check role == Buyer
-	// check contract existence
-	// check contract status (to avoid logical conflict, e.g. accept contract rejected previously)
-	// add docs to Shipment (with description optionally)
-	// set contract status to "waiting for payment" (or some other final one)
-	// generate Invoice from contract field
-	// save Shipment, Contract to collection
-	// save Invoice to Trade Finance chaincode ledger
-	Notifier(stub, NoticeRuningType)
-
-	//checking role
-	allowedUnits := map[string]bool{
-		Supplier: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = agencyReportIndex
+	event.Value.EntityID = agencyReport.Key.ID
+	err := event.emitState(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//checking contract existing
-	contract := Contract{}
-	if err := contract.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	if !ExistsIn(stub, &contract, "") {
-		compositeKey, _ := contract.ToCompositeKey(stub)
-		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	if err := LoadFrom(stub, &contract, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	if contract.Value.State != stateContractSigned {
-		message := fmt.Sprintf("invalid state of contract")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//invoking another chaincode for registering invoice
-	fcnName := "registerInvoice"
-	chaincodeName := "trade-finance-chaincode"
-	channelName := "common"
-	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
-
-	for _, oneArg := range args {
-		argsByte = append(argsByte, []byte(oneArg))
-	}
-
-	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
-	if response.Status >= 400 {
-		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
-		return pb.Response{Status: 400, Message: message}
+		return pb.Response{Status: 500, Message: message}
 	}
 
 	Notifier(stub, NoticeSuccessType)
@@ -1018,7 +1309,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	agencyReports := []AgencyReport{}
-	agencyReportsBytes, err := Query(stub, AgencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter, []string{})
+	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter, []string{})
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1036,6 +1327,179 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(resultBytes)
+}
+
+func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	shipments := []Shipment{}
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(shipmentsBytes, &shipments); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(shipments)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
+func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	event := Event{}
+	if err := event.FillFromCompositeKeyParts(args[:eventKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return pb.Response{Status: 404, Message: message}
+	}
+
+	if !ExistsIn(stub, &event, "") {
+		compositeKey, _ := event.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("event with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	result, err := json.Marshal(event)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	Logger.Debug("Result: " + string(result))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(result)
+}
+
+func (cc *SupplyChainChaincode) getDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	document := Document{}
+	if err := document.FillFromCompositeKeyParts(args[:documentKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return pb.Response{Status: 404, Message: message}
+	}
+
+	if !ExistsIn(stub, &document, "") {
+		compositeKey, _ := document.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("document with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &document, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	result, err := json.Marshal(document)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	Logger.Debug("Result: " + string(result))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(result)
+}
+
+func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) (bool, error) {
+
+	filterByDocumentHash := func(data LedgerData) bool {
+		entity, ok := data.(*Document)
+		if ok && entity.Value.DocumentHash == documentHash {
+			return true
+		}
+
+		return false
+	}
+
+	documents := []Document{}
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByDocumentHash, []string{})
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return false, errors.New(message)
+	}
+
+	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+		message := fmt.Sprintf("unable to unmarshal documents query result: %s", err.Error())
+		Logger.Error(message)
+		return false, errors.New(message)
+	}
+
+	if len(documents) != 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
+	eventAction, _ := stub.GetFunctionAndParameters()
+	eventID := uuid.Must(uuid.NewV4()).String()
+
+	if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return errors.New(message)
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	config := Config{}
+	if err := LoadFrom(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+
+		return errors.New(message)
+	}
+
+	event.Value.Creator = creator
+	event.Value.Timestamp = time.Now().UTC().Unix()
+
+	bytes, err := json.Marshal(event)
+	if err != nil {
+		message := fmt.Sprintf("Error marshaling: %s", err.Error())
+		return errors.New(message)
+	}
+	eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
+	if err = stub.SetEvent(eventName, bytes); err != nil {
+		message := fmt.Sprintf("Error setting event: %s", err.Error())
+		return errors.New(message)
+	}
+	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
+
+	if err := UpdateOrInsertIn(stub, event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	Logger.Debug("PutState")
+	if err = stub.PutState(eventIndex+"."+eventAction+"."+eventID, bytes); err != nil {
+		return err
+	}
+
+	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+
+	return nil
 }
 
 func main() {

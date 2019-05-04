@@ -13,7 +13,8 @@ import (
 var ledgerDataLogger = shim.NewLogger("LedgerData")
 
 const (
-	NoticeRuningType = iota
+	NoticeUnknown = iota
+	NoticeRuningType
 	NoticeSuccessType
 )
 
@@ -265,7 +266,6 @@ func CheckStateValidity(statesAutomaton map[int][]int, oldState, newState int) b
 }
 
 func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
-
 	fnc, _ := stub.GetFunctionAndParameters()
 
 	switch typeNotice {

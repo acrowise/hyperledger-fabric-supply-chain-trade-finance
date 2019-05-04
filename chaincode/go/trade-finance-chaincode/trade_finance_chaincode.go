@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
@@ -71,6 +72,8 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	} else if function == "listInvoices" {
 		// List all invoices
 		return cc.listInvoices(stub, args)
+	} else if function == "getEventPayload" {
+		return cc.getEventPayload(stub, args)
 	}
 	// (optional) add other query functions
 
@@ -152,6 +155,17 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 
 	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = invoiceIndex
+	event.Value.EntityID = invoice.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -252,6 +266,17 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = invoiceIndex
+	event.Value.EntityID = invoice.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -332,6 +357,17 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	//updating state in ledger
 	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = invoiceIndex
+	event.Value.EntityID = invoice.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -425,6 +461,17 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = invoiceIndex
+	event.Value.EntityID = invoice.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -514,6 +561,17 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = invoiceIndex
+	event.Value.EntityID = invoice.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -598,6 +656,17 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 
 	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = bidIndex
+	event.Value.EntityID = bid.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -693,6 +762,17 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = bidIndex
+	event.Value.EntityID = bid.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -763,6 +843,17 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 
 	if err := UpdateOrInsertIn(stub, &bidToUpdate, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = bidIndex
+	event.Value.EntityID = bid.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
@@ -874,6 +965,17 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = bidIndex
+	event.Value.EntityID = bid.Key.ID
+	err = event.emitState(stub)
+	if err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
 }
@@ -976,6 +1078,92 @@ func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, 
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(resultBytes)
+}
+
+func (cc *TradeFinanceChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	event := Event{}
+	if err := event.FillFromCompositeKeyParts(args[:eventKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return pb.Response{Status: 404, Message: message}
+	}
+
+	if !ExistsIn(stub, &event, "") {
+		compositeKey, _ := event.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("event with the key %s doesn't exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	result, err := json.Marshal(event)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+	Logger.Debug("Result: " + string(result))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(result)
+}
+
+func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
+	eventAction, _ := stub.GetFunctionAndParameters()
+	eventID := uuid.Must(uuid.NewV4()).String()
+
+	if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
+		message := fmt.Sprintf(err.Error())
+		return errors.New(message)
+	}
+
+	creator, err := GetCreatorOrganization(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	config := Config{}
+	if err := LoadFrom(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+
+		return errors.New(message)
+	}
+
+	event.Value.Creator = creator
+	event.Value.Timestamp = time.Now().UTC().Unix()
+
+	bytes, err := json.Marshal(event)
+	if err != nil {
+		message := fmt.Sprintf("Error marshaling: %s", err.Error())
+		return errors.New(message)
+	}
+	eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
+	if err = stub.SetEvent(eventName, bytes); err != nil {
+		message := fmt.Sprintf("Error setting event: %s", err.Error())
+		return errors.New(message)
+	}
+	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
+
+	if err := UpdateOrInsertIn(stub, event, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	Logger.Debug("PutState")
+	if err = stub.PutState(eventIndex+"."+eventAction+"."+eventID, bytes); err != nil {
+		return err
+	}
+
+	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+
+	return nil
 }
 
 func main() {
