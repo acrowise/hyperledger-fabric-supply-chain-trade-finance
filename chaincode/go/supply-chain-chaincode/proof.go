@@ -1,11 +1,9 @@
 package main
 
 import (
-	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/idemix"
 	"github.com/satori/go.uuid"
@@ -55,9 +53,9 @@ type ProofDataForVerification struct {
 	Disclosure      []byte                  `json:"disclosure"`
 	Ipk             *idemix.IssuerPublicKey `json:"ipk"`
 	Msg             []byte                  `json:"msg"`
-	AttributeValues []*FP256BN.BIG          `json:"attributeValues"`
+	AttributeValues [][]byte                `json:"attributeValues"`
 	RhIndex         int                     `json:"rhIndex"`
-	RevPk           *ecdsa.PublicKey        `json:"revPk"`
+	RevPk           string                  `json:"revPk"`
 	Epoch           int                     `json:"epoch"`
 }
 
