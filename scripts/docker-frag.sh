@@ -10,6 +10,8 @@ git clone git@gitlab.altoros.com:intprojects/fabric-rest-api-go.git
 
 cd fabric-rest-api-go
 
+git checkout dev
+
 # Compatibility reasons
 #git checkout 8457988087cf99a8335565b5df2695d4bc4c1e98
 
