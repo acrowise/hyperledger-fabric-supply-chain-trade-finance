@@ -794,7 +794,7 @@ elif [ "${MODE}" == "down" ]; then
 
 elif [ "${MODE}" == "clean" ]; then
   clean
-
+  removeArtifacts
 elif [ "${MODE}" == "generate" ]; then
   clean
   removeArtifacts
