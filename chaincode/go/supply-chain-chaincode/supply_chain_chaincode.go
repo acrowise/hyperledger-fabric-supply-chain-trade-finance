@@ -635,18 +635,78 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6		7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	State	Documents
+//0		1	2	3	4	5
+//ID	0	0	0	0	0
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	allowedUnits := map[string]bool{
+		Buyer: true,
+	}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	if !allowedUnits[orgUnit] {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking shipment exist
 	shipment := Shipment{}
+	if err := shipment.FillFromCompositeKeyParts(args[:shipmentKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &shipment, "") {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	shipmentToUpdate := Shipment{}
+	shipmentToUpdate.Key = shipment.Key
+	if err := LoadFrom(stub, &shipmentToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if shipmentToUpdate.Value.State != stateShipmentRequested {
+		message := fmt.Sprintf("unable confirm shipment with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	shipmentToUpdate.Value.State = stateShipmentConfirmed
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
 
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
-	err := event.emitState(stub)
+	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
