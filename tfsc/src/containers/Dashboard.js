@@ -9,7 +9,7 @@ import Nav from './Nav';
 import Orders from './Orders';
 import Invoices from './Invoices';
 import Contracts from './Contracts';
-import ShippingDocuments from './ShippingDocuments';
+import Shipments from './Shipments';
 import Proofs from './Proofs';
 import Filter from '../components/Filter';
 import Reports from './Reports';
@@ -77,7 +77,7 @@ const tabs = role => [
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
       <Filter statuses={[]}>
-        <ShippingDocuments role={role} />
+        <Shipments role={role} />
       </Filter>
     )
   },

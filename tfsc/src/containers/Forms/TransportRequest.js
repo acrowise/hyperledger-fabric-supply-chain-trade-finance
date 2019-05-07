@@ -16,15 +16,14 @@ import { formReducer } from '../../reducers';
 import ActionCompleted from '../../components/ActionCompleted';
 
 const initialState = {
-  shipFrom: '',
-  shipTo: '',
+  shipmentFrom: '',
+  shipmentTo: '',
   transport: '',
   description: ''
 };
 
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, dispatch] = useReducer(formReducer, initialState);
-  // const [formState, setFormState] = useState(defaultFormState);
   const [files, setFiles] = useState([]);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
   const [, uploadDocs] = post('uploadDocuments')();
@@ -57,89 +56,98 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
           && !shipmentRequestRes.complete
           && !shipmentRequestRes.data ? (
             <>
-            <div className="modal-header">
-              New shipment
-            </div>
-            <div className="modal-body">
-              {/*<Label>ContractId: {dialogIsOpen.item.contractId}</Label>*/}
-              <div className="row">
-              <div className="col-6">
-                {INPUTS.TRANSPORT_REQUEST.map(({
-                  label, type, placeholder, field
-                }) => (
-                  <FormGroup key={label} label={label}>
-                    <InputGroup
-                      type={type}
-                      placeholder={placeholder}
-                      value={formState[field]}
-                      onChange={({ target: { value } }) => dispatch({
-                        type: 'change',
-                        payload: {
-                          field,
-                          value
+              <div className="modal-header">New shipment</div>
+              <div className="modal-body">
+                {/* <Label>ContractId: {dialogIsOpen.item.contractId}</Label> */}
+                <div className="row">
+                  <div className="col-6">
+                    {INPUTS.TRANSPORT_REQUEST.map(({
+                      label, type, placeholder, field
+                    }) => (
+                      <FormGroup key={label} label={label}>
+                        <InputGroup
+                          type={type}
+                          placeholder={placeholder}
+                          value={formState[field]}
+                          onChange={({ target: { value } }) => dispatch({
+                            type: 'change',
+                            payload: {
+                              field,
+                              value
+                            }
+                          })
+                          }
+                        />
+                      </FormGroup>
+                    ))}
+                  </div>
+                  <div className="col-6">
+                    <Label>
+                      Description
+                      <TextArea
+                        growVertically={true}
+                        value={formState.description}
+                        onChange={({ target: { value } }) => dispatch({
+                          type: 'change',
+                          payload: {
+                            field: 'description',
+                            value
+                          }
+                        })
                         }
-                      })
-                      }
-                    />
-                  </FormGroup>
-                ))}
+                      />
+                    </Label>
+                    <Label>
+                      Packing List
+                      <FileUploader files={files} setFiles={setFiles} />
+                    </Label>
+                  </div>
+                </div>
               </div>
-              <div className="col-6">
-                <Label>
-                  Description
-                  <TextArea
-                    growVertically={true}
-                    value={formState.description}
-                    onChange={({ target: { value } }) => dispatch({
-                      type: 'change',
-                      payload: {
-                        field: 'description',
-                        value
-                      }
-                    })
-                    }
-                  />
-                </Label>
-                <FileUploader files={files} setFiles={setFiles} />
+              <div className="modal-footer">
+                <Button
+                  large
+                  intent="none"
+                  className="btn-modal btn-default"
+                  onClick={() => {
+                    setDialogOpenState({
+                      state: false,
+                      item: {}
+                    });
+                    dispatch({ type: 'reset', payload: initialState });
+                    setFiles([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  large
+                  intent="primary"
+                  className="btn-modal"
+                  onClick={() => {
+                    requestShipment({
+                      fcn: 'requestShipment',
+                      args: [
+                        '0',
+                        dialogIsOpen.item.id,
+                        formState.shipmentFrom,
+                        formState.shipmentTo,
+                        formState.transport,
+                        formState.description
+                      ]
+                    });
+                    dispatch({ type: 'reset', payload: initialState });
+                    const form = new FormData();
+                    files.forEach((f) => {
+                      form.append('file', f);
+                    });
+                    uploadDocs(form);
+                    setFiles([]);
+                  }}
+                >
+                  Request
+                </Button>
               </div>
-              </div>
-            </div>
-            <div className="modal-footer">
-              <Button
-                large
-                intent="none"
-                className="btn-modal btn-default"
-                onClick={() => {
-                  setDialogOpenState({
-                    state: false,
-                    item: {}
-                  });
-                  dispatch({ type: 'reset', payload: initialState });
-                  setFiles([]);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                large
-                intent="primary"
-                className="btn-modal"
-                onClick={() => {
-                  requestShipment(
-                    Object.assign({ contractId: dialogIsOpen.item.contractId }, formState)
-                  );
-                  dispatch({ type: 'reset', payload: initialState });
-                  const form = new FormData();
-                  files.forEach((f) => {
-                    form.append('file', f);
-                  });
-                  uploadDocs(form);
-                  setFiles([]);
-                }}
-              >
-                Request
-              </Button>
-            </div>
             </>
             ) : (
             <></>

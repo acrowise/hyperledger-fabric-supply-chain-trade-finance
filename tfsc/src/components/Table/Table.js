@@ -23,20 +23,27 @@ const Table = ({
         ) : (
           data.map((item, index) => (
             <tr key={index}>
-              {Object.keys(fields).map(j => (
-                <td
-                  onClick={() => {
-                    if (onSelect) {
-                      onSelect(item);
-                    }
-                  }}
-                  key={j.toString()}
-                >
-                  {j === 'dueDate' || j === 'paymentDate' || j === 'timestamp'
-                    ? new Date(item[j]).toLocaleDateString()
-                    : item[j]}
-                </td>
-              ))}
+              {Object.keys(fields).map((j) => {
+                let value = item[j];
+                if (j === 'dueDate' || j === 'paymentDate' || j === 'timestamp') {
+                  value = new Date(item[j]).toLocaleDateString();
+                }
+                if (j === 'id' || j === 'contractId') {
+                  value = item[j].slice(0, 7).toUpperCase();
+                }
+                return (
+                  <td
+                    onClick={() => {
+                      if (onSelect) {
+                        onSelect(item);
+                      }
+                    }}
+                    key={j.toString()}
+                  >
+                    {value}
+                  </td>
+                );
+              })}
               {actions ? <td>{actions(item)}</td> : <></>}
             </tr>
           ))

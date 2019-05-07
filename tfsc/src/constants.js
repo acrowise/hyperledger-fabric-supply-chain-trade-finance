@@ -36,6 +36,10 @@ export const STATUSES = {
     3: 'For Sale',
     4: 'Sold',
     5: 'Removed'
+  },
+  SHIPMENT: {
+    1: 'Requested',
+    2: 'Confirmed'
   }
 };
 
@@ -72,13 +76,13 @@ export const INPUTS = {
       label: 'Ship From',
       placeholder: 'Placeholder text',
       type: 'text',
-      field: 'shipFrom'
+      field: 'shipmentFrom'
     },
     {
       label: 'Ship To',
       placeholder: 'Placeholder text',
       type: 'text',
-      field: 'shipTo'
+      field: 'shipmentTo'
     },
     {
       label: 'Transport',
@@ -144,10 +148,10 @@ export const REVIEWERS = [
 
 export const TABLE_MAP = {
   SHIPMENTS: {
-    shipmentId: 'Shipment Id',
+    id: 'Shipment Id',
     contractId: 'Contract ID',
-    shipFrom: 'From',
-    shipTo: 'To',
+    shipmentFrom: 'From',
+    shipmentTo: 'To',
     transport: 'Transport',
     state: 'Status'
   },
@@ -157,7 +161,7 @@ export const TABLE_MAP = {
     consigneeName: 'Consignee',
     totalDue: 'Total Due',
     paymentDate: 'Payment Date',
-    lastUpdated: 'Last Updated',
+    // timestamp: 'Last Updated',
     dueDate: 'Due Date',
     destination: 'Destination',
     quantity: 'Quantity',

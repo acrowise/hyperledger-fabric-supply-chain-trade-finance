@@ -71,8 +71,8 @@ const HISTORY = [
 ];
 
 const ShipmentDetailPage = (props) => {
-  const [data, loading] = useFetch('documents');
-  const [proofs, loadingProofs, setData] = useFetch('proofs');
+  // const [data, loading] = useFetch('documents');
+  const [proofs, loadingProofs, setData] = useFetch('listProofs');
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
@@ -103,16 +103,19 @@ const ShipmentDetailPage = (props) => {
         setDialogOpenState={setCsDialogOpenState}
         shipment={props}
       />
-      <GenerateProofForm
-        dialogIsOpen={gpDialogIsOpen}
-        setDialogOpenState={setGpDialogOpenState}
-      />
+      <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
       <ConfirmDeliveryForm
         dialogIsOpen={cdDialogIsOpen}
         setDialogOpenState={setCdDialogOpenState}
         shipment={props}
       />
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div
+        style={{ display: 'flex', flexDirection: 'row' }}
+        onClick={() => {
+          props.showShipmentDetail(null);
+          props.setContent(false);
+        }}
+      >
         <Icon icon="arrow-left" />
         <p>Back</p>
       </div>
@@ -137,6 +140,7 @@ const ShipmentDetailPage = (props) => {
           {props.role === 'transporter' && props.state === 'Requested' ? (
             <div>
               <Button
+                intent="primary"
                 onClick={() => {
                   setCsDialogOpenState(true);
                 }}
@@ -153,21 +157,17 @@ const ShipmentDetailPage = (props) => {
                 <tr>
                   <th>Ship From</th>
                   <th>Ship To</th>
-                  <th>Quantity</th>
                   <th>Due Date</th>
-                  <th>Transporter</th>
                   <th>Vehicle/Transport</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td>{props.shipFrom}</td>
-                  <td>{props.shipTo}</td>
-                  <td>1000</td>
+                  <td>{props.shipmentFrom}</td>
+                  <td>{props.shipmentTo}</td>
                   <td>{new Date().toISOString()}</td>
-                  <td>Company Name</td>
-                  <td>Air</td>
+                  <td>{props.transport}</td>
                   <td>{props.state}</td>
                 </tr>
               </tbody>
@@ -179,7 +179,7 @@ const ShipmentDetailPage = (props) => {
         </div>
 
         <div className="layout-aside">
-          {props.state === 'Confirmed' && (
+          {props.state === 'Confirmed' && props.role === 'supplier' && (
             <Button
               onClick={(e) => {
                 setGpDialogOpenState(true);
@@ -202,16 +202,16 @@ const ShipmentDetailPage = (props) => {
               <h4>Documents</h4>
             </div>
             <div className="sidebar-panel-body">
-              {loading ? (
+              {/* {loading ? (
                 <div>Loading...</div>
-              ) : (
-                data.map(d => (
-                  <div key={data} style={{ display: 'flex', flexDirection: 'row' }}>
+              ) : ( */}
+              {props.documents
+                && props.documents.map((doc, i) => (
+                  <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row' }}>
                     <Icon icon="document" />
-                    <div style={{ marginLeft: '10px' }}>{d}</div>
+                    <div style={{ marginLeft: '10px' }}>{doc}</div>
                   </div>
-                ))
-              )}
+                ))}
             </div>
           </div>
         </div>

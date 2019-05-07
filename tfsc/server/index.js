@@ -15,100 +15,66 @@ const API_PORT = process.env.API_PORT || 4002;
 const ORDERS = {
   result: []
 };
-const testInvoicId = uuid();
+
 const INVOICES = {
   result: [
-    {
-      key: {
-        id: testInvoicId
-      },
-      value: {
-        debtor: 'a',
-        beneficiary: 'b',
-        totalDue: '123',
-        dueDate: '12.12.19',
-        owner: 'b',
-        state: 1
-      }
-    }
+    // {
+    //   key: {
+    //     id: uuid()
+    //   },
+    //   value: {
+    //     debtor: 'a',
+    //     beneficiary: 'b',
+    //     totalDue: '123',
+    //     dueDate: new Date().getTime(),
+    //     owner: 'b',
+    //     state: 1
+    //   }
+    // }
   ]
 };
 const BIDS = {
   result: []
 };
-const CONTRACTS = {
-  result: [
-    {
-      key: {
-        id: 'contract-id'
-      },
-      value: {
-        consignorName: 'Buyer',
-        consigneeName: 'Supplier',
-        totalDue: 'totalDue',
-        quantity: 'quantity',
-        dueDate: new Date().getTime(),
-        state: 'New',
-        destination: 'destination',
-        dateCreated: new Date().toISOString(),
-        lastUpdated: new Date().toISOString(),
-        documents: 'documents hashes'
-      }
-    }
-  ]
-};
-const SHIPMENTS = [
-  {
-    shipmentId: 'test-shipment-id',
-    contractId: 'contract-id',
-    state: 'Requested',
-    documents: [
-      'Packing list',
-      'Phytosanitory certificate',
-      'Commercial Invoices',
-      'Certificate of origin',
-      'Bill of Landing',
-      'Export License'
-    ]
-  }
-];
+const CONTRACTS = { result: [] };
+const SHIPMENTS = { result: [] };
 const PROOFS = [
-  {
-    reportId: 'FDDSA',
-    shipmentId: 'GSNJF',
-    ProofId: 'MCDSEDF',
-    state: 'Generated',
-    contractId: 'contract-id',
-    consignore: 'Buyer',
-    consignee: 'Supplier',
-    documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-  },
-  {
-    reportId: 'ASDADSA',
-    shipmentId: 'LLDSF',
-    ProofId: 'KDSAD',
-    state: 'Validated',
-    contractId: 'contract-id',
-    consignore: 'Buyer',
-    consignee: 'Supplier',
-    documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-  }
+  // {
+  //   reportId: 'FDDSA',
+  //   shipmentId: 'GSNJF',
+  //   ProofId: 'MCDSEDF',
+  //   state: 'Generated',
+  //   contractId: 'contract-id',
+  //   consignore: 'Buyer',
+  //   consignee: 'Supplier',
+  //   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+  // },
+  // {
+  //   reportId: 'ASDADSA',
+  //   shipmentId: 'LLDSF',
+  //   ProofId: 'KDSAD',
+  //   state: 'Validated',
+  //   contractId: 'contract-id',
+  //   consignore: 'Buyer',
+  //   consignee: 'Supplier',
+  //   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+  // }
 ];
 const DOCS = [];
 const REPORTS = {
   result: [
-    {
-      reportId: 'FDDSA',
-      shipmentId: 'GSNJF',
-      ProofId: 'MCDSEDF',
-      state: 'Generated'
-    },
-    {
-      reportId: 'ASDADSA',
-      shipmentId: 'LLDSF',
-      ProofId: 'KDSAD',
-      state: 'Validated'
-    }
+    // {
+    //   reportId: 'FDDSA',
+    //   shipmentId: 'GSNJF',
+    //   ProofId: 'MCDSEDF',
+    //   state: 'Generated'
+    // },
+    // {
+    //   reportId: 'ASDADSA',
+    //   shipmentId: 'LLDSF',
+    //   ProofId: 'KDSAD',
+    //   state: 'Validated'
+    // }
   ]
 };
 
@@ -163,7 +129,7 @@ router.get('/listReports', (_, res) => {
   res.json(REPORTS);
 });
 
-router.post('/uploadDocuments', upload.array('file'), (req, res) => {
+router.post('/uploadDocumentsadd', upload.array('file'), (req, res) => {
   const { files } = req;
 
   files.forEach(f => DOCS.push(f.originalname));
@@ -179,7 +145,7 @@ router.post('/generateProof', (req, res) => {
   const proof = Object.assign(req.body, {
     state: 'Generated',
     proofId: id,
-    dateCreated: new Date().toISOString()
+    dateCreated: new Date().getTime()
   });
   PROOFS.push(proof);
   res.send('ok');
@@ -193,15 +159,15 @@ router.post('/placeOrder', (req, res) => {
       id
     },
     value: {
-      state: 1,
-      dateCreated: new Date().toISOString(),
-      productName: req.body.args[0],
-      quantity: req.body.args[1],
-      price: req.body.args[2],
-      destination: req.body.args[3],
-      dueDate: req.body.args[4],
-      paymentDate: req.body.args[5],
-      buyerId: req.body.args[6]
+      state: 0,
+      dateCreated: new Date().getTime(),
+      productName: req.body.args[1],
+      quantity: req.body.args[2],
+      price: req.body.args[3],
+      destination: req.body.args[4],
+      dueDate: req.body.args[5],
+      paymentDate: req.body.args[6],
+      buyerId: req.body.args[7]
     },
     type: 'place'
   };
@@ -211,25 +177,33 @@ router.post('/placeOrder', (req, res) => {
 });
 
 router.post('/requestShipment', (req, res) => {
-  const id = nanoid();
-  res.send('ok');
+  const id = uuid();
 
   const shipment = Object.assign(req.body, {
-    shipmentId: id,
-    contractId: req.body.contractId,
-    state: 'Requested',
-    documents: [
-      'Packing list',
-      'Phytosanitory certificate',
-      'Commercial Invoices',
-      'Certificate of origin',
-      'Bill of Landing',
-      'Export License'
-    ]
+    key: {
+      id
+    },
+    value: {
+      state: 1,
+      contractId: req.body.args[1],
+      shipmentFrom: req.body.args[2],
+      shipmentTo: req.body.args[3],
+      transport: req.body.args[4],
+      description: req.body.args[5],
+      documents: [
+        'Packing list',
+        'Phytosanitory certificate',
+        'Commercial Invoices',
+        'Certificate of origin',
+        'Bill of Landing',
+        'Export License'
+      ]
+    }
   });
-  SHIPMENTS.push(shipment);
+  SHIPMENTS.result.push(shipment);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentRequested' }))));
+  res.end('ok');
 });
 
 router.post('/confirmDelivery', (req, res) => {
@@ -245,7 +219,7 @@ router.post('/confirmDelivery', (req, res) => {
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
 
-  const shipment = SHIPMENTS.find(i => i.shipmentId === req.body.shipmentId);
+  const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
   shipment.state = 'Delivered';
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentDelivered' }))));
 
@@ -253,11 +227,11 @@ router.post('/confirmDelivery', (req, res) => {
 });
 
 router.post('/confirmShipment', (req, res) => {
-  res.send('ok');
-  const shipment = SHIPMENTS.find(i => i.shipmentId === req.body.shipmentId);
+  const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.args[0]);
 
-  shipment.state = 'Confirmed';
+  shipment.value.state = 2;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentConfirmed' }))));
+  res.end('ok');
 });
 
 router.post('/validateProof', (req, res) => {
@@ -268,47 +242,68 @@ router.post('/validateProof', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'validateProof' }))));
 });
 
-router.post('/acceptOrder', async (req, res) => {
-  const order = ORDERS.result.find(i => i.id === req.body.args[0]);
+const registerInvoice = ({ totalDue, dueDate }) => {
+  const id = uuid();
+  INVOICES.result.push({
+    key: { id },
+    value: {
+      debtor: 'a',
+      beneficiary: 'b',
+      totalDue,
+      dueDate,
+      owner: 'b',
+      state: 1
+    }
+  });
+};
 
-  order.state = 'Accepted';
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'updateOrder' }))));
+router.post('/acceptOrder', async (req, res) => {
+  const order = ORDERS.result.find(i => i.key.id === req.body.args[0]);
+
+  order.value.state = 1;
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'acceptOrder' }))));
   const contract = {
-    contractId: order.orderId,
-    consignorName: 'Buyer',
-    consigneeName: 'Supplier',
-    totalDue: '123',
-    quantity: order.quantity,
-    dueDate: new Date().getTime(),
-    state: 'New',
-    destination: order.destination,
-    dateCreated: new Date().toISOString(),
-    lastUpdated: new Date().toISOString(),
-    documents: 'documents hashes'
+    key: {
+      id: order.key.id
+    },
+    value: {
+      consignorName: 'Buyer',
+      consigneeName: 'Supplier',
+      totalDue: '123',
+      quantity: order.quantity,
+      dueDate: new Date().getTime(),
+      state: 'New',
+      destination: order.destination,
+      dateCreated: new Date().getTime(),
+      timestamp: new Date().getTime(),
+      documents: ['dasasd', 'asdas', 'asdasd']
+    }
   };
 
-  try {
-    const result = await axios.post(
-      'http://localhost:4002/api/channels/common/chaincodes/trade-finance-chaincode',
-      {
-        fcn: 'registerInvoice',
-        args: [
-          order.orderId, // contractId
-          'a',
-          'b',
-          contract.totalDue,
-          contract.dueDate.toString(),
-          '0',
-          'b'
-        ]
-      }
-    );
-    console.log(result.data);
-  } catch (e) {
-    console.error(e);
-  }
+  registerInvoice(contract);
 
-  CONTRACTS.push(contract);
+  // try {
+  //   const result = await axios.post(
+  //     'http://localhost:4002/api/channels/common/chaincodes/trade-finance-chaincode',
+  //     {
+  //       fcn: 'registerInvoice',
+  //       args: [
+  //         order.orderId, // contractId
+  //         'a',
+  //         'b',
+  //         contract.totalDue,
+  //         contract.dueDate,
+  //         '0',
+  //         'b'
+  //       ]
+  //     }
+  //   );
+  //   console.log(result.data);
+  // } catch (e) {
+  //   console.error(e);
+  // }
+
+  CONTRACTS.result.push(contract);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'invoiceRegistered' }))));

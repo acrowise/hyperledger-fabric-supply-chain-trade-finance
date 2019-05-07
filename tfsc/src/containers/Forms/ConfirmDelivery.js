@@ -29,8 +29,8 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           {/*<p>ShipmentId: {shipment.shipmentId}</p>*/}
           {/*<p>ContractId: {shipment.contractId}</p>*/}
-          {/*<p>From: {shipment.shipFrom}</p>*/}
-          {/*<p>To: {shipment.shipTo}</p>*/}
+          {/*<p>From: {shipment.shipmentFrom}</p>*/}
+          {/*<p>To: {shipment.shipmentTo}</p>*/}
           {/*<p>Transport: {shipment.transport}</p>*/}
           {/*<p>Description: {shipment.description}</p>*/}
 

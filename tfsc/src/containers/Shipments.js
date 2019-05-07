@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from '@blueprintjs/core';
+// import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import { useFetch } from '../hooks';
@@ -9,31 +9,51 @@ import ShipmentDetailPage from './ShipmentDetailPage';
 
 import Table from '../components/Table/Table';
 
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
 
-const ShippingDocuments = ({ role, content, setContent }) => {
-  const [selectedShipment, setSelectedShipment] = useState({});
+const Shipments = ({ role, content, setContent }) => {
+  // const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
-
   const [shipments, loading, setData] = useFetch('shipments');
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'shipmentConfirmed') {
-      const newState = shipments.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.shipmentId === notification.shipmentId);
+      const newState = shipments.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
       newState[itemToUpdateIndex] = notification;
       setData(newState);
+      if (
+        shipment
+        && shipment.state !== shipments.result.find(i => i.key.id === shipment.id).state
+      ) {
+        showShipmentDetail(
+          Object.assign({}, notification, {
+            id: notification.key.id,
+            state: STATUSES.SHIPMENT[notification.value.state]
+          })
+        );
+      }
     }
 
     if (notification.type === 'shipmentRequested') {
-      const newState = shipments.concat(notification);
+      const newState = shipments.result.concat(notification);
       setData(newState);
     }
   };
 
   useSocket('notification', onNotification);
+
+  let dataToDisplay = shipments.result;
+
+  if (dataToDisplay) {
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+  }
+
+  if (loading) {
+    return <>Loading...</>;
+  }
 
   return shipment ? (
     <ShipmentDetailPage
@@ -46,7 +66,7 @@ const ShippingDocuments = ({ role, content, setContent }) => {
     <div>
       <Table
         fields={TABLE_MAP.SHIPMENTS}
-        data={shipments}
+        data={dataToDisplay}
         onSelect={(item) => {
           setContent(item);
         }}
@@ -55,8 +75,8 @@ const ShippingDocuments = ({ role, content, setContent }) => {
   );
 };
 
-export default ShippingDocuments;
+export default Shipments;
 
-ShippingDocuments.propTypes = {
+Shipments.propTypes = {
   role: PropTypes.string
 };

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Overlay, Card } from '@blueprintjs/core';
+import {
+  Button, Overlay, Card, Label, InputGroup, TextArea
+} from '@blueprintjs/core';
 
 import FileUploader from '../../components/FileUploader';
 
@@ -23,6 +25,14 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
     }
   }
 
+  const fields = {
+    id: 'Shipment ID',
+    contractId: 'Contract ID',
+    shipmentFrom: 'From',
+    shipmentTo: 'To',
+    transport: 'Transport'
+  };
+
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -33,24 +43,35 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
           paddingTop: '15vh'
         }}
       >
-        <Card className="modal" style={{ width: '500px' }}>
+        <Card className="modal" style={{ width: '720px' }}>
           <ActionCompleted res={shipmentRes} action="Shipment Confirmed" result="Accepted" />
           {!shipmentRes.pending && !shipmentRes.complete && !shipmentRes.data ? (
             <>
-              {/*<p>ShipmentId: {shipment.shipmentId}</p>*/}
-              {/*<p>ContractId: {shipment.contractId}</p>*/}
-              {/*<p>From: {shipment.shipFrom}</p>*/}
-              {/*<p>To: {shipment.shipTo}</p>*/}
-              {/*<p>Transport: {shipment.transport}</p>*/}
-              {/*<p>Description: {shipment.description}</p>*/}
-              {/*<p>Upload Bill of Lading</p>*/}
-
-            <div className="modal-header">
-              Confirm Shipment
-            </div>
+              <div className="modal-header">Confirm Shipment</div>
               <div className="modal-body">
-                <FileUploader files={files} setFiles={setFiles} />
+                <div className="row">
+                  {Object.keys(fields).map(field => (
+                    <Label className="col-6" key={field}>
+                      {fields[field]}
+                      <InputGroup type="text" value={shipment[field]} disabled />
+                    </Label>
+                  ))}
+                  <Label className="col-6">
+                    Description
+                    <TextArea
+                      growVertically={true}
+                      large={true}
+                      value={shipment.description}
+                      disabled
+                    />
+                  </Label>
+                  <Label className="col-6">
+                    Upload Bill of Lading
+                    <FileUploader files={files} setFiles={setFiles} />
+                  </Label>
+                </div>
               </div>
+
               <div className="modal-footer">
                 <Button
                   large
@@ -67,7 +88,10 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   intent="primary"
                   className="btn-modal"
                   onClick={() => {
-                    confirmShipment({ shipmentId: shipment.shipmentId });
+                    confirmShipment({
+                      fcn: 'confirmShipment',
+                      args: [shipment.id]
+                    });
                     const form = new FormData();
                     files.forEach((f) => {
                       form.append('file', f);

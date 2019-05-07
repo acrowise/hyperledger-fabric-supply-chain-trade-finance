@@ -7,7 +7,7 @@ import { useFetch } from '../hooks';
 import { post } from '../helper/api';
 
 import Table from '../components/Table/Table';
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
 
 const Orders = ({ role, filter, search }) => {
   const [data, loading, setData] = useFetch('listOrders');
@@ -23,7 +23,7 @@ const Orders = ({ role, filter, search }) => {
 
     if (notification.type === 'acceptOrder') {
       const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.orderId === notification.orderId);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
       newState[itemToUpdateIndex] = notification;
       setData({ result: newState });
     }
@@ -43,7 +43,7 @@ const Orders = ({ role, filter, search }) => {
   }
 
   if (filteredData) {
-    filteredData = filteredData.map(i => Object.assign({}, { id: i.key.id }, i.value));
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.ORDER[i.value.state] }));
   }
 
   return loading ? (
@@ -53,7 +53,7 @@ const Orders = ({ role, filter, search }) => {
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
-        actions={item => (role === 'supplier' && item.state === 1 ? (
+        actions={item => (role === 'supplier' && item.state === 'New' ? (
             <div className="nowrap">
               <Button
                 onClick={() => {
