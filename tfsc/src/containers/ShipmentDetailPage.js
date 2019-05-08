@@ -15,37 +15,32 @@ const EVENTS = [
   {
     id: 1,
     date: '10 april 2019',
-    details: {
-      text: 'Details 1 Details 1 Details 1 Details 1 Details 1 Details 1 Details 1 Details 1'
-    }
+    action: 'ShipmentConfirmed',
+    user: 'Supplier'
   },
   {
     id: 2,
     date: '20 april 2019',
-    details: {
-      text: 'Details 2 Details 2 Details 2 Details 2 Details 2 Details 2 Details 2 Details 2'
-    }
+    action: 'ShipmentConfirmed',
+    user: 'Supplier'
   },
   {
     id: 3,
     date: '23 april 2019',
-    details: {
-      text: 'Details 3 Details 3 Details 3 Details 3 Details 3 Details 3 v Details 3'
-    }
+    action: 'ShipmentConfirmed',
+    user: 'Supplier'
   },
   {
     id: 4,
     date: '25 april 2019',
-    details: {
-      text: 'Details 4 Details 4Details 4 Details 4 Details 4 Details 4 Details 4 Details 4'
-    }
+    action: 'ShipmentConfirmed',
+    user: 'Supplier'
   },
   {
     id: 5,
     date: '28 april 2019',
-    details: {
-      text: 'Details 5 Details 5 Details 5 Details 5 Details 5 Details 5 Details 5'
-    }
+    action: 'ShipmentConfirmed',
+    user: 'Supplier'
   }
 ];
 
@@ -122,17 +117,18 @@ const ShipmentDetailPage = (props) => {
 
       <div className="layout-container">
         <div className="layout-main">
-          <h3>Shipment Number: FDFJK53</h3>
+          <h3>Shipment Number: {props.id.slice(0, 7).toUpperCase()}</h3>
           {props.role === 'buyer' ? (
             <div>
               <Button
+                intent="primary"
                 onClick={() => {
                   setCdDialogOpenState(true);
                 }}
               >
                 Confirm Delivery
               </Button>
-              <Button>Cancel Delivery</Button>
+              {/* <Button>Cancel Delivery</Button> */}
             </div>
           ) : (
             <></>

@@ -40,6 +40,15 @@ export const STATUSES = {
   SHIPMENT: {
     1: 'Requested',
     2: 'Confirmed'
+  },
+  PROOF: {
+
+  },
+  REPORT: {
+
+  },
+  BID: {
+
   }
 };
 
@@ -197,13 +206,18 @@ export const TABLE_MAP = {
     beneficiary: 'Beneficiary',
     totalDue: 'Total',
     dueDate: 'Due Date',
-    state: 'Status',
-    owner: 'Owner'
+    owner: 'Owner',
+    state: 'Status'
   },
   REPORTS: {
     shipmentId: 'Shipment ID',
     proofId: 'Proof ID',
     reportId: 'Report ID',
     state: 'Status'
+  },
+  SHIPMENT_DETAIL: {
+    date: 'Date',
+    action: 'Action',
+    user: 'User'
   }
 };

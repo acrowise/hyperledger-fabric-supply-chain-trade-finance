@@ -67,7 +67,7 @@ const Orders = ({ role, filter, search }) => {
               >
                 Accept
               </Button>
-              <Button intent="danger">Decline!</Button>
+              <Button intent="danger">Decline</Button>
             </div>
         ) : (
             <></>

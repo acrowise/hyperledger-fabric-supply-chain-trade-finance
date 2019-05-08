@@ -61,7 +61,7 @@ const Invoices = ({ role, filter, search }) => {
   }
 
   // FIXME:
-  dataToDisplay = dataToDisplay.map(i => Object.assign({}, { id: i.key.id }, i.value));
+  dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
 
   return loading ? (
     <>Loading...</>
@@ -71,7 +71,7 @@ const Invoices = ({ role, filter, search }) => {
       data={dataToDisplay}
       actions={item => (
         <div>
-          {role === 'buyer' && item.state === 1 ? (
+          {role === 'buyer' && item.state === 'Issued' ? (
             <div className="nowrap">
               <Button
                 style={{ marginRight: '5px' }}
@@ -90,7 +90,7 @@ const Invoices = ({ role, filter, search }) => {
           ) : (
             <></>
           )}
-          {role === 'supplier' && item.state === 2 ? (
+          {role === 'supplier' && item.state === 'Signed' ? (
             <div>
               <Button
                 style={{ marginRight: '5px' }}
@@ -103,7 +103,7 @@ const Invoices = ({ role, filter, search }) => {
                       'a', // Buyer Id
                       'b', // SupplierId
                       '123.65', // Total Due,
-                      item.dueDate.toString(),
+                      item.dueDate,
                       '0',
                       'b'
                     ]
@@ -136,12 +136,12 @@ const Invoices = ({ role, filter, search }) => {
           ) : (
             <></>
           )}
-          {(role === 'factor-1' || role === 'factor-2') && item.state === 3 ? (
+          {(role === 'factor-1' || role === 'factor-2') && item.state === 'For Sale' ? (
             <div>
               <BidForm
                 dialogIsOpen={invoiceBidDialogIsOpen}
                 setDialogOpenState={setInvoiceBidDialogOpenState}
-                invoiceId={item.key.id}
+                invoiceId={item.id}
                 role={role}
                 rate={item.rate}
               />

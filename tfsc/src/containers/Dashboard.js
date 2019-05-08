@@ -76,7 +76,7 @@ const tabs = role => [
     name: 'Shipments',
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
-      <Filter statuses={[]}>
+      <Filter statuses={['Requested', 'Confirmed']}>
         <Shipments role={role} />
       </Filter>
     )
@@ -101,9 +101,9 @@ const tabs = role => [
   },
   {
     name: 'Bids',
-    actors: ['factor-1', 'factor-2'],
+    actors: ['factor-1', 'factor-2', 'supplier'],
     panel: (
-      <Filter statuses={['Accepted']}>
+      <Filter statuses={['Offered', 'Accepted', 'Cancelled']}>
         <Bids role={role} />
       </Filter>
     )

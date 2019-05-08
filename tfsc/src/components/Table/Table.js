@@ -12,7 +12,7 @@ const Table = ({
           {Object.keys(fields).map(i => (
             <th key={i.toString()}>{fields[i]}</th>
           ))}
-          {actions ? <th>Action</th> : <></>}
+          {actions ? <th></th> : <></>}
         </tr>
       </thead>
       <tbody>

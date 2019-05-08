@@ -5,10 +5,10 @@ export const notifications = {
   shipmentRequested: 'shipments',
   shipmentConfirmed: 'shipments',
   validateProof: 'proofs',
+  generateProof: 'proofs',
   contractCreated: 'contracts',
   placeInvoice: 'invoices',
-  placeInvoiceForTrade: 'invoices',
-  placeBid: 'invoices',
-  acceptBid: 'invoices',
-  acceptInvoice: 'invoices'
+  acceptInvoice: 'invoices',
+  placeBid: 'bids',
+  acceptBid: 'bids',
 };

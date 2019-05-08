@@ -6,6 +6,8 @@ import './timeline.scss';
 
 import Table from '../Table/Table';
 
+import { TABLE_MAP } from '../../constants';
+
 const TimelineItem = ({
   id, date, isSelected, timelineItemClickHandler
 }) => (
@@ -17,7 +19,9 @@ const TimelineItem = ({
   </div>
 );
 
-const TimelineDetails = ({ event, selectedId }) => (selectedId && event.id === selectedId && <h2>{event.details.text}</h2>) || null;
+const TimelineDetails = ({ event }) => (
+  <Table fields={TABLE_MAP.SHIPMENT_DETAIL} data={[event]} />
+);
 
 const Timeline = ({ events }) => {
   const [selectedId, setSelected] = useState(events[0].id);
@@ -55,10 +59,9 @@ const Timeline = ({ events }) => {
         <div className="timeline-future" />
       </div>
       <div className="timeline-details">
-        {events
-          && events.map(event => (
-            <TimelineDetails key={event.id} event={event} selectedId={selectedId} />
-          ))}
+        {events && (
+          <TimelineDetails event={events.find(i => i.id === selectedId)} selectedId={selectedId} />
+        )}
       </div>
     </div>
   );

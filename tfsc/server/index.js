@@ -16,50 +16,31 @@ const ORDERS = {
   result: []
 };
 
-const INVOICES = {
-  result: [
-    // {
-    //   key: {
-    //     id: uuid()
-    //   },
-    //   value: {
-    //     debtor: 'a',
-    //     beneficiary: 'b',
-    //     totalDue: '123',
-    //     dueDate: new Date().getTime(),
-    //     owner: 'b',
-    //     state: 1
-    //   }
-    // }
-  ]
-};
-const BIDS = {
-  result: []
-};
+const INVOICES = { result: [] };
+const BIDS = { result: [] };
 const CONTRACTS = { result: [] };
 const SHIPMENTS = { result: [] };
-const PROOFS = [
-  // {
-  //   reportId: 'FDDSA',
-  //   shipmentId: 'GSNJF',
-  //   ProofId: 'MCDSEDF',
-  //   state: 'Generated',
-  //   contractId: 'contract-id',
-  //   consignore: 'Buyer',
-  //   consignee: 'Supplier',
-  //   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-  // },
-  // {
-  //   reportId: 'ASDADSA',
-  //   shipmentId: 'LLDSF',
-  //   ProofId: 'KDSAD',
-  //   state: 'Validated',
-  //   contractId: 'contract-id',
-  //   consignore: 'Buyer',
-  //   consignee: 'Supplier',
-  //   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-  // }
-];
+const PROOFS = { result: [] };
+// {
+//   reportId: 'FDDSA',
+//   shipmentId: 'GSNJF',
+//   ProofId: 'MCDSEDF',
+//   state: 'Generated',
+//   contractId: 'contract-id',
+//   consignore: 'Buyer',
+//   consignee: 'Supplier',
+//   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+// },
+// {
+//   reportId: 'ASDADSA',
+//   shipmentId: 'LLDSF',
+//   ProofId: 'KDSAD',
+//   state: 'Validated',
+//   contractId: 'contract-id',
+//   consignore: 'Buyer',
+//   consignee: 'Supplier',
+//   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
+// }
 const DOCS = [];
 const REPORTS = {
   result: [
@@ -141,15 +122,17 @@ router.get('/documents', (req, res) => {
 });
 
 router.post('/generateProof', (req, res) => {
-  const id = nanoid();
-  const proof = Object.assign(req.body, {
-    state: 'Generated',
-    proofId: id,
-    dateCreated: new Date().getTime()
-  });
-  PROOFS.push(proof);
-  res.send('ok');
+  const id = uuid();
+  const proof = {
+    key: { id },
+    value: Object.assign(req.body, {
+      state: 1,
+      dateCreated: new Date().getTime()
+    })
+  };
+  PROOFS.result.push(proof);
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'generateProof' }))));
+  res.end('ok');
 });
 
 router.post('/placeOrder', (req, res) => {
@@ -235,11 +218,26 @@ router.post('/confirmShipment', (req, res) => {
 });
 
 router.post('/validateProof', (req, res) => {
-  res.send('ok');
-  const proof = PROOFS.find(i => i.proofId === req.body.proofId);
+  const proof = PROOFS.result.find(i => i.key.id === req.body.args[0]);
 
-  proof.state = 'Validated';
+  proof.value.state = 2;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'validateProof' }))));
+
+  REPORTS.result.push({
+    key: {
+      id: uuid()
+    },
+    value: {
+      shipmentId: '',
+      proofId: '',
+      contractId: '',
+      consignee: '',
+      consignor: '',
+      state: 1,
+      description: ''
+    }
+  });
+  res.end('ok');
 });
 
 const registerInvoice = ({ totalDue, dueDate }) => {
@@ -310,13 +308,13 @@ router.post('/acceptOrder', async (req, res) => {
   res.send('ok');
 });
 
-router.post('/placeInvoiceForTrade', (req, res) => {
+router.post('/placeInvoice', (req, res) => {
   res.send('ok');
 
   const invoice = INVOICES.result.find(i => i.key.id === req.body.args[0]);
 
   invoice.value.state = 3;
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoiceForTrade' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoice' }))));
 });
 
 router.post('/placeBid', (req, res) => {
