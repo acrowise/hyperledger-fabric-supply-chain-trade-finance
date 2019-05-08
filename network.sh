@@ -83,6 +83,9 @@ fi
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
 
+: ${SUPPLY_CHAIN_POLICY=$(printf "AND(\'%sMSP.member\')" $ORG1)}
+: ${TRADE_FINANCE_POLICY=$(printf "AND(\'%sMSP.member\')" $ORG1)}
+
 : ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT $CHAINCODE_TRADE_FINANCE_NAME)}
 : ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT $CHAINCODE_SUPPLY_CHAIN_NAME)}
 
@@ -444,6 +447,7 @@ function instantiateChaincode () {
     org=$1
     channel_names=($2)
     n=$3
+    p=$6
     i=$4
     cc=$5
     if [ -z "$cc" ]; then
@@ -457,7 +461,7 @@ function instantiateChaincode () {
     for channel_name in ${channel_names[@]}; do
         info "instantiating chaincode $n on $channel_name by $org using $f with $i"
         #  peer chaincode instantiate -n reference -v 1.0 -c '{"Args":["Init","a","100","b","100"]}' -o orderer.example.com:7050 -C common  --collections-config $GOPATH/src/reference/collections_config.json --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt
-        c="CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode instantiate -n $n -v ${CHAINCODE_VERSION} -c '$i' -o orderer.$DOMAIN:7050 -C $channel_name  $cc --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
+        c="CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode instantiate -n $n -v ${CHAINCODE_VERSION} -P \"$p\" -c '$i' -o orderer.$DOMAIN:7050 -C $channel_name  $cc --tls --cafile /etc/hyperledger/crypto/orderer/tls/ca.crt"
         d="cli.$org.$DOMAIN"
 
         echo "instantiating with $d by $c"
@@ -570,10 +574,11 @@ function createJoinInstantiate() {
   chaincode_name=${3}
   chaincode_init=${4}
   collections=${5}
+  policy=${6}
 
   createChannel ${org} ${channel_name}
   joinChannel ${org} ${channel_name}
-  instantiateChaincode ${org} ${channel_name} ${chaincode_name} ${chaincode_init} ${collections}
+  instantiateChaincode ${org} ${channel_name} ${chaincode_name} ${chaincode_init} ${collections} ${policy}
 }
 
 function makeCertDirs() {
@@ -774,8 +779,8 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   done
 
-  createJoinInstantiate ${ORG1} common ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_SUPPLY_CHAIN_INIT} ${SUPPLY_CHAIN_COLLECTION_CONFIG}
-  instantiateChaincode ${ORG1} common ${CHAINCODE_TRADE_FINANCE_NAME} ${CHAINCODE_TRADE_FINANCE_INIT} ${TRADE_FINANCE_COLLECTION_CONFIG}
+  createJoinInstantiate ${ORG1} common ${CHAINCODE_SUPPLY_CHAIN_NAME} ${CHAINCODE_SUPPLY_CHAIN_INIT} ${SUPPLY_CHAIN_COLLECTION_CONFIG} ${SUPPLY_CHAIN_POLICY}
+  instantiateChaincode ${ORG1} common ${CHAINCODE_TRADE_FINANCE_NAME} ${CHAINCODE_TRADE_FINANCE_INIT} ${TRADE_FINANCE_COLLECTION_CONFIG} ${TRADE_FINANCE_POLICY}
 
  for org in ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
