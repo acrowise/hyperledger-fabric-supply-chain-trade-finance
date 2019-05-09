@@ -18,17 +18,18 @@ const Proofs = ({ role }) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'proof') {
-      const newState = proofs.concat([]);
+      const newState = proofs.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.contractId === notification.contractId);
       newState[itemToUpdateIndex] = notification;
-      setData(newState);
+      setData({ result: newState });
     }
 
     if (notification.type === 'validateProof') {
-      const newState = proofs.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.proofId === notification.proofId);
-      newState[itemToUpdateIndex] = notification;
-      setData(newState);
+      console.log('notification', notification);
+      const newState = proofs.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex] = notification.data;
+      setData({ result: newState });
     }
   };
 
@@ -36,8 +37,12 @@ const Proofs = ({ role }) => {
 
   let dataToDisplay = proofs.result;
 
+  console.log('dataToDisplay', dataToDisplay);
+
   if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }));
+    dataToDisplay = dataToDisplay
+      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }))
+      .filter(i => i.agency.id === role);
   }
 
   return loading ? (

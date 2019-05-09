@@ -158,11 +158,11 @@ export const INPUTS = {
 
 export const REVIEWERS = [
   {
-    id: 'agency-1',
+    id: 'ggcb',
     title: 'Government Goods Control Bureau'
   },
   {
-    id: 'agency-2',
+    id: 'uscts',
     title: 'US Commercial Trade Service'
   }
 ];
@@ -205,11 +205,10 @@ export const TABLE_MAP = {
     state: 'Status'
   },
   BIDS: {
-    invoiceId: 'Invoice ID',
-    debtor: 'Debtor',
+    invoiceID: 'Invoice ID',
     factor: 'Factor ID',
     rate: 'Rate',
-    totalDue: 'Total',
+    amount: 'Amount',
     state: 'Status'
   },
   INVOICES: {
@@ -224,7 +223,7 @@ export const TABLE_MAP = {
   REPORTS: {
     shipmentId: 'Shipment ID',
     proofId: 'Proof ID',
-    reportId: 'Report ID',
+    id: 'Report ID',
     state: 'Status'
   },
   SHIPMENT_DETAIL: {

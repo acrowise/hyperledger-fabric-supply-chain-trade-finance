@@ -64,8 +64,8 @@ const PlaceBidForm = ({
               onClick={() => {
                 postAction({
                   fcn: `${dialogIsOpen.action}Bid`,
-                  args: ['0', formState.rate.toString(), 'f', invoiceId]
-                }); // FIXME:  f- factor-id
+                  args: ['0', formState.rate, role, invoiceId]
+                }); // FIXME:  'f' === factor-id
                 setDialogOpenState({
                   isOpen: false,
                   action: null

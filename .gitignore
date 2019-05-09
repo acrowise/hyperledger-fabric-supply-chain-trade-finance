@@ -22,3 +22,4 @@ artifacts-templates/api-configs/network.yaml
 
 .cache
 dist
+.docs

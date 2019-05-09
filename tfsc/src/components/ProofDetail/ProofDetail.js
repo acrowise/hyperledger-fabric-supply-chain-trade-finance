@@ -4,6 +4,7 @@ import { Overlay, Button, Card } from '@blueprintjs/core';
 import './proofDetail.scss';
 
 import { STATUSES } from '../../constants';
+import { cropId } from '../../helper/utils';
 
 const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
   <Overlay usePortal isOpen={dialogIsOpen}>
@@ -16,7 +17,7 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
       }}
     >
       <Card className="modal" style={{ width: '550px' }}>
-        <div className="modal-header">Proof {proof.key ? proof.key.id : 'No Data'}</div>
+        <div className="modal-header">Proof {proof.key ? cropId(proof.key.id) : 'No Data'}</div>
 
         <div className="modal-body">
           <table className="proof-detail-table">

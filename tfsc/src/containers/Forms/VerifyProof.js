@@ -6,16 +6,20 @@ import {
 } from '@blueprintjs/core';
 
 import { post } from '../../helper/api';
-
+import { cropId } from '../../helper/utils';
 import FileUploader from '../../components/FileUploader';
 
 const ValidateProof = ({
-  dialogIsOpen, setDialogOpenState, proof, role
+  dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
   const [files, setFiles] = useState([]);
   const [, validateProof] = post('validateProof')();
   const [, uploadDocs] = post('uploadDocuments')();
 
+  console.log('proof', proof);
+  if (!proof || !proof.contract) {
+    return <></>;
+  }
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -27,20 +31,24 @@ const ValidateProof = ({
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <div className="modal-header">Verify {role === 'uscts' ? 'Commercial Trade' : 'Goods'}</div>
+          <div className="modal-header">
+            {type === 'update'
+              ? 'Update Report'
+              : `Verify ${role === 'uscts' ? 'Commercial Trade' : 'Goods'}`}
+          </div>
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="ContractId">
-                  <InputGroup disabled value={proof.contractId} />
+                  <InputGroup disabled value={cropId(proof.contract.key.id)} />
                 </FormGroup>
 
                 <FormGroup className="form-group-horizontal" label="Consignor">
-                  <InputGroup disabled value={proof.consignor} />
+                  <InputGroup disabled value={proof.contract.value.consignorName} />
                 </FormGroup>
 
                 <FormGroup className="form-group-horizontal" label="Consignee">
-                  <InputGroup disabled value={proof.consignee} />
+                  <InputGroup disabled value={proof.contract.value.consigneeName} />
                 </FormGroup>
                 <br />
                 {proof.documents
@@ -89,13 +97,14 @@ const ValidateProof = ({
               </div>
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="Shipment number">
-                  <InputGroup disabled value={proof.shipmentId} />
+                  <InputGroup disabled value={cropId(proof.shipmentId)} />
                 </FormGroup>
                 <Label>Add report</Label>
                 <FileUploader files={files} setFiles={setFiles} />
                 <Label>
                   Description
                   <TextArea
+                    value={proof.description}
                     growVertically={true}
                     // onChange={({ target: { value } }) => dispatch({
                     //   type: 'change',
@@ -111,37 +120,55 @@ const ValidateProof = ({
             </div>
           </div>
           <div className="modal-footer">
-            <Button
-              large
-              intent="primary"
-              className="btn-modal"
-              onClick={() => {
-                setDialogOpenState(false);
-                validateProof({
-                  fcn: 'validateProof',
-                  args: [proof.id]
-                });
+            {type === 'update' ? (
+              <Button
+                large
+                intent="primary"
+                className="btn-modal"
+                onClick={() => {
+                  setDialogOpenState(false);
+                }}
+              >
+                Update Report
+              </Button>
+            ) : (
+              <>
+                <Button
+                  large
+                  intent="primary"
+                  className="btn-modal"
+                  onClick={() => {
+                    setDialogOpenState(false);
+                    validateProof({
+                      fcn: 'validateProof',
+                      contractId: proof.contract.key.id,
+                      shipmentId: proof.shipmentId,
+                      args: [proof.id]
+                    });
 
-                const form = new FormData();
-                form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
-                files.forEach((f) => {
-                  form.append('file', f);
-                });
-                uploadDocs(form);
-              }}
-            >
-              {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}
-            </Button>
-            <Button
-              large
-              intent="none"
-              className="btn-modal btn-default"
-              onClick={() => {
-                setDialogOpenState(false);
-              }}
-            >
-              {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
-            </Button>
+                    const form = new FormData();
+                    form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
+                    form.append('contractId', proof.contract.key.id);
+                    files.forEach((f) => {
+                      form.append('file', f);
+                    });
+                    uploadDocs(form);
+                  }}
+                >
+                  {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}
+                </Button>
+                <Button
+                  large
+                  intent="none"
+                  className="btn-modal btn-default"
+                  onClick={() => {
+                    setDialogOpenState(false);
+                  }}
+                >
+                  {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
+                </Button>
+              </>
+            )}
           </div>
         </Card>
       </div>

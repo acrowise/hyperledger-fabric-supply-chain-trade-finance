@@ -9,5 +9,6 @@ export const notifications = {
   placeInvoice: 'invoices',
   acceptInvoice: 'invoices',
   placeBid: 'bids',
-  acceptBid: 'bids'
+  acceptBid: 'bids',
+  documentUploaded: 'shipments'
 };

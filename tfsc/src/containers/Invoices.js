@@ -23,7 +23,7 @@ const Invoices = ({ role, filter, search }) => {
   const [acceptedInvoiceRes, acceptInvoice] = post('acceptInvoice')();
   // SUPPLIER
 
-  const [forSaleInvoiceRes, placeForTradeInvoice] = post('placeInvoiceForTrade')();
+  const [forSaleInvoiceRes, placeForTradeInvoice] = post('placeInvoice')();
   const [removeInvoiceRes, removeInvoice] = post('removeInvoice')();
   // const [acceptedBidRes, acceptBid] = post('acceptBid')();
   // const [cancelBidRes, cancelBid] = post('cancelBid')();
@@ -34,16 +34,16 @@ const Invoices = ({ role, filter, search }) => {
   const onMessage = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'acceptInvoice' || notification.type === 'placeInvoiceForTrade') {
+    if (notification.type === 'acceptInvoice' || notification.type === 'placeInvoice') {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
       newState[itemToUpdateIndex].value.state = notification.value.state;
       setData({ result: newState });
     }
 
-    if (notification.type === 'placeInvoice') {
-      setData({ result: data.result.concat(notification) });
-    }
+    // if (notification.type === 'placeInvoice') {
+    //   setData({ result: data.result.concat(notification) });
+    // }
   };
 
   useSocket('notification', onMessage);
@@ -167,6 +167,20 @@ const Invoices = ({ role, filter, search }) => {
                 }}
               >
                 Edit Bid
+              </Button>
+            </div>
+          ) : (
+            <></>
+          )}
+          {role === 'supplier' && item.state === 'For Sale' ? (
+            <div>
+              <Button
+                intent="danger"
+                onClick={() => {
+                  // TODO:
+                }}
+              >
+                Remove
               </Button>
             </div>
           ) : (

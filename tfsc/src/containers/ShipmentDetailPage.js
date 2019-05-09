@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
+
 import { useFetch } from '../hooks';
+
+import { cropId } from '../helper/utils';
 
 import GenerateProofForm from './Forms/GenerateProof';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
@@ -21,6 +24,7 @@ const ShipmentDetailPage = (props) => {
 
   const [docs, setDocs] = useState(props.documents);
 
+  console.log(props);
   const shipment = {
     id: props.id,
     contractId: props.contractId,
@@ -32,7 +36,7 @@ const ShipmentDetailPage = (props) => {
     documents: docs
   };
 
-  console.log('proofs', proofs)
+  console.log('proofs', proofs);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -88,7 +92,7 @@ const ShipmentDetailPage = (props) => {
 
       <div className="layout-container">
         <div className="layout-main">
-          <h3>Shipment Number: {shipment.id.slice(0, 7).toUpperCase()}</h3>
+          <h3>Shipment Number: {cropId(shipment.id)}</h3>
           {props.role === 'buyer' ? (
             <div>
               <Button
@@ -133,7 +137,7 @@ const ShipmentDetailPage = (props) => {
                 <tr>
                   <td>{shipment.shipmentFrom}</td>
                   <td>{shipment.shipmentTo}</td>
-                  <td>{new Date().toISOString()}</td>
+                  <td>{new Date().toLocaleDateString()}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
                 </tr>
@@ -141,7 +145,7 @@ const ShipmentDetailPage = (props) => {
             </table>
           </div>
 
-          <Timeline events={props.events} />
+          <Timeline shipment={shipment} events={props.events} />
           <CollapsiblePanel history={props.events} />
         </div>
 

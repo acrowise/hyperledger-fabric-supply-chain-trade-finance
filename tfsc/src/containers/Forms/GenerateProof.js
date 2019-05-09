@@ -37,7 +37,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <div className="modal-header">Confirm Shipment</div>
+          <div className="modal-header">Generate Proof</div>
           <div
             className="modal-body"
             style={{
@@ -126,9 +126,10 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                 generateProof({
                   fcn: 'generateProof',
                   user: 'supplier',
-                  shipmentId: '', // FIXME: shipmentId,
+                  shipmentId: shipment.id,
                   data: formState,
-                  reviewer: formState.reviewer
+                  reviewer: formState.reviewer,
+                  contractId: shipment.contractId
                 });
                 dispatch({ type: 'reset', payload: initialState });
               }}

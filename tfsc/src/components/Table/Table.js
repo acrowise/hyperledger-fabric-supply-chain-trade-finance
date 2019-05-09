@@ -2,6 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import './table.scss';
 
+import { cropId } from '../../helper/utils';
+
+const ids = ['id', 'contractId', 'shipmentId', 'invoiceID'];
+const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
+
 const Table = ({
   fields, data, actions, onSelect
 }) => (
@@ -12,7 +17,7 @@ const Table = ({
           {Object.keys(fields).map(i => (
             <th key={i.toString()}>{fields[i]}</th>
           ))}
-          {actions ? <th></th> : <></>}
+          {actions ? <th /> : <></>}
         </tr>
       </thead>
       <tbody>
@@ -25,11 +30,11 @@ const Table = ({
             <tr key={index}>
               {Object.keys(fields).map((j) => {
                 let value = item[j];
-                if (j === 'dueDate' || j === 'paymentDate' || j === 'timestamp') {
+                if (dates.includes(j)) {
                   value = new Date(item[j]).toLocaleDateString();
                 }
-                if (j === 'id' || j === 'contractId') {
-                  value = item[j].slice(0, 7).toUpperCase();
+                if (ids.includes(j)) {
+                  value = cropId(item[j]);
                 }
                 return (
                   <td

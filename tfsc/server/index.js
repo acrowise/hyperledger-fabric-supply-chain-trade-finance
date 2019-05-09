@@ -22,43 +22,8 @@ const BIDS = { result: [] };
 const CONTRACTS = { result: [] };
 const SHIPMENTS = { result: [] };
 const PROOFS = { result: [] };
-// {
-//   reportId: 'FDDSA',
-//   shipmentId: 'GSNJF',
-//   ProofId: 'MCDSEDF',
-//   state: 'Generated',
-//   contractId: 'contract-id',
-//   consignore: 'Buyer',
-//   consignee: 'Supplier',
-//   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-// },
-// {
-//   reportId: 'ASDADSA',
-//   shipmentId: 'LLDSF',
-//   ProofId: 'KDSAD',
-//   state: 'Validated',
-//   contractId: 'contract-id',
-//   consignore: 'Buyer',
-//   consignee: 'Supplier',
-//   documents: ['Phytosanitory certificate', 'Export License', 'Packing List']
-// }
 const DOCS = [];
-const REPORTS = {
-  result: [
-    // {
-    //   reportId: 'FDDSA',
-    //   shipmentId: 'GSNJF',
-    //   ProofId: 'MCDSEDF',
-    //   state: 'Generated'
-    // },
-    // {
-    //   reportId: 'ASDADSA',
-    //   shipmentId: 'LLDSF',
-    //   ProofId: 'KDSAD',
-    //   state: 'Validated'
-    // }
-  ]
-};
+const REPORTS = { result: [] };
 
 const clients = [];
 const app = express();
@@ -148,6 +113,7 @@ router.get('/documents', (req, res) => {
 
 router.post('/generateProof', (req, res) => {
   const id = uuid();
+  console.log('contract', CONTRACTS.result.find(c => c.key.id === req.body.contractId));
   const proof = {
     key: { id },
     value: {
@@ -155,7 +121,8 @@ router.post('/generateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       dateCreated: new Date().getTime(),
       agency: req.body.reviewer,
-      fields: req.body.data
+      fields: req.body.data,
+      contract: CONTRACTS.result.find(c => c.key.id === req.body.contractId)
     }
   };
   if (req.body.shipmentId) {
@@ -168,7 +135,7 @@ router.post('/generateProof', (req, res) => {
     });
   }
   PROOFS.result.push(proof);
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'generateProof' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign({}, proof, { type: 'generateProof' }))));
   res.end('ok');
 });
 
@@ -236,16 +203,16 @@ router.post('/requestShipment', (req, res) => {
 
 router.post('/confirmDelivery', (req, res) => {
   const id = nanoid();
-  const newInvoice = Object.assign(req.body, { state: 2 });
+  // const newInvoice = Object.assign(req.body, { state: 2 });
 
-  INVOICES.result.push({
-    key: {
-      id
-    },
-    value: newInvoice
-  });
+  // INVOICES.result.push({
+  //   key: {
+  //     id
+  //   },
+  //   value: newInvoice
+  // });
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
+  // clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
 
   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
   shipment.value.state = 4;
@@ -278,31 +245,29 @@ router.post('/validateProof', (req, res) => {
   const proof = PROOFS.result.find(i => i.key.id === req.body.args[0]);
 
   proof.value.state = 2;
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'validateProof' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, type: 'validateProof' })));
 
   REPORTS.result.push({
     key: {
       id: uuid()
     },
     value: {
-      shipmentId: '',
-      proofId: proof.id,
-      contractId: '',
-      consignee: '',
-      consignor: '',
       state: 1,
-      description: req.body.description
+      shipmentId: req.body.shipmentId,
+      proofId: proof.key.id,
+      description: req.body.description,
+      contract: CONTRACTS.result.find(c => c.key.id === req.body.contractId)
     }
   });
-  // if (req.body.shipmentId) {
-  //   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
-  //   shipment.value.events.push({
-  //     id: uuid(),
-  //     date: new Date().getTime(),
-  //     action: 'validateProof',
-  //     user: req.body.user
-  //   });
-  // }
+  if (req.body.shipmentId) {
+    const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
+    shipment.value.events.push({
+      id: uuid(),
+      date: new Date().getTime(),
+      action: 'validateProof',
+      user: req.body.user
+    });
+  }
   res.end('ok');
 });
 
@@ -333,14 +298,13 @@ router.post('/acceptOrder', async (req, res) => {
     value: {
       consignorName: 'Buyer',
       consigneeName: 'Supplier',
-      totalDue: '123', // FIXME
+      totalDue: order.value.price * order.value.quantity, // FIXME
       quantity: order.value.quantity,
       dueDate: order.value.paymentDate,
       state: 1,
       destination: order.value.destination,
       dateCreated: new Date().getTime(),
-      timestamp: new Date().getTime(),
-      documents: ['dasasd', 'asdas', 'asdasd']
+      timestamp: new Date().getTime()
     }
   };
 
@@ -370,42 +334,46 @@ router.post('/acceptOrder', async (req, res) => {
   CONTRACTS.result.push(contract);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'invoiceRegistered' }))));
-  res.send('ok');
+  // clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'invoiceRegistered' }))));
+  res.end('ok');
 });
 
 router.post('/placeInvoice', (req, res) => {
-  res.send('ok');
-
   const invoice = INVOICES.result.find(i => i.key.id === req.body.args[0]);
 
   invoice.value.state = 3;
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoice' }))));
+  res.end('ok');
 });
 
 router.post('/placeBid', (req, res) => {
-  res.send('ok');
   const id = nanoid();
 
   const bid = {
-    id,
-    factor: req.body.args[2],
-    rate: req.body.args[1],
-    invoiceID: req.body.args[3]
+    key: {
+      id
+    },
+    value: {
+      factor: req.body.args[2],
+      rate: req.body.args[1],
+      invoiceID: req.body.args[3],
+      state: 1
+    }
   };
 
   BIDS.result.push(bid);
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'placeBid' }))));
+  res.end('ok');
 });
 
 router.post('/acceptBid', (req, res) => {
-  res.send('ok');
-  const bid = BIDS.result.find(i => i.id === req.body.id);
+  const bid = BIDS.result.find(i => i.key.id === req.body.id);
 
-  bid.state = 'Closed';
+  bid.value.state = 2;
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'acceptBid' }))));
+  res.senendd('ok');
 });
 
 router.post('/acceptInvoice', (req, res) => {

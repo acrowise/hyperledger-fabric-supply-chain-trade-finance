@@ -8,7 +8,7 @@ import { useFetch } from '../hooks';
 import { post } from '../helper/api';
 
 import Table from '../components/Table/Table';
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
 
 const Bids = ({ role, filter, search }) => {
   const [data, loading, setData] = useFetch('listBids');
@@ -34,6 +34,10 @@ const Bids = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
+  if (filteredData) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.BID[i.value.state] }));
+  }
+
   if (!loading) {
     if (filter) {
       filteredData = filteredData.filter(item => item.state === filter);
@@ -43,6 +47,8 @@ const Bids = ({ role, filter, search }) => {
     }
   }
 
+  console.log(filteredData);
+
   return loading ? (
     <>Loading...</>
   ) : (
@@ -50,26 +56,44 @@ const Bids = ({ role, filter, search }) => {
       <Table
         fields={TABLE_MAP.BIDS}
         data={filteredData}
-        actions={item => (role === 'supplier' && item.state === 'New' ? (
-            <div>
-              <Button
-                onClick={() => {
-                  acceptBid({
-                    fcn: 'acceptBid',
-                    args: [item.id, '0', '0', '0']
-                  });
-                }}
-                style={{ marginRight: '5px' }}
-                intent="primary"
-              >
-                Accept
-              </Button>
-              <Button intent="danger">Decline</Button>
-            </div>
-        ) : (
-            <></>
-        ))
-        }
+        actions={item => (
+          <>
+            {role === 'supplier' && item.state === 'Issued' ? (
+              <div>
+                <Button
+                  onClick={() => {
+                    acceptBid({
+                      fcn: 'acceptBid',
+                      args: [item.id, '0', '0', '0'],
+                      id: item.id // FIXME:
+                    });
+                  }}
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                >
+                  Accept
+                </Button>
+                <Button intent="danger">Decline</Button>
+              </div>
+            ) : (
+              <></>
+            )}
+            {(role === 'factor-1' || role === 'factor-2' )&& item.state === 'Issued' ? (
+              <div>
+                <Button
+                  onClick={() => {}}
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                >
+                  Edit
+                </Button>
+                <Button intent="danger">Cancel</Button>
+              </div>
+            ) : (
+              <></>
+            )}
+          </>
+        )}
       />
     </div>
   );

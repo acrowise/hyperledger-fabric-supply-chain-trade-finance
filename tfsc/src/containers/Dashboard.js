@@ -85,7 +85,7 @@ const tabs = role => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter statuses={[]}>
+      <Filter statuses={['Generated', 'Validated']}>
         <Proofs role={role} />
       </Filter>
     )

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
+import { format } from 'date-fns';
 
 import classNames from 'classnames';
 
@@ -32,7 +33,7 @@ const CollapsiblePanel = ({ history }) => {
                 <td className="history-table-bullet">
                   <Icon icon="symbol-circle"/>
                 </td>
-                <td>{item.date}</td>
+                <td>{format(item.date, 'DD MMMM YYYY')}</td>
                 <td>{item.id}</td>
                 <td>{item.action}</td>
                 <td>{item.type}</td>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
+import { format } from 'date-fns';
 
 import './timeline.scss';
 
@@ -19,11 +20,9 @@ const TimelineItem = ({
   </div>
 );
 
-const TimelineDetails = ({ event }) => (
-  <Table fields={TABLE_MAP.SHIPMENT_DETAIL} data={[event]} />
-);
+const TimelineDetails = ({ event }) => <Table fields={TABLE_MAP.SHIPMENT_DETAIL} data={[event]} />;
 
-const Timeline = ({ events }) => {
+const Timeline = ({ shipment, events }) => {
   const [selectedId, setSelected] = useState(events[0].id);
 
   return (
@@ -32,15 +31,13 @@ const Timeline = ({ events }) => {
         <div className="timeline-start">
           <div className="timeline-start-text">10 april 2019</div>
           <div className="timeline-item-bottom-text">
-            <div>Amsterdam,</div>
-            <div>Netherlands</div>
+            <div>{shipment.shipmentFrom}</div>
           </div>
         </div>
         <div className="timeline-finish">
           <div className="timeline-finish-text">30 may 2019</div>
           <div className="timeline-item-bottom-text">
-            <div>Athens,</div>
-            <div>Greece</div>
+          <div>{shipment.shipmentTo}</div>
           </div>
         </div>
 
@@ -50,7 +47,7 @@ const Timeline = ({ events }) => {
               <TimelineItem
                 id={event.id}
                 key={event.id}
-                date={event.date}
+                date={format(event.date, 'DD MMMM YYYY')}
                 timelineItemClickHandler={setSelected}
                 isSelected={event.id === selectedId}
               />

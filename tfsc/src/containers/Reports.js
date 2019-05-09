@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 import { useFetch } from '../hooks';
 
 import Table from '../components/Table/Table';
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
+import VerifyProof from './Forms/VerifyProof';
 
 const Reports = ({ role, filter, search }) => {
+  const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('listReports');
+  const [selectedProof, setSelectedProof] = useState({});
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -30,6 +33,14 @@ const Reports = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
+  console.log(filteredData);
+
+  if (filteredData) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
+  }
+
+  console.log(filteredData);
+
   if (!loading) {
     if (filter) {
       filteredData = filteredData.filter(item => item.state === filter);
@@ -40,13 +51,23 @@ const Reports = ({ role, filter, search }) => {
     <>Loading...</>
   ) : (
     <div>
+      <VerifyProof
+        dialogIsOpen={vpDialogIsOpen}
+        setDialogOpenState={setVpDialogOpenState}
+        proof={selectedProof}
+        role={role}
+        type="update"
+      />
       <Table
         fields={TABLE_MAP.REPORTS}
         data={filteredData}
-        actions={() => (role === 'ggcb' || role === 'uscts' ? (
+        actions={item => (role === 'ggcb' || role === 'uscts' ? (
             <div>
               <Button
-                onClick={() => { }}
+                onClick={() => {
+                  setSelectedProof(item);
+                  setVpDialogOpenState(true);
+                }}
                 style={{ marginRight: '5px' }}
                 intent="primary"
               >

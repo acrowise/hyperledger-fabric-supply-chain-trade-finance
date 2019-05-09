@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  Button, Overlay, Card, TextArea, FormGroup
+  Button, Overlay, Card, TextArea, FormGroup, Label
 } from '@blueprintjs/core';
 
 import FileUploader from '../../components/FileUploader';
@@ -35,18 +35,20 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
           {/* <p>Description: {shipment.description}</p> */}
 
           <div className="modal-body">
-            <FileUploader withPreview files={files} setFiles={setFiles} />
-
-            <FormGroup label="Details">
-              <TextArea growVertically={true} large={true} value={shipment.description} />
-            </FormGroup>
+            <Label>
+              Act of Hangover
+              <FileUploader withPreview files={files} setFiles={setFiles} />
+              <FormGroup label="Details">
+                <TextArea growVertically={true} large={true} />
+              </FormGroup>
+            </Label>
           </div>
           <div className="modal-footer">
             <Button
               large
               intent="none"
               className="btn-modal btn-default"
-              onClick={setDialogOpenState(false)}
+              onClick={() => setDialogOpenState(false)}
             >
               Cancel
             </Button>
@@ -55,7 +57,6 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               className="btn-modal"
               intent="primary"
               onClick={() => {
-                setDialogOpenState(false);
                 confirmDelivery({ shipmentId: shipment.shipmentId });
 
                 const form = new FormData();
@@ -65,6 +66,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 });
                 uploadDocs(form);
                 setFiles([]);
+                setDialogOpenState(false);
               }}
             >
               Submit
