@@ -14,7 +14,7 @@ import ActionCompleted from '../../components/ActionCompleted';
 const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
   const [shipmentRes, confirmShipment, reset] = post('confirmShipment')();
-  const [, uploadDocs] = post('uploadDocument')();
+  const [, uploadDocs] = post('uploadDocuments')();
 
   if (!shipmentRes.pending) {
     if (shipmentRes.complete) {

@@ -11,60 +11,6 @@ import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 
 import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
-const EVENTS = [
-  {
-    id: 1,
-    date: '10 april 2019',
-    action: 'ShipmentConfirmed',
-    user: 'Supplier'
-  },
-  {
-    id: 2,
-    date: '20 april 2019',
-    action: 'ShipmentConfirmed',
-    user: 'Supplier'
-  },
-  {
-    id: 3,
-    date: '23 april 2019',
-    action: 'ShipmentConfirmed',
-    user: 'Supplier'
-  },
-  {
-    id: 4,
-    date: '25 april 2019',
-    action: 'ShipmentConfirmed',
-    user: 'Supplier'
-  },
-  {
-    id: 5,
-    date: '28 april 2019',
-    action: 'ShipmentConfirmed',
-    user: 'Supplier'
-  }
-];
-
-const HISTORY = [
-  {
-    id: 'VGUIX234',
-    date: '10 april 2019',
-    action: 'Create Shipment',
-    type: 'Commercial Invoices'
-  },
-  {
-    id: 'VGUIX235',
-    date: '10 april 2019',
-    action: 'Create Shipment',
-    type: 'Commercial Invoices'
-  },
-  {
-    id: 'VGUIX236',
-    date: '10 april 2019',
-    action: 'Create Shipment',
-    type: 'Commercial Invoices'
-  }
-];
-
 const ShipmentDetailPage = (props) => {
   // const [data, loading] = useFetch('documents');
   const [proofs, loadingProofs, setData] = useFetch('listProofs');
@@ -77,15 +23,17 @@ const ShipmentDetailPage = (props) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'generateProof') {
-      const newState = proofs.concat(notification);
-      setData(newState);
+      console.log('proofs.result', proofs.result);
+      console.log('notification', notification);
+      const newState = proofs.result.concat(notification); // FIXME
+      setData({ result: newState });
     }
 
     if (notification.type === 'validateProof') {
-      const newState = proofs.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.proofId === notification.proofId);
-      newState[itemToUpdateIndex] = notification;
-      setData(newState);
+      const newState = proofs.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.jey.id === notification.key.id);
+      newState[itemToUpdateIndex].value = notification.value;
+      setData({ result: newState });
     }
   };
 
@@ -170,8 +118,8 @@ const ShipmentDetailPage = (props) => {
             </table>
           </div>
 
-          <Timeline events={EVENTS} />
-          <CollapsiblePanel history={HISTORY} />
+          <Timeline events={props.events} />
+          <CollapsiblePanel history={props.events} />
         </div>
 
         <div className="layout-aside">
@@ -189,8 +137,8 @@ const ShipmentDetailPage = (props) => {
             </Button>
           )}
 
-          {proofs.length > 0 && (
-            <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs} />}</div>
+          {proofs.result && proofs.result.length > 0 && (
+            <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs.result} />}</div>
           )}
 
           <div className="sidebar-panel">

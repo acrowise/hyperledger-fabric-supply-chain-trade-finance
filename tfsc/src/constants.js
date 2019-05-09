@@ -29,6 +29,11 @@ export const STATUSES = {
     1: 'Accepted',
     2: 'Cancelled'
   },
+  CONTRACT: {
+    0: 'Unknown',
+    1: 'Signed',
+    2: 'Completed'
+  },
   INVOICE: {
     0: 'Unknown',
     1: 'Issued',
@@ -38,17 +43,28 @@ export const STATUSES = {
     5: 'Removed'
   },
   SHIPMENT: {
+    0: 'Unknown',
     1: 'Requested',
-    2: 'Confirmed'
+    2: 'Confirmed',
+    3: 'Approved',
+    4: 'Delivered'
   },
   PROOF: {
-
+    0: 'Unknown',
+    1: 'Generated',
+    2: 'Validated'
   },
   REPORT: {
-
+    0: 'Unknown',
+    1: 'Accepted',
+    2: 'Declined'
   },
   BID: {
-
+    0: 'Unknown',
+    1: 'Issued',
+    2: 'Accepted',
+    3: 'Cancelled',
+    4: 'Removed'
   }
 };
 

@@ -1,15 +1,15 @@
-import React, {useReducer} from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, Checkbox, Card, MenuItem
 } from '@blueprintjs/core';
-import {Select} from '@blueprintjs/select';
+import { Select } from '@blueprintjs/select';
 
-import {post} from '../../helper/api';
-import {formReducer} from '../../reducers';
-import {INPUTS, REVIEWERS} from '../../constants';
+import { post } from '../../helper/api';
+import { formReducer } from '../../reducers';
+import { INPUTS, REVIEWERS } from '../../constants';
 
-const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
+const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
   const initialState = {
     contractId: false,
     consignorName: false,
@@ -35,10 +35,8 @@ const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
           paddingTop: '15vh'
         }}
       >
-        <Card className="modal" style={{width: '720px'}}>
-          <div className="modal-header">
-            Confirm Shipment
-          </div>
+        <Card className="modal" style={{ width: '720px' }}>
+          <div className="modal-header">Confirm Shipment</div>
           <div
             className="modal-body"
             style={{
@@ -48,7 +46,7 @@ const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
             <div className="row">
               <div className="col-8">
                 <div className="row">
-                  {INPUTS.GENERATE_PROOF.map(({label, field}) => (
+                  {INPUTS.GENERATE_PROOF.map(({ label, field }) => (
                     <Checkbox
                       key={label}
                       label={label}
@@ -77,12 +75,12 @@ const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
                       }
                     });
                   }}
-                  itemRenderer={(item, {handleClick}) => (
-                    <MenuItem text={item.title} onClick={handleClick}/>
+                  itemRenderer={(item, { handleClick }) => (
+                    <MenuItem text={item.title} onClick={handleClick} />
                   )}
                   items={REVIEWERS}
                   filterable={false}
-                  popoverProps={{minimal: true}}
+                  popoverProps={{ minimal: true }}
                 >
                   <Button
                     style={{
@@ -119,8 +117,14 @@ const GenerateProof = ({dialogIsOpen, setDialogOpenState}) => {
               className="btn-modal"
               onClick={() => {
                 setDialogOpenState(false);
-                generateProof(formState);
-                dispatch({type: 'reset', payload: initialState});
+                generateProof({
+                  fcn: 'generateProof',
+                  user: 'supplier',
+                  shipmentId: '', // FIXME: shipmentId,
+                  data: formState,
+                  reviewer: formState.reviewer
+                });
+                dispatch({ type: 'reset', payload: initialState });
               }}
             >
               Submit

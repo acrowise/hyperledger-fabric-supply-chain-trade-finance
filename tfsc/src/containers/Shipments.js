@@ -29,7 +29,7 @@ const Shipments = ({ role, content, setContent }) => {
         && shipment.state !== shipments.result.find(i => i.key.id === shipment.id).state
       ) {
         showShipmentDetail(
-          Object.assign({}, notification, {
+          Object.assign({}, notification.value, {
             id: notification.key.id,
             state: STATUSES.SHIPMENT[notification.value.state]
           })

@@ -8,7 +8,7 @@ import { useFetch } from '../hooks';
 import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
 
 const Contracts = ({ role }) => {
   const [data, loading, setData] = useFetch('listContracts');
@@ -30,7 +30,7 @@ const Contracts = ({ role }) => {
   let dataToDisplay = data.result;
 
   if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, { id: i.key.id }, i.value));
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
   }
 
   return loading ? (

@@ -1,5 +1,4 @@
 export const notifications = {
-  generateProof: 'proofs',
   place: 'orders',
   acceptOrder: 'orders',
   shipmentRequested: 'shipments',
@@ -10,5 +9,5 @@ export const notifications = {
   placeInvoice: 'invoices',
   acceptInvoice: 'invoices',
   placeBid: 'bids',
-  acceptBid: 'bids',
+  acceptBid: 'bids'
 };

@@ -10,7 +10,7 @@ import { post } from '../../helper/api';
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
   const [deliveryRes, confirmDelivery] = post('confirmDelivery')();
-  const [documentsRes, uploadDocs] = post('uploadDocument')();
+  const [documentsRes, uploadDocs] = post('uploadDocuments')();
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>

@@ -7,7 +7,7 @@ import { useFetch } from '../hooks';
 
 import VerifyProof from './Forms/VerifyProof';
 import Table from '../components/Table/Table';
-import { TABLE_MAP } from '../constants';
+import { TABLE_MAP, STATUSES } from '../constants';
 
 const Proofs = ({ role }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
@@ -34,7 +34,15 @@ const Proofs = ({ role }) => {
 
   useSocket('notification', onNotification);
 
-  return (
+  let dataToDisplay = proofs.result;
+
+  if (dataToDisplay) {
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }));
+  }
+
+  return loading ? (
+    <>Loading...</>
+  ) : (
     <div>
       <VerifyProof
         dialogIsOpen={vpDialogIsOpen}
@@ -44,7 +52,7 @@ const Proofs = ({ role }) => {
       />
       <Table
         fields={TABLE_MAP.PROOFS}
-        data={proofs}
+        data={dataToDisplay}
         actions={item => (item.state === 'Generated' ? (
             <div>
               <Button

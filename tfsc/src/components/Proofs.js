@@ -6,7 +6,7 @@ import ProofDetail from './ProofDetail/ProofDetail';
 const Proofs = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
   const [dialogIsOpen, setDialogOpenState] = useState(false);
-  const [selectedProof, setSelectedProof] = useState(false);
+  const [selectedProof, setSelectedProof] = useState({});
 
   return (
     <div className="sidebar-panel">
@@ -32,10 +32,10 @@ const Proofs = ({ data }) => {
                 setDialogOpenState(true);
                 setSelectedProof(proof);
               }}
-              key={proof.proofId}
+              key={proof.key.id}
               style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
             >
-              <p>ProofId: {proof.proofId}</p>
+              <p>ProofId: {proof.key.id}</p>
             </div>
           ))}
         </div>

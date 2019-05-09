@@ -110,11 +110,23 @@ router.get('/listReports', (_, res) => {
   res.json(REPORTS);
 });
 
-router.post('/uploadDocumentsadd', upload.array('file'), (req, res) => {
+router.post('/uploadDocuments', upload.array('file'), (req, res) => {
   const { files } = req;
 
   files.forEach(f => DOCS.push(f.originalname));
-  res.send('ok');
+
+  if (req.body.shipmentId) {
+    const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
+    shipment.value.documents.concat(DOCS);
+    shipment.value.events.push({
+      id: uuid(),
+      date: new Date().getTime(),
+      action: 'uploadDocument',
+      user: req.body.user
+    });
+  }
+
+  res.end('ok');
 });
 
 router.get('/documents', (req, res) => {
@@ -125,11 +137,22 @@ router.post('/generateProof', (req, res) => {
   const id = uuid();
   const proof = {
     key: { id },
-    value: Object.assign(req.body, {
+    value: {
       state: 1,
-      dateCreated: new Date().getTime()
-    })
+      dateCreated: new Date().getTime(),
+      agency: req.body.reviewer,
+      fields: req.body.data
+    }
   };
+  if (req.body.shipmentId) {
+    const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
+    shipment.value.events.push({
+      id: uuid(),
+      date: new Date().getTime(),
+      action: 'generateProof',
+      user: req.body.user
+    });
+  }
   PROOFS.result.push(proof);
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(proof, { type: 'generateProof' }))));
   res.end('ok');
@@ -180,6 +203,14 @@ router.post('/requestShipment', (req, res) => {
         'Certificate of origin',
         'Bill of Landing',
         'Export License'
+      ],
+      events: [
+        {
+          id: uuid(),
+          date: new Date().getTime(),
+          action: 'ShipmentRequested',
+          user: 'Supplier'
+        }
       ]
     }
   });
@@ -203,7 +234,13 @@ router.post('/confirmDelivery', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
 
   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
-  shipment.state = 'Delivered';
+  shipment.value.state = 4;
+  shipment.value.events.push({
+    id: uuid(),
+    date: new Date().getTime(),
+    action: 'generateProof',
+    user: req.body.user
+  });
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentDelivered' }))));
 
   res.send('ok');
@@ -213,6 +250,12 @@ router.post('/confirmShipment', (req, res) => {
   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.args[0]);
 
   shipment.value.state = 2;
+  shipment.value.events.push({
+    id: uuid(),
+    action: 'ShipmentConfirmed',
+    date: new Date().getTime(),
+    user: 'Transporter'
+  });
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentConfirmed' }))));
   res.end('ok');
 });
@@ -229,14 +272,23 @@ router.post('/validateProof', (req, res) => {
     },
     value: {
       shipmentId: '',
-      proofId: '',
+      proofId: proof.id,
       contractId: '',
       consignee: '',
       consignor: '',
       state: 1,
-      description: ''
+      description: req.body.description
     }
   });
+  // if (req.body.shipmentId) {
+  //   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
+  //   shipment.value.events.push({
+  //     id: uuid(),
+  //     date: new Date().getTime(),
+  //     action: 'validateProof',
+  //     user: req.body.user
+  //   });
+  // }
   res.end('ok');
 });
 
@@ -267,11 +319,11 @@ router.post('/acceptOrder', async (req, res) => {
     value: {
       consignorName: 'Buyer',
       consigneeName: 'Supplier',
-      totalDue: '123',
-      quantity: order.quantity,
-      dueDate: new Date().getTime(),
-      state: 'New',
-      destination: order.destination,
+      totalDue: '123', // FIXME
+      quantity: order.value.quantity,
+      dueDate: order.value.paymentDate,
+      state: 1,
+      destination: order.value.destination,
       dateCreated: new Date().getTime(),
       timestamp: new Date().getTime(),
       documents: ['dasasd', 'asdas', 'asdasd']
