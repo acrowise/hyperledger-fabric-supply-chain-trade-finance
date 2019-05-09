@@ -19,12 +19,25 @@ const ShipmentDetailPage = (props) => {
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
 
+  const [docs, setDocs] = useState(props.documents);
+
+  const shipment = {
+    id: props.id,
+    contractId: props.contractId,
+    shipmentFrom: props.shipmentFrom,
+    shipmentTo: props.shipmentTo,
+    transport: props.transport,
+    description: props.description,
+    state: props.state,
+    documents: docs
+  };
+
+  console.log('proofs', proofs)
+
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'generateProof') {
-      console.log('proofs.result', proofs.result);
-      console.log('notification', notification);
       const newState = proofs.result.concat(notification); // FIXME
       setData({ result: newState });
     }
@@ -35,6 +48,12 @@ const ShipmentDetailPage = (props) => {
       newState[itemToUpdateIndex].value = notification.value;
       setData({ result: newState });
     }
+
+    if (notification.type === 'documentUploaded') {
+      if (notification.data.contractId === shipment.contractId) {
+        setDocs(docs.concat(notification.data));
+      }
+    }
   };
 
   useSocket('notification', onNotification);
@@ -44,13 +63,17 @@ const ShipmentDetailPage = (props) => {
       <ConfirmShipmentForm
         dialogIsOpen={csDialogIsOpen}
         setDialogOpenState={setCsDialogOpenState}
-        shipment={props}
+        shipment={shipment}
       />
-      <GenerateProofForm dialogIsOpen={gpDialogIsOpen} setDialogOpenState={setGpDialogOpenState} />
+      <GenerateProofForm
+        dialogIsOpen={gpDialogIsOpen}
+        setDialogOpenState={setGpDialogOpenState}
+        shipment={shipment}
+      />
       <ConfirmDeliveryForm
         dialogIsOpen={cdDialogIsOpen}
         setDialogOpenState={setCdDialogOpenState}
-        shipment={props}
+        shipment={shipment}
       />
       <div
         style={{ display: 'flex', flexDirection: 'row' }}
@@ -65,7 +88,7 @@ const ShipmentDetailPage = (props) => {
 
       <div className="layout-container">
         <div className="layout-main">
-          <h3>Shipment Number: {props.id.slice(0, 7).toUpperCase()}</h3>
+          <h3>Shipment Number: {shipment.id.slice(0, 7).toUpperCase()}</h3>
           {props.role === 'buyer' ? (
             <div>
               <Button
@@ -108,11 +131,11 @@ const ShipmentDetailPage = (props) => {
               </thead>
               <tbody>
                 <tr>
-                  <td>{props.shipmentFrom}</td>
-                  <td>{props.shipmentTo}</td>
+                  <td>{shipment.shipmentFrom}</td>
+                  <td>{shipment.shipmentTo}</td>
                   <td>{new Date().toISOString()}</td>
-                  <td>{props.transport}</td>
-                  <td>{props.state}</td>
+                  <td>{shipment.transport}</td>
+                  <td>{shipment.state}</td>
                 </tr>
               </tbody>
             </table>
@@ -123,7 +146,7 @@ const ShipmentDetailPage = (props) => {
         </div>
 
         <div className="layout-aside">
-          {props.state === 'Confirmed' && props.role === 'supplier' && (
+          {shipment.state === 'Confirmed' && props.role === 'supplier' && (
             <Button
               onClick={(e) => {
                 setGpDialogOpenState(true);
@@ -149,11 +172,11 @@ const ShipmentDetailPage = (props) => {
               {/* {loading ? (
                 <div>Loading...</div>
               ) : ( */}
-              {props.documents
-                && props.documents.map((doc, i) => (
+              {docs
+                && docs.map((doc, i) => (
                   <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row' }}>
                     <Icon icon="document" />
-                    <div style={{ marginLeft: '10px' }}>{doc}</div>
+                    <div style={{ marginLeft: '10px' }}>{doc.type}</div>
                   </div>
                 ))}
             </div>

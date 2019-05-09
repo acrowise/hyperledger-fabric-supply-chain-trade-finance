@@ -9,7 +9,9 @@ import { post } from '../../helper/api';
 
 import FileUploader from '../../components/FileUploader';
 
-const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
+const ValidateProof = ({
+  dialogIsOpen, setDialogOpenState, proof, role
+}) => {
   const [files, setFiles] = useState([]);
   const [, validateProof] = post('validateProof')();
   const [, uploadDocs] = post('uploadDocuments')();
@@ -25,7 +27,7 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <div className="modal-header">Verify Commercial Trade</div>
+          <div className="modal-header">Verify {role === 'uscts' ? 'Commercial Trade' : 'Goods'}</div>
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
@@ -121,13 +123,14 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
                 });
 
                 const form = new FormData();
+                form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
                 files.forEach((f) => {
                   form.append('file', f);
                 });
                 uploadDocs(form);
               }}
             >
-              Trade permitted
+              {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}
             </Button>
             <Button
               large
@@ -137,7 +140,7 @@ const ValidateProof = ({ dialogIsOpen, setDialogOpenState, proof }) => {
                 setDialogOpenState(false);
               }}
             >
-              Trade prohibited
+              {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
             </Button>
           </div>
         </Card>

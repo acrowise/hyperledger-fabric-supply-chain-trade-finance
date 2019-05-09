@@ -118,15 +118,15 @@ export const INPUTS = {
   ],
   GENERATE_PROOF: [
     {
-      label: 'Contract_Id',
+      label: 'Contract ID',
       field: 'contractId'
     },
     {
-      label: 'Consignor_Name',
+      label: 'Consignor Name',
       field: 'consignorName'
     },
     {
-      label: 'Total_Due',
+      label: 'Total Due',
       field: 'totalDue'
     },
     {
@@ -138,16 +138,12 @@ export const INPUTS = {
       field: 'destination'
     },
     {
-      label: 'Due_Date',
+      label: 'Due Date',
       field: 'dueDate'
     },
     {
-      label: 'Payment_Date',
+      label: 'Payment Date',
       field: 'paymentDay'
-    },
-    {
-      label: 'doc1',
-      field: 'doc'
     }
   ],
   PLACE_BID: [
@@ -204,8 +200,8 @@ export const TABLE_MAP = {
   },
   PROOFS: {
     shipmentId: 'Shipment ID',
-    proofId: 'Proof ID',
-    reportId: 'Report ID',
+    id: 'Proof ID',
+    // reportId: 'Report ID',
     state: 'Status'
   },
   BIDS: {

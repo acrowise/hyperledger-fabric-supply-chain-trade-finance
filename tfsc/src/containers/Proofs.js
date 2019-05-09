@@ -46,9 +46,9 @@ const Proofs = ({ role }) => {
     <div>
       <VerifyProof
         dialogIsOpen={vpDialogIsOpen}
-        // dialogIsOpen={true}
         setDialogOpenState={setVpDialogOpenState}
         proof={selectedProof}
+        role={role}
       />
       <Table
         fields={TABLE_MAP.PROOFS}
@@ -63,7 +63,7 @@ const Proofs = ({ role }) => {
                 style={{ marginRight: '5px' }}
                 intent="primary"
               >
-                Verify Commertial Trade
+                Verify {role === 'uscts' ? 'Commertial Trade' : 'Goods'}
               </Button>
             </div>
         ) : (

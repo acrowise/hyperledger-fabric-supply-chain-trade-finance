@@ -93,6 +93,8 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                       args: [shipment.id]
                     });
                     const form = new FormData();
+                    form.append('contractId', shipment.contractId);
+                    form.append('type', 'Bill of Landing');
                     files.forEach((f) => {
                       form.append('file', f);
                     });

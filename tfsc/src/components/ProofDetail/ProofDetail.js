@@ -16,7 +16,7 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
       }}
     >
       <Card className="modal" style={{ width: '550px' }}>
-        <div className="modal-header">Proof {proof.proofId}</div>
+        <div className="modal-header">Proof {proof.key ? proof.key.id : 'No Data'}</div>
 
         <div className="modal-body">
           <table className="proof-detail-table">
@@ -26,7 +26,7 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
             </tr>
             <tr>
               <th>Agency</th>
-              <td>{proof.value ? proof.value.reviewer.title : 'No data'}</td>
+              <td>{proof.value ? proof.value.agency.title : 'No data'}</td>
             </tr>
             <tr>
               <th>Status</th>

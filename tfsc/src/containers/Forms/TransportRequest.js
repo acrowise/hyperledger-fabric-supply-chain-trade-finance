@@ -136,13 +136,15 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         formState.description
                       ]
                     });
-                    dispatch({ type: 'reset', payload: initialState });
                     const form = new FormData();
+                    form.append('contractId', dialogIsOpen.item.id);
+                    form.append('type', 'Packing List');
                     files.forEach((f) => {
                       form.append('file', f);
                     });
                     uploadDocs(form);
                     setFiles([]);
+                    dispatch({ type: 'reset', payload: initialState });
                   }}
                 >
                   Request

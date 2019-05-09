@@ -6,6 +6,7 @@ const multer = require('multer');
 const proxy = require('http-proxy-middleware');
 const axios = require('axios');
 const uuid = require('uuid/v4');
+const fs = require('fs');
 
 const upload = multer();
 
@@ -113,18 +114,30 @@ router.get('/listReports', (_, res) => {
 router.post('/uploadDocuments', upload.array('file'), (req, res) => {
   const { files } = req;
 
-  files.forEach(f => DOCS.push(f.originalname));
-
-  if (req.body.shipmentId) {
-    const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
-    shipment.value.documents.concat(DOCS);
+  files.forEach((f) => {
+    try {
+      fs.mkdirSync('./.docs');
+    } catch (e) {}
+    try {
+      fs.mkdirSync(`./.docs/${req.body.contractId}`);
+    } catch (e) {}
+    fs.writeFileSync(`./.docs/${req.body.contractId}/${f.originalname}`, f.buffer);
+    const doc = {
+      contractId: req.body.contractId,
+      name: f.originalname,
+      type: req.body.type
+    };
+    const shipment = SHIPMENTS.result.find(i => i.value.contractId === doc.contractId);
+    shipment.value.documents.push(doc);
     shipment.value.events.push({
       id: uuid(),
       date: new Date().getTime(),
       action: 'uploadDocument',
       user: req.body.user
     });
-  }
+
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, type: 'documentUploaded' })));
+  });
 
   res.end('ok');
 });
@@ -139,6 +152,7 @@ router.post('/generateProof', (req, res) => {
     key: { id },
     value: {
       state: 1,
+      shipmentId: req.body.shipmentId,
       dateCreated: new Date().getTime(),
       agency: req.body.reviewer,
       fields: req.body.data
@@ -197,12 +211,12 @@ router.post('/requestShipment', (req, res) => {
       transport: req.body.args[4],
       description: req.body.args[5],
       documents: [
-        'Packing list',
-        'Phytosanitory certificate',
-        'Commercial Invoices',
-        'Certificate of origin',
-        'Bill of Landing',
-        'Export License'
+        // 'Packing list',
+        // 'Phytosanitory certificate',
+        // 'Commercial Invoices',
+        // 'Certificate of origin',
+        // 'Bill of Landing',
+        // 'Export License'
       ],
       events: [
         {

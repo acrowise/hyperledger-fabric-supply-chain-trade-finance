@@ -9,7 +9,7 @@ import { post } from '../../helper/api';
 import { formReducer } from '../../reducers';
 import { INPUTS, REVIEWERS } from '../../constants';
 
-const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
+const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const initialState = {
     contractId: false,
     consignorName: false,
@@ -18,9 +18,10 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
     destination: false,
     dueDate: false,
     paymentDay: false,
-    doc1: false,
     reviewer: null
   };
+
+  shipment.documents.forEach(doc => (initialState[doc.type] = false));
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [proofRes, generateProof] = post('generateProof')();
@@ -46,7 +47,12 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState }) => {
             <div className="row">
               <div className="col-8">
                 <div className="row">
-                  {INPUTS.GENERATE_PROOF.map(({ label, field }) => (
+                  {INPUTS.GENERATE_PROOF.concat(
+                    shipment.documents.map(doc => ({
+                      label: doc.type,
+                      field: doc.type
+                    }))
+                  ).map(({ label, field }) => (
                     <Checkbox
                       key={label}
                       label={label}

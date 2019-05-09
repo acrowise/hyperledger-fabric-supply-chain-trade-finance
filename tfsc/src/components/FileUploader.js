@@ -41,21 +41,21 @@ function FileUploader({ files, setFiles, withPreview }) {
   const { getRootProps, getInputProps } = useDropzone({
     accept: 'image/*',
     onDrop: (acceptedFiles) => {
-      ipfs.addDocument(acceptedFiles[0]).then(
-        (document) => {
-          if (!document) {
-            console.log('no document');
-          } else {
-            console.log('ok');
-            // this.changeDocumentHash(document.hash);
-            // this.changeDocumentType(document.type);
-            // this.props.dispatch(alertActions.success('Document file was uploaded'));
-          }
-        },
-        (error) => {
-          console.error(error);
-        }
-      );
+      // ipfs.addDocument(acceptedFiles[0]).then(
+      //   (document) => {
+      //     if (!document) {
+      //       console.log('no document');
+      //     } else {
+      //       console.log('ok');
+      //       // this.changeDocumentHash(document.hash);
+      //       // this.changeDocumentType(document.type);
+      //       // this.props.dispatch(alertActions.success('Document file was uploaded'));
+      //     }
+      //   },
+      //   (error) => {
+      //     console.error(error);
+      //   }
+      // );
       setFiles(
         acceptedFiles.map(file => Object.assign(file, {
           preview: URL.createObjectURL(file)

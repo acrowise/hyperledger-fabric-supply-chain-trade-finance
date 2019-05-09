@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
-import { Button, Overlay, Card, TextArea, FormGroup } from '@blueprintjs/core';
+import {
+  Button, Overlay, Card, TextArea, FormGroup
+} from '@blueprintjs/core';
 
 import FileUploader from '../../components/FileUploader';
 
@@ -23,34 +25,21 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card className="modal" style={{ width: '600px' }}>
-          <div className="modal-header">
-            Upload Act of Handover
-          </div>
+          <div className="modal-header">Upload Act of Handover</div>
 
-          {/*<p>ShipmentId: {shipment.shipmentId}</p>*/}
-          {/*<p>ContractId: {shipment.contractId}</p>*/}
-          {/*<p>From: {shipment.shipmentFrom}</p>*/}
-          {/*<p>To: {shipment.shipmentTo}</p>*/}
-          {/*<p>Transport: {shipment.transport}</p>*/}
-          {/*<p>Description: {shipment.description}</p>*/}
+          {/* <p>ShipmentId: {shipment.shipmentId}</p> */}
+          {/* <p>ContractId: {shipment.contractId}</p> */}
+          {/* <p>From: {shipment.shipmentFrom}</p> */}
+          {/* <p>To: {shipment.shipmentTo}</p> */}
+          {/* <p>Transport: {shipment.transport}</p> */}
+          {/* <p>Description: {shipment.description}</p> */}
 
           <div className="modal-body">
-            <FileUploader
-              withPreview
-              files={files}
-              setFiles={setFiles}
-            />
+            <FileUploader withPreview files={files} setFiles={setFiles} />
 
-            <FormGroup
-              label="Details"
-            >
-              <TextArea
-                growVertically={true}
-                large={true}
-                value={shipment.description}
-              />
+            <FormGroup label="Details">
+              <TextArea growVertically={true} large={true} value={shipment.description} />
             </FormGroup>
-
           </div>
           <div className="modal-footer">
             <Button
@@ -70,6 +59,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 confirmDelivery({ shipmentId: shipment.shipmentId });
 
                 const form = new FormData();
+                form.append('type', 'Act of Handover');
                 files.forEach((f) => {
                   form.append('file', f);
                 });
