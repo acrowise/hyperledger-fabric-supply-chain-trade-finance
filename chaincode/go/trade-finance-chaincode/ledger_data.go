@@ -7,13 +7,15 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	"strings"
 )
 
 var ledgerDataLogger = shim.NewLogger("LedgerData")
 
 const (
-	NoticeRuningType = iota
+	NoticeUnknown = iota
+	NoticeRuningType
 	NoticeSuccessType
 )
 
@@ -72,7 +74,7 @@ func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, collection stri
 	return data.FillFromLedgerValue(bytes)
 }
 
-func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string) error {
+func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string, endorsers []string, endorserRoleType statebased.RoleType) error {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -83,16 +85,66 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collect
 		return err
 	}
 
+	for key, value := range endorsers {
+		endorsers[key] = value + "MSP"
+	}
+
 	if collection != "" {
 		Logger.Debug("PutPrivateData")
 
 		if err = stub.PutPrivateData(collection, compositeKey, value); err != nil {
 			return err
 		}
+		if len(endorsers) != 0 {
+			// set new endorsement policy. Start
+			ep, err := statebased.NewStateEP(nil)
+			if err != nil {
+				return err
+			}
+
+			err = ep.AddOrgs(endorserRoleType, endorsers...)
+			if err != nil {
+				return err
+			}
+			// set the endorsement policy
+			epBytes, err := ep.Policy()
+			if err != nil {
+				return err
+			}
+
+			err = stub.SetPrivateDataValidationParameter(collection, compositeKey, epBytes)
+			if err != nil {
+				return err
+			}
+			//set new endorsement policy. End
+		}
 	} else {
 		Logger.Debug("PutState")
 		if err = stub.PutState(compositeKey, value); err != nil {
 			return err
+		}
+		if len(endorsers) != 0 {
+			// set new endorsement policy. Start
+			ep, err := statebased.NewStateEP(nil)
+			if err != nil {
+				return err
+			}
+
+			err = ep.AddOrgs(endorserRoleType, endorsers...)
+			if err != nil {
+				return err
+			}
+			// set the endorsement policy
+			epBytes, err := ep.Policy()
+			if err != nil {
+				return err
+			}
+
+			err = stub.SetStateValidationParameter(compositeKey, epBytes)
+			if err != nil {
+				return err
+			}
+			//set new endorsement policy. End
 		}
 	}
 
@@ -265,16 +317,15 @@ func CheckStateValidity(statesAutomaton map[int][]int, oldState, newState int) b
 }
 
 func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
-
 	fnc, _ := stub.GetFunctionAndParameters()
 
 	switch typeNotice {
 	case NoticeRuningType:
-		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s is running", fnc))
-		Logger.Debug(fmt.Sprintf("TradeFinanceChaincode.%s", fnc))
+		Logger.Info(fmt.Sprintf("%s.%s is running", ChaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("%s.%s", ChaincodeName, fnc))
 	case NoticeSuccessType:
-		Logger.Info(fmt.Sprintf("TradeFinanceChaincode.%s exited without errors", fnc))
-		Logger.Debug(fmt.Sprintf("Success: TradeFinanceChaincode.%s", fnc))
+		Logger.Info(fmt.Sprintf("%s.%s exited without errors", ChaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("Success: %s.%s", ChaincodeName, fnc))
 	default:
 		Logger.Debug("Unknown typeNotice: %d", typeNotice)
 	}

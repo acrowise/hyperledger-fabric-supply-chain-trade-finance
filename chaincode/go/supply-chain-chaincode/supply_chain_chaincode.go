@@ -14,18 +14,16 @@ import (
 	"time"
 )
 
-var logger = shim.NewLogger("SupplyChainChaincode")
-
 type SupplyChainChaincode struct {
 }
 
 func (cc *SupplyChainChaincode) Init(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debug("Init")
+	Logger.Debug("Init")
 
 	_, args := stub.GetFunctionAndParameters()
 
 	message := fmt.Sprintf("Received args: %s", []string(args))
-	logger.Debug(message)
+	Logger.Debug(message)
 
 	config := Config{}
 	if err := config.FillFromArguments(stub, args); err != nil {
@@ -34,7 +32,7 @@ func (cc *SupplyChainChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respon
 		return shim.Error(message)
 	}
 
-	if err := UpdateOrInsertIn(stub, &config, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &config, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -44,7 +42,7 @@ func (cc *SupplyChainChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respon
 }
 
 func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
-	logger.Debug("Invoke")
+	Logger.Debug("Invoke")
 
 	function, args := stub.GetFunctionAndParameters()
 	if function == "placeOrder" {
@@ -100,7 +98,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		"acceptInvoice, rejectInvoice, " +
 		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
-	logger.Debug(message)
+	Logger.Debug(message)
 
 	return pb.Response{Status: 400, Message: message}
 }
@@ -182,7 +180,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &order, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &order, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -287,7 +285,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -383,7 +381,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -505,7 +503,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &contract, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -538,7 +536,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -614,7 +612,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipment, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipment, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -696,7 +694,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -787,7 +785,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		Logger.Debug("Document: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &document, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &document, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -807,7 +805,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, "", []string{}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -825,7 +823,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, "", []string{}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -968,7 +966,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		Logger.Debug("proof: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &proof, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1042,7 +1040,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("proof: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &proof, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1118,7 +1116,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &agencyReport, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &agencyReport, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1539,15 +1537,10 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	}
 	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
 
-	if err := UpdateOrInsertIn(stub, event, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, event, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)
-	}
-
-	Logger.Debug("PutState")
-	if err = stub.PutState(eventIndex+"."+eventAction+"."+eventID, bytes); err != nil {
-		return err
 	}
 
 	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
@@ -1559,6 +1552,6 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 func main() {
 	err := shim.Start(new(SupplyChainChaincode))
 	if err != nil {
-		logger.Error(err.Error())
+		Logger.Error(err.Error())
 	}
 }

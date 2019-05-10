@@ -1155,11 +1155,6 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 		return errors.New(message)
 	}
 
-	Logger.Debug("PutState")
-	if err = stub.PutState(eventIndex+"."+eventAction+"."+eventID, bytes); err != nil {
-		return err
-	}
-
 	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
 	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
 

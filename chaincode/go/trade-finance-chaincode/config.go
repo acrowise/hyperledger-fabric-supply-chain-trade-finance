@@ -7,7 +7,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-var Logger = shim.NewLogger("TradeFinanceChaincode")
+const ChaincodeName = "TradeFinanceChaincode"
 
 // Namespaces constants
 const (
@@ -28,6 +28,8 @@ const (
 	configKeyFieldsNumber      = 0
 	configBasicArgumentsNumber = 1
 )
+
+var Logger = shim.NewLogger(ChaincodeName)
 
 type Config struct {
 	Key   ConfigKey   `json:"key"`
