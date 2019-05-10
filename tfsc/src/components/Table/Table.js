@@ -21,12 +21,12 @@ const Table = ({
         </tr>
       </thead>
       <tbody>
-        {data.length === 0 ? (
+        {data && data.length === 0 ? (
           <tr className="no-data-cell">
             <td colSpan="100%">No Data</td>
           </tr>
         ) : (
-          data.map((item, index) => (
+          data && data.map((item, index) => (
             <tr key={index}>
               {Object.keys(fields).map((j) => {
                 let value = item[j];
