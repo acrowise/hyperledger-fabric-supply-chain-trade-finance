@@ -81,10 +81,10 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
   files.forEach((f) => {
     try {
       fs.mkdirSync('./.docs');
-    } catch (e) {}
+    } catch (e) { }
     try {
       fs.mkdirSync(`./.docs/${req.body.contractId}`);
-    } catch (e) {}
+    } catch (e) { }
     fs.writeFileSync(`./.docs/${req.body.contractId}/${f.originalname}`, f.buffer);
     const doc = {
       contractId: req.body.contractId,
@@ -117,7 +117,6 @@ router.post('/generateProof', (req, res) => {
     value: {
       state: 1,
       shipmentId: req.body.shipmentId,
-      dateCreated: new Date().getTime(),
       agency: req.body.reviewer,
       fields: req.body.data,
       contract: CONTRACTS.result.find(c => c.key.id === req.body.contractId)
@@ -145,7 +144,6 @@ router.post('/placeOrder', (req, res) => {
     },
     value: {
       state: 0,
-      dateCreated: new Date().getTime(),
       productName: req.body.args[1],
       quantity: req.body.args[2],
       price: req.body.args[3],
@@ -299,11 +297,11 @@ router.post('/acceptOrder', async (req, res) => {
       consigneeName: 'Supplier',
       totalDue: order.value.price * order.value.quantity, // FIXME
       quantity: order.value.quantity,
-      dueDate: order.value.paymentDate,
+      dueDate: order.value.dueDate,
       state: 1,
       destination: order.value.destination,
-      dateCreated: new Date().getTime(),
-      timestamp: new Date().getTime()
+      timestamp: new Date().getTime(),
+      paymentDate: order.value.paymentDate
     }
   };
 

@@ -180,12 +180,12 @@ export const TABLE_MAP = {
     id: 'Contract ID',
     consignorName: 'Consignor',
     consigneeName: 'Consignee',
-    totalDue: 'Total Due',
-    paymentDate: 'Payment Date',
-    // timestamp: 'Last Updated',
-    dueDate: 'Delivery Date',
-    destination: 'Destination',
     quantity: 'Quantity',
+    totalDue: 'Total Due',
+    // timestamp: 'Last Updated',
+    destination: 'Destination',
+    dueDate: 'Delivery Date',
+    paymentDate: 'Payment Date',
     state: 'Satus'
   },
   ORDERS: {
@@ -196,7 +196,7 @@ export const TABLE_MAP = {
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',
-    state: 'State'
+    state: 'Status'
   },
   PROOFS: {
     shipmentId: 'Shipment ID',
