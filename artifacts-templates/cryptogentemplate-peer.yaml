@@ -21,7 +21,7 @@ PeerOrgs:
 #       Country: US
 #       Province: California
 #       Locality: San Francisco
-       OrganizationalUnit: OU
+       OrganizationalUnit: OrgU
 #       StreetAddress: address for org # default nil
 #       PostalCode: postalCode for org # default nil
 
