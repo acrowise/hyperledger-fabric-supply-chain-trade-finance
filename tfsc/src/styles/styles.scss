@@ -293,6 +293,7 @@ $header-height: 65px;
   border-radius: 20px;
 }
 
+.bp3-intent-danger,
 .btn-default {
   background-color: transparent!important;
   border: 2px solid #D3DAE0!important;
@@ -307,18 +308,19 @@ $header-height: 65px;
 
 .bp3-button.bp3-intent-primary {
   background-color: $color-secondary;
-  border-color: $color-secondary;
+  border: 1px solid $color-secondary;
   &:hover {
     background-color: #3fbea5;
+    border-color: #3fbea5;
   }
   &:disabled {
     background-color: #d3f3e8;
+    border-color: #d3f3e8;
   }
 }
 
 .table .bp3-button {
-  padding-left: 15px;
-  padding-right: 15px;
+  padding: 3px 15px;
   min-height: 25px !important;
   font-size: $fs-smaller;
   font-weight: bold;
