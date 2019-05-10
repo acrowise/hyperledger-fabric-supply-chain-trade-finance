@@ -765,6 +765,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
     installPackages ${org}
 
     makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
+    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
 
     installAll ${org} # install chaincode
 
