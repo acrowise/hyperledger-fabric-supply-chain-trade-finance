@@ -36,7 +36,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              Act of Hangover
+              Act of Handover
               <FileUploader withPreview files={files} setFiles={setFiles} />
               <FormGroup label="Details">
                 <TextArea growVertically={true} large={true} />
