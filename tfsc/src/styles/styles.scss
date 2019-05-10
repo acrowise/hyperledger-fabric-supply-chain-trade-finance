@@ -148,6 +148,21 @@ $header-height: 65px;
   padding: 7px 25px;
 }
 
+.header-notifications-quantity {
+  width: 24px;
+  height: 18px;
+  margin-left: 5px;
+  border-radius: 18px;
+  text-align: center;
+  line-height: 18px;
+  background-color: $color-secondary;
+  color: white;
+}
+
+.header-notifications-btn .bp3-button-text{
+  display: flex;
+}
+
 .role-item-txt {
   margin-top: 5px;
 }
