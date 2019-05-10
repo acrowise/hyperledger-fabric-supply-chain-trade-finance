@@ -242,7 +242,8 @@ router.post('/validateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       proofId: proof.key.id,
       description: req.body.description,
-      contract: get('contracts', req.body.contractId)
+      contract: get('contracts', req.body.contractId),
+      factor: req.body.factor
     }
   });
   if (req.body.shipmentId) {

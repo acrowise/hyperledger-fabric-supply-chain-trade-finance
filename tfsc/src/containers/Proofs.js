@@ -37,8 +37,6 @@ const Proofs = ({ role }) => {
 
   let dataToDisplay = proofs.result;
 
-  console.log('dataToDisplay', dataToDisplay);
-
   if (dataToDisplay) {
     dataToDisplay = dataToDisplay
       .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }))

@@ -7,7 +7,7 @@
     "build": "npm run build:client && npm run build:server",
     "start": "parcel index.html --port 3000",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:client": "parcel build ./index.html --out-dir dist/client",
+    "build:client": "NODE_ENV=production parcel build ./index.html --out-dir dist/client",
     "dev:client": "parcel watch ./index.html --out-dir dist/client",
     "build:server": "node ./server/index.js"
   },

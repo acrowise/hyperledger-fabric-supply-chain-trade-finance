@@ -143,6 +143,7 @@ const ValidateProof = ({
                       fcn: 'validateProof',
                       contractId: proof.contract.key.id,
                       shipmentId: proof.shipmentId,
+                      factor: role,
                       args: [proof.id]
                     });
 
