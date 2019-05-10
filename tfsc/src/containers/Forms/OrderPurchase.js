@@ -7,7 +7,7 @@ import { DateInput } from '@blueprintjs/datetime';
 
 import { post } from '../../helper/api';
 
-import ActionCompleted from '../../components/ActionCompleted';
+import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 import { INPUTS } from '../../constants';
 

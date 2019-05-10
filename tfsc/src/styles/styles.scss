@@ -138,6 +138,16 @@ $header-height: 65px;
   }
 }
 
+//Notifications
+.header-notifications {
+  width: 200px;
+  padding: 10px 0;
+}
+
+.header-notifications-item {
+  padding: 7px 25px;
+}
+
 .role-item-txt {
   margin-top: 5px;
 }
@@ -295,7 +305,6 @@ $header-height: 65px;
   }
 }
 
-
 .bp3-button.bp3-intent-primary {
   background-color: $color-secondary;
   border-color: $color-secondary;
@@ -307,15 +316,13 @@ $header-height: 65px;
   }
 }
 
-
-
-
-
 .table .bp3-button {
   padding-left: 15px;
   padding-right: 15px;
   min-height: 25px !important;
   font-size: $fs-smaller;
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .btn-generate-proof {

@@ -6,7 +6,7 @@
 }
 .table {
   width: 100%;
-  font-size: $fs-bigger;
+  font-size: $fs-big;
   border-collapse: collapse;
 
   tbody tr:hover {
@@ -31,7 +31,7 @@
     text-align: left;
   }
   td {
-    padding: 11px 10px;
+    padding: 4px 10px;
     border-bottom: 2px solid $color-bg-gray;
   }
 }

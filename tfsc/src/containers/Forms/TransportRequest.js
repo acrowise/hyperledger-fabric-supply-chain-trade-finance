@@ -13,7 +13,7 @@ import { INPUTS } from '../../constants';
 
 import { formReducer } from '../../reducers';
 
-import ActionCompleted from '../../components/ActionCompleted';
+import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 const initialState = {
   shipmentFrom: '',
