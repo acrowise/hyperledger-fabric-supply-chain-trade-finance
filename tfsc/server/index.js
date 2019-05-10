@@ -177,6 +177,7 @@ router.post('/requestShipment', (req, res) => {
       shipmentTo: req.body.args[3],
       transport: req.body.args[4],
       description: req.body.args[5],
+      timestamp: new Date().getTime(),
       documents: [
         // 'Packing list',
         // 'Phytosanitory certificate',
@@ -308,7 +309,7 @@ router.post('/acceptOrder', async (req, res) => {
     }
   };
 
-  registerInvoice(contract);
+  registerInvoice(contract.value);
 
   // try {
   //   const result = await axios.post(
@@ -349,6 +350,7 @@ router.post('/placeInvoice', (req, res) => {
 router.post('/placeBid', (req, res) => {
   const id = nanoid();
 
+  const contract = CONTRACTS.result.find(i => i.key.id === req.body.args[3]);
   const bid = {
     key: {
       id
@@ -357,6 +359,7 @@ router.post('/placeBid', (req, res) => {
       factor: req.body.args[2],
       rate: req.body.args[1],
       invoiceID: req.body.args[3],
+      totalDue: contract.value.totalDue,
       state: 1
     }
   };

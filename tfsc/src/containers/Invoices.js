@@ -54,10 +54,7 @@ const Invoices = ({ role, filter, search }) => {
   }
 
   if (filter) {
-    dataToDisplay = dataToDisplay.concat([]);
-    if (filter) {
-      dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.state] === filter);
-    }
+    dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.state] === filter);
   }
 
   // FIXME:

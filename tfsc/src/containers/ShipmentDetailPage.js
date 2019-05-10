@@ -33,7 +33,8 @@ const ShipmentDetailPage = (props) => {
     transport: props.transport,
     description: props.description,
     state: props.state,
-    documents: docs
+    documents: docs,
+    timestamp: props.timestamp
   };
 
   console.log('proofs', proofs);
@@ -168,23 +169,27 @@ const ShipmentDetailPage = (props) => {
             <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs.result} />}</div>
           )}
 
-          <div className="sidebar-panel">
-            <div className="sidebar-panel-header">
-              <h4>Documents</h4>
-            </div>
-            <div className="sidebar-panel-body">
-              {/* {loading ? (
+          {docs && docs.length !== 0 ? (
+            <div className="sidebar-panel">
+              <div className="sidebar-panel-header">
+                <h4>Documents</h4>
+              </div>
+              <div className="sidebar-panel-body">
+                {/* {loading ? (
                 <div>Loading...</div>
               ) : ( */}
-              {docs
-                && docs.map((doc, i) => (
-                  <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row' }}>
-                    <Icon icon="document" />
-                    <div style={{ marginLeft: '10px' }}>{doc.type}</div>
-                  </div>
-                ))}
+                {docs
+                  && docs.map((doc, i) => (
+                    <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row' }}>
+                      <Icon icon="document" />
+                      <div style={{ marginLeft: '10px' }}>{doc.type}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <></>
+          )}
         </div>
       </div>
     </div>

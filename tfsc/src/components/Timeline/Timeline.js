@@ -29,13 +29,13 @@ const Timeline = ({ shipment, events }) => {
     <div className="timeline-wrap">
       <div className="timeline">
         <div className="timeline-start">
-          <div className="timeline-start-text">10 april 2019</div>
+          <div className="timeline-start-text">{format(shipment.timestamp, 'DD MMMM YYYY')}</div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipmentFrom}</div>
           </div>
         </div>
         <div className="timeline-finish">
-          <div className="timeline-finish-text">30 may 2019</div>
+          <div className="timeline-finish-text"></div>
           <div className="timeline-item-bottom-text">
           <div>{shipment.shipmentTo}</div>
           </div>

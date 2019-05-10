@@ -26,55 +26,58 @@ const PlaceBidForm = ({
           paddingTop: '15vh'
         }}
       >
-        <Card style={{ width: '20vw' }}>
-          {INPUTS.PLACE_BID.map(({
-            label, type, placeholder, field
-          }) => (
-            <FormGroup key={label} label={label}>
-              <InputGroup
-                type={type}
-                placeholder={placeholder}
-                value={formState[field]}
-                onChange={({ target }) => setFormState(
-                  Object.assign({}, formState, {
-                    [field]: target.value
-                  })
-                )
-                }
-              />
-            </FormGroup>
-          ))}
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <Card className="modal" style={{ width: '400px' }}>
+          <div className="modal-header">Place Bid</div>
+          <div className="modal-body">
+            {INPUTS.PLACE_BID.map(({
+              label, type, placeholder, field
+            }) => (
+              <FormGroup key={label} label={label}>
+                <InputGroup
+                  type={type}
+                  placeholder={placeholder}
+                  value={formState[field]}
+                  onChange={({ target }) => setFormState(
+                    Object.assign({}, formState, {
+                      [field]: target.value
+                    })
+                  )
+                  }
+                />
+              </FormGroup>
+            ))}
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <Button
-              large
-              intent="danger"
-              onClick={() => {
-                setDialogOpenState({
-                  isOpen: false,
-                  action: null
-                });
-                setFormState(defaultFormState);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              large
-              intent="primary"
-              onClick={() => {
-                postAction({
-                  fcn: `${dialogIsOpen.action}Bid`,
-                  args: ['0', formState.rate, role, invoiceId]
-                }); // FIXME:  'f' === factor-id
-                setDialogOpenState({
-                  isOpen: false,
-                  action: null
-                });
-                setFormState(defaultFormState);
-              }}
-            >
-              Place
-            </Button>
+                large
+                intent="primary"
+                onClick={() => {
+                  postAction({
+                    fcn: `${dialogIsOpen.action}Bid`,
+                    args: ['0', formState.rate, role, invoiceId]
+                  }); // FIXME:  'f' === factor-id
+                  setDialogOpenState({
+                    isOpen: false,
+                    action: null
+                  });
+                  setFormState(defaultFormState);
+                }}
+              >
+                Confirm
+              </Button>
+              <Button
+                large
+                intent="danger"
+                onClick={() => {
+                  setDialogOpenState({
+                    isOpen: false,
+                    action: null
+                  });
+                  setFormState(defaultFormState);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

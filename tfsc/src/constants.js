@@ -72,26 +72,26 @@ export const INPUTS = {
   NEW_PURCHASE_ORDER: [
     {
       label: 'Product Name',
-      placeholder: 'Placeholder text',
+      placeholder: 'Product Name',
       type: 'text',
       field: 'productName'
     },
     {
       label: 'Quantity',
-      placeholder: 'Placeholder text',
+      placeholder: 'Quantity',
       type: 'number',
       field: 'quantity'
     },
     {
       label: 'Price',
-      placeholder: 'Placeholder text',
+      placeholder: 'Price',
       type: 'number',
       field: 'price'
     },
 
     {
       label: 'Destination',
-      placeholder: 'Placeholder text',
+      placeholder: 'Destination',
       type: 'text',
       field: 'destination'
     }
@@ -99,13 +99,13 @@ export const INPUTS = {
   TRANSPORT_REQUEST: [
     {
       label: 'Ship From',
-      placeholder: 'Placeholder text',
+      placeholder: 'Ship From',
       type: 'text',
       field: 'shipmentFrom'
     },
     {
       label: 'Ship To',
-      placeholder: 'Placeholder text',
+      placeholder: 'Ship To',
       type: 'text',
       field: 'shipmentTo'
     },
@@ -148,8 +148,8 @@ export const INPUTS = {
   ],
   PLACE_BID: [
     {
-      label: 'Bid Value',
-      placeholder: 'Placeholder text',
+      label: 'Rate',
+      placeholder: 'Rate',
       type: 'number',
       field: 'rate'
     }
@@ -206,9 +206,9 @@ export const TABLE_MAP = {
   },
   BIDS: {
     invoiceID: 'Invoice ID',
-    factor: 'Factor ID',
-    rate: 'Rate',
-    amount: 'Amount',
+    factor: 'Factor',
+    rate: 'Rate,%',
+    totalDue: 'Amount, USD',
     state: 'Status'
   },
   INVOICES: {

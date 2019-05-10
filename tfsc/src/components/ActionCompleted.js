@@ -13,7 +13,8 @@ const ActionCompleted = ({ res, action, result }) => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
       }}
     >
       <Icon icon={res.complete ? 'tick' : 'cross'} />

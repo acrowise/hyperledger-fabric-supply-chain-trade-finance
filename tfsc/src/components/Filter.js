@@ -56,8 +56,8 @@ const Filter = ({ children, statuses, actionComponent }) => {
           <h4>Filter by</h4>
           {fields.map(f => (
             <div key={f} className="filter-select-wrap">
-              <select className="filter-select">
-                <option selected>{f}</option>
+              <select readOnly value={f} className="filter-select">
+                <option select={f} >{f}</option>
               </select>
             </div>
           ))}
