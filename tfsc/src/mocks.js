@@ -10,5 +10,6 @@ export const notifications = {
   acceptInvoice: 'invoices',
   placeBid: 'bids',
   acceptBid: 'bids',
-  documentUploaded: 'shipments'
+  documentUploaded: 'shipments',
+  invoiceRegistered: 'invoices'
 };

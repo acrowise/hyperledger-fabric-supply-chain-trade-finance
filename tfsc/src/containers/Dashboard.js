@@ -47,6 +47,7 @@ const tabs = role => [
     actors: ['buyer', 'supplier'],
     panel: (
       <Filter
+        filterBy={['Price', 'Delivery Date', 'Payment Date']}
         statuses={['New', 'Accepted', 'Cancelled']}
         actionComponent={<NewPurchaseOrder role={role} />}
       >
@@ -58,7 +59,10 @@ const tabs = role => [
     name: 'Contracts',
     actors: ['buyer', 'supplier'],
     panel: (
-      <Filter statuses={['Signed', 'Completed']}>
+      <Filter
+        filterBy={['Consignor', 'Consignee', 'Total Due', 'Delivery Date', 'Payment Date']}
+        statuses={['Signed', 'Completed']}
+      >
         <Contracts role={role} />
       </Filter>
     )
@@ -67,7 +71,10 @@ const tabs = role => [
     name: 'Invoices',
     actors: ['buyer', 'supplier', 'factor-1', 'factor-2'],
     panel: (
-      <Filter statuses={['Issued', 'Signed', 'For Sale', 'Sold']}>
+      <Filter
+        filterBy={['Debtor', 'Beneficiary', 'Payment Date', 'Owner']}
+        statuses={['Issued', 'Signed', 'For Sale', 'Sold']}
+      >
         <Invoices role={role} />
       </Filter>
     )
@@ -76,7 +83,10 @@ const tabs = role => [
     name: 'Shipments',
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
-      <Filter statuses={['Requested', 'Confirmed']}>
+      <Filter
+        filterBy={['From', 'To', 'Transport']}
+        statuses={['Requested', 'Confirmed']}
+      >
         <Shipments role={role} />
       </Filter>
     )
@@ -85,7 +95,7 @@ const tabs = role => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter statuses={['Generated', 'Validated']}>
+      <Filter filterBy={['Proof ID', 'Shipment ID']} statuses={['Generated', 'Validated']}>
         <Proofs role={role} />
       </Filter>
     )
@@ -94,7 +104,10 @@ const tabs = role => [
     name: 'Reports',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter statuses={['Generated', 'Validated']}>
+      <Filter
+        filterBy={['Proof ID', 'Shipment ID', 'Report ID']}
+        statuses={['Generated', 'Validated']}
+      >
         <Reports role={role} />
       </Filter>
     )
@@ -103,7 +116,10 @@ const tabs = role => [
     name: 'Bids',
     actors: ['factor-1', 'factor-2', 'supplier'],
     panel: (
-      <Filter statuses={['Offered', 'Accepted', 'Cancelled']}>
+      <Filter
+        filterBy={['Debtor', 'Beneficiary', 'Rate', 'Payment Date']}
+        statuses={['Offered', 'Accepted', 'Cancelled']}
+      >
         <Bids role={role} />
       </Filter>
     )

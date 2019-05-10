@@ -109,27 +109,31 @@ const Invoices = ({ role, filter, search }) => {
               >
                 Place for Trade
               </Button>
-              <Button
-                style={{ marginRight: '5px' }}
-                intent="danger"
-                onClick={() => {
-                  removeInvoice({
-                    fcn: 'removeInvoice',
-                    args: [
-                      item.id, // InvoiceId
-                      '0',
-                      '0',
-                      '0',
-                      '0',
-                      '0',
-                      '0'
-                    ]
-                  });
-                }}
-              >
-                Remove
-              </Button>
             </div>
+          ) : (
+            <></>
+          )}
+          {role === 'supplier' && item.state === 'For Sale' ? (
+            <Button
+              style={{ marginRight: '5px' }}
+              intent="danger"
+              onClick={() => {
+                removeInvoice({
+                  fcn: 'removeInvoice',
+                  args: [
+                    item.id, // InvoiceId
+                    '0',
+                    '0',
+                    '0',
+                    '0',
+                    '0',
+                    '0'
+                  ]
+                });
+              }}
+            >
+              Remove
+            </Button>
           ) : (
             <></>
           )}
@@ -154,7 +158,7 @@ const Invoices = ({ role, filter, search }) => {
               >
                 Place Bid
               </Button>
-              <Button
+              {/* <Button
                 intent="primary"
                 onClick={() => {
                   setInvoiceBidDialogOpenState({
@@ -164,12 +168,12 @@ const Invoices = ({ role, filter, search }) => {
                 }}
               >
                 Edit Bid
-              </Button>
+              </Button> */}
             </div>
           ) : (
             <></>
           )}
-          {role === 'supplier' && item.state === 'For Sale' ? (
+          {/* {role === 'supplier' && item.state === 'For Sale' ? (
             <div>
               <Button
                 intent="danger"
@@ -182,7 +186,7 @@ const Invoices = ({ role, filter, search }) => {
             </div>
           ) : (
             <></>
-          )}
+          )} */}
         </div>
       )}
     />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Overlay, Button, Card } from '@blueprintjs/core';
 import './proofDetail.scss';

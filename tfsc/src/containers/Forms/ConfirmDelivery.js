@@ -25,7 +25,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card className="modal" style={{ width: '600px' }}>
-          <div className="modal-header">Upload Act of Handover</div>
+          <div className="modal-header">Upload Shipment Acceptance Act</div>
 
           {/* <p>ShipmentId: {shipment.shipmentId}</p> */}
           {/* <p>ContractId: {shipment.contractId}</p> */}
@@ -36,7 +36,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              Act of Handover
+              Shipment Acceptance Act
               <FileUploader withPreview files={files} setFiles={setFiles} />
               <FormGroup label="Details">
                 <TextArea growVertically={true} large={true} />
@@ -57,10 +57,10 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               className="btn-modal"
               intent="primary"
               onClick={() => {
-                confirmDelivery({ shipmentId: shipment.shipmentId });
+                confirmDelivery({ shipmentId: shipment.id });
 
                 const form = new FormData();
-                form.append('type', 'Act of Handover');
+                form.append('type', 'Shipment Acceptance Act');
                 files.forEach((f) => {
                   form.append('file', f);
                 });

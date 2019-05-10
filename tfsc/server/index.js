@@ -177,14 +177,7 @@ router.post('/requestShipment', (req, res) => {
       transport: req.body.args[4],
       description: req.body.args[5],
       timestamp: new Date().getTime(),
-      documents: [
-        // 'Packing list',
-        // 'Phytosanitory certificate',
-        // 'Commercial Invoices',
-        // 'Certificate of origin',
-        // 'Bill of Landing',
-        // 'Export License'
-      ],
+      documents: [],
       events: [
         {
           id: uuid(),
@@ -201,30 +194,38 @@ router.post('/requestShipment', (req, res) => {
   res.end('ok');
 });
 
+const registerInvoice = (contract) => {
+  const id = uuid();
+  INVOICES.result.push({
+    key: { id },
+    value: {
+      contractId: contract.key.id,
+      debtor: 'Buyer',
+      beneficiary: 'Supplier',
+      totalDue: contract.value.totalDue,
+      dueDate: contract.value.dueDate,
+      owner: 'Supplier',
+      state: 2
+    }
+  });
+};
+
 router.post('/confirmDelivery', (req, res) => {
-  const id = nanoid();
-  // const newInvoice = Object.assign(req.body, { state: 2 });
-
-  // INVOICES.result.push({
-  //   key: {
-  //     id
-  //   },
-  //   value: newInvoice
-  // });
-
-  // clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(newInvoice, { type: 'placeInvoice' }))));
-
   const shipment = SHIPMENTS.result.find(i => i.key.id === req.body.shipmentId);
   shipment.value.state = 4;
   shipment.value.events.push({
     id: uuid(),
     date: new Date().getTime(),
-    action: 'generateProof',
+    action: 'Shipment Delivered',
     user: req.body.user
   });
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentDelivered' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentDelivered' })));
 
-  res.send('ok');
+  const contract = CONTRACTS.result.find(i => i.key.id === shipment.value.contractId);
+  registerInvoice(contract);
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: contract, type: 'invoiceRegistered' })));
+
+  res.end('ok');
 });
 
 router.post('/confirmShipment', (req, res) => {
@@ -271,21 +272,6 @@ router.post('/validateProof', (req, res) => {
   res.end('ok');
 });
 
-const registerInvoice = ({ totalDue, dueDate }) => {
-  const id = uuid();
-  INVOICES.result.push({
-    key: { id },
-    value: {
-      debtor: 'a',
-      beneficiary: 'b',
-      totalDue,
-      dueDate,
-      owner: 'b',
-      state: 1
-    }
-  });
-};
-
 router.post('/acceptOrder', async (req, res) => {
   const order = ORDERS.result.find(i => i.key.id === req.body.args[0]);
 
@@ -308,28 +294,7 @@ router.post('/acceptOrder', async (req, res) => {
     }
   };
 
-  registerInvoice(contract.value);
-
-  // try {
-  //   const result = await axios.post(
-  //     'http://localhost:4002/api/channels/common/chaincodes/trade-finance-chaincode',
-  //     {
-  //       fcn: 'registerInvoice',
-  //       args: [
-  //         order.orderId, // contractId
-  //         'a',
-  //         'b',
-  //         contract.totalDue,
-  //         contract.dueDate,
-  //         '0',
-  //         'b'
-  //       ]
-  //     }
-  //   );
-  //   console.log(result.data);
-  // } catch (e) {
-  //   console.error(e);
-  // }
+  // registerInvoice(contract);
 
   CONTRACTS.result.push(contract);
 
@@ -360,6 +325,9 @@ router.post('/placeBid', (req, res) => {
       rate: req.body.args[1],
       invoiceID: req.body.args[3],
       totalDue: invoice.value.totalDue,
+      dueDate: invoice.value.dueDate,
+      debtor: invoice.value.invoice,
+      beneficiary: invoice.value.beneficiary,
       state: 1
     }
   };

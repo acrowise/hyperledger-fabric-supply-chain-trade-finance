@@ -2,19 +2,19 @@ import React, { useState } from 'react';
 import { RadioGroup, Radio, InputGroup } from '@blueprintjs/core';
 // import PropTypes from 'prop-types';
 
-const fields = ['Price', 'Date', 'Status'];
-
-const Filter = ({ children, statuses, actionComponent }) => {
+const Filter = ({ children, statuses, actionComponent, filterBy }) => {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
 
-  const childrenWithProps = React.Children.map(children, child => React.cloneElement(child, {
-    content,
-    setContent,
-    filter,
-    search
-  }));
+  const childrenWithProps = React.Children.map(children, child =>
+    React.cloneElement(child, {
+      content,
+      setContent,
+      filter,
+      search
+    })
+  );
 
   return content ? (
     childrenWithProps
@@ -47,17 +47,15 @@ const Filter = ({ children, statuses, actionComponent }) => {
             }}
           />
         </div>
-        <div className="dashboard-header-col-btn">
-          {actionComponent || <></>}
-        </div>
+        <div className="dashboard-header-col-btn">{actionComponent || <></>}</div>
       </div>
       <div className="dashboard-panel-body layout-container">
         <aside className="layout-aside">
           <h4>Filter by</h4>
-          {fields.map(f => (
+          {filterBy.map(f => (
             <div key={f} className="filter-select-wrap">
               <select readOnly value={f} className="filter-select">
-                <option select={f} >{f}</option>
+                <option select={f}>{f}</option>
               </select>
             </div>
           ))}

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
 import ProofDetail from './ProofDetail/ProofDetail';
-import { cropId } from '../helper/utils';
 
 const Proofs = ({ data }) => {
   const [expanded, setExpanded] = useState(false);
@@ -36,7 +35,7 @@ const Proofs = ({ data }) => {
               key={proof.key.id}
               style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
             >
-              <p>Proof: {cropId(proof.key.id)}</p>
+              <p>Proof: {proof.value.agency.id.toUpperCase()}</p>
             </div>
           ))}
         </div>

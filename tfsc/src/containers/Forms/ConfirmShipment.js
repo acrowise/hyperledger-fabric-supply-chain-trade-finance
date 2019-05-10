@@ -6,7 +6,7 @@ import {
 } from '@blueprintjs/core';
 
 import FileUploader from '../../components/FileUploader';
-
+import { cropId } from '../../helper/utils';
 import { post } from '../../helper/api';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
@@ -33,6 +33,8 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
     transport: 'Transport'
   };
 
+  const ids = ['id', 'contractId'];
+
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -53,7 +55,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   {Object.keys(fields).map(field => (
                     <Label className="col-6" key={field}>
                       {fields[field]}
-                      <InputGroup type="text" value={shipment[field]} disabled />
+                      <InputGroup type="text" value={ids.includes(field) ? cropId(shipment[field]) : shipment[field]} disabled />
                     </Label>
                   ))}
                   <Label className="col-6">

@@ -19,7 +19,7 @@ const Shipments = ({ role, content, setContent }) => {
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'shipmentConfirmed') {
+    if (notification.type === 'shipmentConfirmed' || notification.type === 'shipmentDelivered') {
       const newState = shipments.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex] = notification.data;
@@ -31,8 +31,7 @@ const Shipments = ({ role, content, setContent }) => {
         showShipmentDetail(
           Object.assign({}, notification.data.value, {
             id: notification.data.key.id,
-            state: STATUSES.SHIPMENT[notification.data.value.state],
-            events: notification.data.value.events
+            state: STATUSES.SHIPMENT[notification.data.value.state]
           })
         );
       }

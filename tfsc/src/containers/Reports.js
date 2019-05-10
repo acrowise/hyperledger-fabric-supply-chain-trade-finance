@@ -33,8 +33,6 @@ const Reports = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
-  console.log(filteredData);
-
   if (filteredData) {
     filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
   }
