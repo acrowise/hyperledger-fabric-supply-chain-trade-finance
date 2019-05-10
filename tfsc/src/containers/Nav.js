@@ -17,12 +17,16 @@ const Nav = ({ role, logout }) => {
   });
 
   const Notifications = () => (
-    <div>
+    <div className="header-notifications">
       {notifications.map((n, i) => (
-        <p key={i.toString()} style={{ margin: '5px' }}>
+        <div
+          key={i.toString()}
+          className="header-notifications-item"
+        >
           Type: {n.type}
-        </p>
+        </div>
       ))}
+
     </div>
   );
 
@@ -72,7 +76,7 @@ const Nav = ({ role, logout }) => {
                       <p
                         style={{
                           color: 'white',
-                          marginTop: '0.2em'
+                          margin: '3px 0'
                         }}
                       >
                         {hasNewNotifications}

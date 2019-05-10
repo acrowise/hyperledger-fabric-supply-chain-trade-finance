@@ -9,7 +9,7 @@ import FileUploader from '../../components/FileUploader';
 
 import { post } from '../../helper/api';
 
-import ActionCompleted from '../../components/ActionCompleted';
+import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
