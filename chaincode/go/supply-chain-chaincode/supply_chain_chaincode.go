@@ -1,8 +1,11 @@
 package main
 
 import (
+	"crypto/ecdsa"
 	"crypto/sha256"
+	"crypto/x509"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
@@ -877,12 +880,14 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Value.State = stateProofGenerated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
 
-	// idemix
+	// making arrays of attributes names and values
 	rng, err := idemix.GetRand()
+	// attributes names
 	AttributeNames := []string{"Attr1", "Attr2", "Attr3", "Attr4", "Attr5"}
 	attrs := make([]*FP256BN.BIG, len(AttributeNames))
 	for i := range AttributeNames {
 		h := sha256.New()
+		// make hash from value of attribute
 		h.Write([]byte("hello world " + strconv.Itoa(i)))
 		attrs[i] = FP256BN.FromBytes(h.Sum(nil))
 	}
@@ -922,26 +927,13 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch), idemix.RevocationAlgorithm(cri.RevocationAlg))
-	if err == nil {
-		message := fmt.Sprintf("Error: Epoch pk is valid in future epoch")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// make sure that epoch pk is not valid in future epoch
-	err = idemix.VerifyEpochPK(&revocationKey.PublicKey, cri.EpochPk, cri.EpochPkSig, int(cri.Epoch)+1, idemix.RevocationAlgorithm(cri.RevocationAlg))
-	if err == nil {
-		message := fmt.Sprintf("Error: Epoch pk is valid in future epoch")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
 	// signing selective disclosure
 	Nym, RandNym := idemix.MakeNym(sk, key.Ipk, rng)
+	// make mask for hide values 0 - hide, 1 - show
 	disclosure := []byte{0, 1, 1, 1, 0}
 	msg := []byte{1, 2, 3, 4, 5}
 	rhindex := 4
+	// make signature
 	sig, err := idemix.NewSignature(cred, sk, Nym, RandNym, key.Ipk, disclosure, msg, rhindex, cri, rng)
 	if err != nil {
 		message := fmt.Sprintf("Idemix NewSignature return error: %s", err.Error())
@@ -949,23 +941,27 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
+	// fill hidden fields random value
 	attrs[0] = FP256BN.NewBIGint(1111)
 	attrs[4] = FP256BN.NewBIGint(1111)
+	attributeValuesBytes := make([][]byte, len(attrs))
+	for i := 0; i < len(attrs); i++ {
+		row := make([]byte, FP256BN.MODBYTES)
+		attributeValue := attrs[i]
+		attributeValue.ToBytes(row)
+		attributeValuesBytes[i] = row
+	}
 
 	proof.Value.SnapShot = sig
 	proof.Value.DataForVerification.Disclosure = disclosure
 	proof.Value.DataForVerification.Ipk = key.Ipk
 	proof.Value.DataForVerification.Msg = msg
-	proof.Value.DataForVerification.AttributeValues = attrs
+	proof.Value.DataForVerification.AttributeValues = attributeValuesBytes
 	proof.Value.DataForVerification.RhIndex = rhindex
-	proof.Value.DataForVerification.RevPk = &revocationKey.PublicKey
+	proof.Value.DataForVerification.RevPk = encode(&revocationKey.PublicKey)
 	proof.Value.DataForVerification.Epoch = epoch
 
 	// updating state in ledger
-	if bytes, err := json.Marshal(proof); err == nil {
-		Logger.Debug("proof: " + string(bytes))
-	}
-
 	if err := UpdateOrInsertIn(stub, &proof, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
@@ -1018,13 +1014,18 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	attributeValuesBytes := make([]*FP256BN.BIG, len(proof.Value.DataForVerification.AttributeValues))
 
+	for i := range proof.Value.DataForVerification.AttributeValues {
+		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i]))
+		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i])
+	}
 	err := proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
 		proof.Value.DataForVerification.Ipk,
 		proof.Value.DataForVerification.Msg,
-		proof.Value.DataForVerification.AttributeValues,
+		attributeValuesBytes,
 		proof.Value.DataForVerification.RhIndex,
-		proof.Value.DataForVerification.RevPk,
+		decode(proof.Value.DataForVerification.RevPk),
 		proof.Value.DataForVerification.Epoch)
 
 	if err != nil {
@@ -1547,6 +1548,22 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
 
 	return nil
+}
+
+func encode(publicKey *ecdsa.PublicKey) string {
+	x509EncodedPub, _ := x509.MarshalPKIXPublicKey(publicKey)
+	pemEncodedPub := pem.EncodeToMemory(&pem.Block{Type: "PUBLIC KEY", Bytes: x509EncodedPub})
+
+	return string(pemEncodedPub)
+}
+
+func decode(pemEncodedPub string) *ecdsa.PublicKey {
+	blockPub, _ := pem.Decode([]byte(pemEncodedPub))
+	x509EncodedPub := blockPub.Bytes
+	genericPublicKey, _ := x509.ParsePKIXPublicKey(x509EncodedPub)
+	publicKey := genericPublicKey.(*ecdsa.PublicKey)
+
+	return publicKey
 }
 
 func main() {
