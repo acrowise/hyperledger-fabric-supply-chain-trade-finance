@@ -25,7 +25,7 @@ func (cc *TradeFinanceChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respo
 		return shim.Error(message)
 	}
 
-	if err := UpdateOrInsertIn(stub, &config, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &config, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -153,7 +153,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		Logger.Debug("Invoice: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -260,7 +260,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -355,7 +355,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -455,7 +455,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -555,7 +555,7 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -654,7 +654,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bid, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bid, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -756,7 +756,7 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -841,7 +841,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -948,7 +948,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Invoice: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &invoice, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -959,7 +959,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1149,7 +1149,7 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	}
 	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
 
-	if err := UpdateOrInsertIn(stub, event, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, event, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)

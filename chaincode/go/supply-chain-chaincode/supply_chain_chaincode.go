@@ -703,6 +703,24 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//invoking another chaincode for accepting invoice
+	fcnName := "registerInvoice"
+	chaincodeName := "trade-finance-chaincode"
+	channelName := "common"
+	invoiceID := shipment.Value.ContractID
+
+	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte("0"), []byte("0"), []byte("0"), []byte("0"), []byte("0"), []byte("0")}
+
+	for _, oneArg := range args {
+		argsByte = append(argsByte, []byte(oneArg))
+	}
+
+	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
+	if response.Status >= 400 {
+		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
+		return pb.Response{Status: 400, Message: message}
+	}
+
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
