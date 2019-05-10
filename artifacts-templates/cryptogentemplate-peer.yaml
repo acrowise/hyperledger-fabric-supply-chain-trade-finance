@@ -8,6 +8,7 @@ PeerOrgs:
   - Name: ORG
     #EnableNodeOUs: true
     Domain: ORG.DOMAIN
+    EnableNodeOUs: true
 
     # ---------------------------------------------------------------------------
     # "CA"

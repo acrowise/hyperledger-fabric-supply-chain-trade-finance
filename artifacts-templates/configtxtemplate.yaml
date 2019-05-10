@@ -30,10 +30,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('OrdererMSP.member')"
+                Rule: "OR('OrdererMSP.admin','OrdererMSP.peer','OrdererMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('OrdererMSP.member')"
+                Rule: "OR('OrdererMSP.admin','OrdererMSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('OrdererMSP.admin')"
@@ -54,10 +54,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG1MSP.member')"
+                Rule: "OR('ORG1MSP.admin','ORG1MSP.peer','ORG1MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG1MSP.member')"
+                Rule: "OR('ORG1MSP.admin','ORG1MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG1MSP.admin')"
@@ -77,10 +77,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG2MSP.member')"
+                Rule: "OR('ORG2MSP.admin','ORG2MSP.peer','ORG2MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG2MSP.member')"
+                Rule: "OR('ORG2MSP.admin','ORG2MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG2MSP.admin')"
@@ -95,10 +95,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG3MSP.member')"
+                Rule: "OR('ORG3MSP.admin','ORG3MSP.peer','ORG3MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG3MSP.member')"
+                Rule: "OR('ORG3MSP.admin','ORG3MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG3MSP.admin')"
@@ -113,10 +113,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG4MSP.member')"
+                Rule: "OR('ORG4MSP.admin','ORG4MSP.peer','ORG4MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG4MSP.member')"
+                Rule: "OR('ORG4MSP.admin','ORG4MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG4MSP.admin')"
@@ -131,10 +131,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG5MSP.member')"
+                Rule: "OR('ORG5MSP.admin','ORG5MSP.peer','ORG5MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG5MSP.member')"
+                Rule: "OR('ORG5MSP.admin','ORG5MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG5MSP.admin')"
@@ -148,10 +148,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG6MSP.member')"
+                Rule: "OR('ORG6MSP.admin','ORG6MSP.peer','ORG6MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG6MSP.member')"
+                Rule: "OR('ORG6MSP.admin','ORG6MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG6MSP.admin')"
@@ -166,10 +166,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG7MSP.member')"
+                Rule: "OR('ORG7MSP.admin','ORG7MSP.peer','ORG7MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG7MSP.member')"
+                Rule: "OR('ORG7MSP.admin','ORG7MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG7MSP.admin')"
@@ -183,10 +183,10 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('ORG8MSP.member')"
+                Rule: "OR('ORG8MSP.admin','ORG8MSP.peer','ORG8MSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('ORG8MSP.member')"
+                Rule: "OR('ORG8MSP.admin','ORG8MSP.client')"
             Admins:
                 Type: Signature
                 Rule: "OR('ORG8MSP.admin')"
