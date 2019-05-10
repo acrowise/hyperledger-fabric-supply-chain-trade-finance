@@ -24,7 +24,6 @@ const ShipmentDetailPage = (props) => {
 
   const [docs, setDocs] = useState(props.documents);
 
-  console.log(props);
   const shipment = {
     id: props.id,
     contractId: props.contractId,
@@ -37,8 +36,6 @@ const ShipmentDetailPage = (props) => {
     timestamp: props.timestamp
   };
 
-  console.log('proofs', proofs);
-
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
@@ -49,13 +46,13 @@ const ShipmentDetailPage = (props) => {
 
     if (notification.type === 'validateProof') {
       const newState = proofs.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.jey.id === notification.key.id);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
       newState[itemToUpdateIndex].value = notification.value;
       setData({ result: newState });
     }
 
     if (notification.type === 'documentUploaded') {
-      if (notification.data.contractId === shipment.contractId) {
+      if (notification.event.shipmentId === shipment.id) {
         setDocs(docs.concat(notification.data));
       }
     }
@@ -109,7 +106,7 @@ const ShipmentDetailPage = (props) => {
           ) : (
             <></>
           )}
-          {props.role === 'transporter' && props.state === 'Requested' ? (
+          {props.role === 'transporter' && shipment.state === 'Requested' ? (
             <div>
               <Button
                 intent="primary"

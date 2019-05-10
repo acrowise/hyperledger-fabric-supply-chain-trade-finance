@@ -21,17 +21,18 @@ const Shipments = ({ role, content, setContent }) => {
 
     if (notification.type === 'shipmentConfirmed') {
       const newState = shipments.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
-      newState[itemToUpdateIndex] = notification;
-      setData(newState);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex] = notification.data;
+      setData({ result: newState });
       if (
         shipment
         && shipment.state !== shipments.result.find(i => i.key.id === shipment.id).state
       ) {
         showShipmentDetail(
-          Object.assign({}, notification.value, {
-            id: notification.key.id,
-            state: STATUSES.SHIPMENT[notification.value.state]
+          Object.assign({}, notification.data.value, {
+            id: notification.data.key.id,
+            state: STATUSES.SHIPMENT[notification.data.value.state],
+            events: notification.data.value.events
           })
         );
       }
@@ -39,7 +40,7 @@ const Shipments = ({ role, content, setContent }) => {
 
     if (notification.type === 'shipmentRequested') {
       const newState = shipments.result.concat(notification);
-      setData(newState);
+      setData({ result: newState });
     }
   };
 

@@ -43,7 +43,7 @@ const Timeline = ({ shipment, events }) => {
 
         <div className="timeline-past">
           {events
-            && events.map(event => (
+            && events.filter(i => i.type !== 'document').map(event => (
               <TimelineItem
                 id={event.id}
                 key={event.id}

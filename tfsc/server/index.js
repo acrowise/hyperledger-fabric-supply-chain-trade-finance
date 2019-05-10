@@ -81,10 +81,10 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
   files.forEach((f) => {
     try {
       fs.mkdirSync('./.docs');
-    } catch (e) { }
+    } catch (e) {}
     try {
       fs.mkdirSync(`./.docs/${req.body.contractId}`);
-    } catch (e) { }
+    } catch (e) {}
     fs.writeFileSync(`./.docs/${req.body.contractId}/${f.originalname}`, f.buffer);
     const doc = {
       contractId: req.body.contractId,
@@ -93,14 +93,17 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
     };
     const shipment = SHIPMENTS.result.find(i => i.value.contractId === doc.contractId);
     shipment.value.documents.push(doc);
-    shipment.value.events.push({
+    const event = {
       id: uuid(),
       date: new Date().getTime(),
-      action: 'uploadDocument',
-      user: req.body.user
-    });
+      action: `${req.body.type} uploaded`,
+      user: req.body.user,
+      type: 'document',
+      shipmentId: shipment.key.id
+    };
+    shipment.value.events.push(event);
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, type: 'documentUploaded' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, event, type: 'documentUploaded' })));
   });
 
   res.end('ok');
@@ -127,7 +130,7 @@ router.post('/generateProof', (req, res) => {
     shipment.value.events.push({
       id: uuid(),
       date: new Date().getTime(),
-      action: 'generateProof',
+      action: 'Proof generated',
       user: req.body.user
     });
   }
@@ -230,11 +233,11 @@ router.post('/confirmShipment', (req, res) => {
   shipment.value.state = 2;
   shipment.value.events.push({
     id: uuid(),
-    action: 'ShipmentConfirmed',
+    action: 'Shipment Confirmed',
     date: new Date().getTime(),
     user: 'Transporter'
   });
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentConfirmed' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentConfirmed' })));
   res.end('ok');
 });
 
@@ -261,7 +264,7 @@ router.post('/validateProof', (req, res) => {
     shipment.value.events.push({
       id: uuid(),
       date: new Date().getTime(),
-      action: 'validateProof',
+      action: 'Proof Validated',
       user: req.body.user
     });
   }
