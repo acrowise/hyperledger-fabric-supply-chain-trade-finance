@@ -21,7 +21,7 @@ const Contracts = ({ role }) => {
     const notification = JSON.parse(message);
     if (notification.type === 'contractCreated') {
       const newState = data.result.concat(notification);
-      setData(newState);
+      setData({ result: newState });
     }
   };
 
@@ -44,7 +44,7 @@ const Contracts = ({ role }) => {
       <Table
         fields={TABLE_MAP.CONTRACTS}
         data={dataToDisplay}
-        actions={item => (role === 'supplier' ? (
+        actions={item => (role === 'supplier' && item.state === 'Signed' ? (
             <div>
               <Button
                 onClick={() => {

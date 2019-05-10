@@ -208,7 +208,7 @@ export const TABLE_MAP = {
     invoiceID: 'Invoice ID',
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
-    factor: 'Factor',
+    // factor: 'Factor',
     rate: 'Rate,%',
     totalDue: 'Amount, USD',
     dueDate: 'Payment Date',

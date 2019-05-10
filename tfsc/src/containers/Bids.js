@@ -54,7 +54,11 @@ const Bids = ({ role, filter, search }) => {
   ) : (
     <div>
       <Table
-        fields={TABLE_MAP.BIDS}
+        fields={
+          role === 'factor-1' || role === 'factor-2'
+            ? TABLE_MAP.BIDS
+            : Object.assign({}, TABLE_MAP.BIDS, { factor: 'Factor' })
+        }
         data={filteredData}
         actions={item => (
           <>
@@ -78,13 +82,9 @@ const Bids = ({ role, filter, search }) => {
             ) : (
               <></>
             )}
-            {(role === 'factor-1' || role === 'factor-2' )&& item.state === 'Issued' ? (
+            {role === item.factor && item.state === 'Issued' ? (
               <div>
-                <Button
-                  onClick={() => {}}
-                  style={{ marginRight: '5px' }}
-                  intent="primary"
-                >
+                <Button onClick={() => {}} style={{ marginRight: '5px' }} intent="primary">
                   Edit
                 </Button>
                 <Button intent="danger">Cancel</Button>

@@ -37,6 +37,20 @@ const Shipments = ({ role, content, setContent }) => {
       }
     }
 
+    if (notification.type === 'proofGenerated') {
+      const newState = shipments.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.shipment.key.id);
+      newState[itemToUpdateIndex] = notification.shipment;
+      setData({ result: newState });
+
+      showShipmentDetail(
+        Object.assign({}, notification.shipment.value, {
+          id: notification.shipment.key.id,
+          state: STATUSES.SHIPMENT[notification.shipment.value.state]
+        })
+      );
+    }
+
     if (notification.type === 'shipmentRequested') {
       const newState = shipments.result.concat(notification);
       setData({ result: newState });
