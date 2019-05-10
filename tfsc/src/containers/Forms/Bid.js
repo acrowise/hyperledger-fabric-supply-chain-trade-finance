@@ -47,7 +47,7 @@ const PlaceBidForm = ({
               </FormGroup>
             ))}
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <Button
+              <Button
                 large
                 intent="primary"
                 onClick={() => {

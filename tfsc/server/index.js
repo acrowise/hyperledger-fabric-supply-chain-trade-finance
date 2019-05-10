@@ -113,7 +113,6 @@ router.get('/documents', (req, res) => {
 
 router.post('/generateProof', (req, res) => {
   const id = uuid();
-  console.log('contract', CONTRACTS.result.find(c => c.key.id === req.body.contractId));
   const proof = {
     key: { id },
     value: {
@@ -350,7 +349,8 @@ router.post('/placeInvoice', (req, res) => {
 router.post('/placeBid', (req, res) => {
   const id = nanoid();
 
-  const contract = CONTRACTS.result.find(i => i.key.id === req.body.args[3]);
+  const invoice = INVOICES.result.find(i => i.key.id === req.body.args[3]);
+
   const bid = {
     key: {
       id
@@ -359,7 +359,7 @@ router.post('/placeBid', (req, res) => {
       factor: req.body.args[2],
       rate: req.body.args[1],
       invoiceID: req.body.args[3],
-      totalDue: contract.value.totalDue,
+      totalDue: invoice.value.totalDue,
       state: 1
     }
   };
@@ -376,7 +376,7 @@ router.post('/acceptBid', (req, res) => {
   bid.value.state = 2;
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'acceptBid' }))));
-  res.senendd('ok');
+  res.end('ok');
 });
 
 router.post('/acceptInvoice', (req, res) => {
