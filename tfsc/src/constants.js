@@ -138,7 +138,7 @@ export const INPUTS = {
       field: 'destination'
     },
     {
-      label: 'Due Date',
+      label: 'Delivery Date',
       field: 'dueDate'
     },
     {
@@ -183,7 +183,7 @@ export const TABLE_MAP = {
     totalDue: 'Total Due',
     paymentDate: 'Payment Date',
     // timestamp: 'Last Updated',
-    dueDate: 'Due Date',
+    dueDate: 'Delivery Date',
     destination: 'Destination',
     quantity: 'Quantity',
     state: 'Satus'
@@ -194,7 +194,7 @@ export const TABLE_MAP = {
     quantity: 'Quantity',
     price: 'Price',
     destination: 'Destination',
-    dueDate: 'Due Date',
+    dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',
     state: 'State'
   },
@@ -216,7 +216,7 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     totalDue: 'Total',
-    dueDate: 'Due Date',
+    dueDate: 'Delivery Date',
     owner: 'Owner',
     state: 'Status'
   },

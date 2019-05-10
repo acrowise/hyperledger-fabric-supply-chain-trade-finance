@@ -69,7 +69,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 <div className="col-6">
                   <div className="row">
                     <Label className="col-6">
-                      Due Date
+                      Delivery Date
                       <DateInput
                         value={formState.dueDate}
                         formatDate={date => date.toLocaleDateString()}

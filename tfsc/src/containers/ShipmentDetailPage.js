@@ -129,7 +129,7 @@ const ShipmentDetailPage = (props) => {
                 <tr>
                   <th>Ship From</th>
                   <th>Ship To</th>
-                  <th>Due Date</th>
+                  <th>Delivery Date</th>
                   <th>Vehicle/Transport</th>
                   <th>Status</th>
                 </tr>
