@@ -5,6 +5,7 @@ import {
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
+import { title } from '../mocks';
 
 const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
@@ -19,14 +20,25 @@ const Nav = ({ role, logout }) => {
   const Notifications = () => (
     <div className="header-notifications">
       {notifications.map((n, i) => (
-        <div
-          key={i.toString()}
-          className="header-notifications-item"
-        >
-          Type: {n.type}
+        <div key={i.toString()} className="header-notifications-item">
+          <svg
+            width="18"
+            height="15"
+            viewBox="0 0 18 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M2 8.44828L6.42105 13L16 2"
+              stroke="#69D7BC"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <p style={{ paddingLeft: '5px' }}>{title[n.type]}</p>
         </div>
       ))}
-
     </div>
   );
 
@@ -63,9 +75,7 @@ const Nav = ({ role, logout }) => {
                   >
                     Notifications
                     {hasNewNotifications !== 0 && (
-                      <div className="header-notifications-quantity">
-                        {hasNewNotifications}
-                      </div>
+                      <div className="header-notifications-quantity">{hasNewNotifications}</div>
                     )}
                   </Button>
                 </div>

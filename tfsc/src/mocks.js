@@ -13,3 +13,18 @@ export const notifications = {
   documentUploaded: 'shipments',
   invoiceRegistered: 'invoices'
 };
+
+export const title = {
+  place: 'Order Created',
+  acceptOrder: 'Order Accepted',
+  shipmentRequested: 'Shipment Requested',
+  shipmentConfirmed: 'Shipment Confirmed',
+  validateProof: 'Proof Validated',
+  proofGenerated: 'Proof Generated',
+  contractCreated: 'Contract Created',
+  acceptInvoice: 'Invoice Accepted',
+  placeBid: 'Bid Placed',
+  acceptBid: 'Bid Accepted',
+  // documentUploaded: 'shipments',
+  invoiceRegistered: 'Invoice Registered'
+};
