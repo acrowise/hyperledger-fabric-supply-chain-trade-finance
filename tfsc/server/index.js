@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const nanoid = require('nanoid');
 const multer = require('multer');
 const proxy = require('http-proxy-middleware');
-const axios = require('axios');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 

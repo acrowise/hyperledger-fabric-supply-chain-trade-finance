@@ -10,7 +10,8 @@ const Icon = ({ name }) => {
       return <Supplier />;
     case 'transporter':
       return <Transporter />;
-    case 'auditor':
+    case 'ggcb':
+    case 'uscts':
       return <Auditor />;
 
     case 'factor-1':
