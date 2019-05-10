@@ -704,7 +704,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//invoking another chaincode for accepting invoice
-	fcnName := "registerInvoice"
+	fcnName := "acceptInvoice"
 	chaincodeName := "trade-finance-chaincode"
 	channelName := "common"
 	invoiceID := shipment.Value.ContractID
