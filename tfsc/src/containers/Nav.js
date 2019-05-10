@@ -55,41 +55,28 @@ const Nav = ({ role, logout }) => {
                   }}
                 >
                   <Button
-                    className="bp3-minimal"
+                    className="bp3-minimal header-notifications-btn"
                     style={{ textTransform: 'capitalize' }}
                     onClick={() => {
                       setShowNotifications(true);
                     }}
                   >
                     Notifications
-                  </Button>
-                  {hasNewNotifications !== 0 ? (
-                    <div
-                      style={{
-                        borderRadius: '100%',
-                        height: '1.5em',
-                        width: '1.5em',
-                        textAlign: 'center',
-                        backgroundColor: '#69D7BC'
-                      }}
-                    >
-                      <p
-                        style={{
-                          color: 'white',
-                          margin: '3px 0'
-                        }}
-                      >
+                    {hasNewNotifications !== 0 && (
+                      <div className="header-notifications-quantity">
                         {hasNewNotifications}
-                      </p>
-                    </div>
-                  ) : (
-                    <></>
-                  )}
+                      </div>
+                    )}
+                  </Button>
                 </div>
               }
             />
 
-            <Button className="bp3-minimal" icon="user" style={{ textTransform: 'capitalize' }}>
+            <Button
+              className="bp3-minimal"
+              icon="user"
+              style={{ textTransform: 'capitalize', marginLeft: 50 }}
+            >
               {role}
             </Button>
           </Navbar.Group>
