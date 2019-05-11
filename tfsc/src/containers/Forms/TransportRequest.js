@@ -99,7 +99,9 @@ const TransportRequestForm = ({dialogIsOpen, setDialogOpenState}) => {
                   </Label>
                   <Label>
                     Packing List
+                    <div style={{marginTop: 5}}>
                     <FileUploader files={files} setFiles={setFiles}/>
+                    </div>
                   </Label>
                 </div>
               </div>

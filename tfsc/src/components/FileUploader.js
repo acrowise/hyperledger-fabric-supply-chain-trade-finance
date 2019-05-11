@@ -143,7 +143,6 @@ function FileUploader({ files, setFiles, withPreview }) {
         style={{
           padding: '10px 0 0 0',
           margin: '5px 0 0 0',
-          textAlign: 'center',
           color: '#69D7BC',
           listStyle: 'none'
         }}
@@ -151,7 +150,7 @@ function FileUploader({ files, setFiles, withPreview }) {
         {files.map((file, i) => (
           <li
             key={i.toString()}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{ display: 'flex', alignItems: 'center' }}
           >
             <span style={{ marginRight: '5px' }}>
               <svg
