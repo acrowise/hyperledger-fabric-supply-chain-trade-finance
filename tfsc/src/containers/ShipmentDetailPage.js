@@ -46,8 +46,8 @@ const ShipmentDetailPage = (props) => {
 
     if (notification.type === 'validateProof') {
       const newState = proofs.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
-      newState[itemToUpdateIndex].value = notification.value;
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex].value = notification.data.value;
       setData({ result: newState });
     }
 
