@@ -194,9 +194,10 @@ export const TABLE_MAP = {
   },
   ORDERS: {
     id: 'Order ID',
-    productName: 'Name',
+    productName: 'Product',
     quantity: 'Quantity',
     price: 'Price',
+    totalDue: 'Total Amount',
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',

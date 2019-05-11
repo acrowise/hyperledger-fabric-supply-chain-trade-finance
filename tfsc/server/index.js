@@ -181,7 +181,8 @@ router.post('/placeOrder', (req, res) => {
       destination: req.body.args[4],
       dueDate: req.body.args[5],
       paymentDate: req.body.args[6],
-      buyerId: req.body.args[7]
+      buyerId: req.body.args[7],
+      totalDue: req.body.args[2] * req.body.args[3]
     },
     type: 'place'
   };
@@ -320,7 +321,7 @@ router.post('/validateProof', (req, res) => {
       id: uuid(),
       date: new Date().getTime(),
       action: 'Proof Validated',
-      user: req.body.user
+      user: req.body.factor
     });
     db.set('shipments', shipments).write();
   }
