@@ -2,7 +2,14 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  Button, Overlay, Card, Label, TextArea, FormGroup, InputGroup
+  Button,
+  Overlay,
+  Card,
+  Label,
+  TextArea,
+  FormGroup,
+  InputGroup,
+  Icon
 } from '@blueprintjs/core';
 
 import { post } from '../../helper/api';
@@ -50,6 +57,14 @@ const ValidateProof = ({
                 <FormGroup className="form-group-horizontal" label="Consignee">
                   <InputGroup disabled value={proof.contract.value.consigneeName} />
                 </FormGroup>
+                <div style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                  <Icon icon="document" />
+                  <div style={{ marginLeft: '10px' }}>Packing List</div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                  <Icon icon="document" />
+                  <div style={{ marginLeft: '10px' }}>Bill of Landing</div>
+                </div>
                 <br />
                 {proof.documents
                   && proof.documents.map(i => (

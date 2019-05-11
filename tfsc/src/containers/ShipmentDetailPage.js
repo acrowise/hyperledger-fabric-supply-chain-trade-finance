@@ -94,6 +94,7 @@ const ShipmentDetailPage = (props) => {
           {props.role === 'buyer' ? (
             <div>
               <Button
+                style={{ marginBottom: '10px' }}
                 intent="primary"
                 onClick={() => {
                   setCdDialogOpenState(true);
@@ -109,6 +110,7 @@ const ShipmentDetailPage = (props) => {
           {props.role === 'transporter' && shipment.state === 'Requested' ? (
             <div>
               <Button
+                style={{ marginBottom: '10px' }}
                 intent="primary"
                 onClick={() => {
                   setCsDialogOpenState(true);

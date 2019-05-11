@@ -170,7 +170,7 @@ router.post('/requestShipment', (req, res) => {
         {
           id: uuid(),
           date: new Date().getTime(),
-          action: 'ShipmentRequested',
+          action: 'Shipment Requested',
           user: 'Supplier'
         }
       ]

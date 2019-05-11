@@ -126,6 +126,10 @@ export const INPUTS = {
       field: 'consignorName'
     },
     {
+      label: 'Consignee Name',
+      field: 'consigneeName'
+    },
+    {
       label: 'Total Due',
       field: 'totalDue'
     },

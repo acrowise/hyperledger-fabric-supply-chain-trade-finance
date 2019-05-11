@@ -13,6 +13,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const initialState = {
     contractId: false,
     consignorName: false,
+    consigneeName: false,
     totalDue: false,
     quantity: false,
     destination: false,
