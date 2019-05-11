@@ -152,6 +152,7 @@ $header-height: 65px;
 .header-notifications-quantity {
   width: 24px;
   height: 18px;
+  margin-top: -10px;
   margin-left: 5px;
   border-radius: 18px;
   text-align: center;
@@ -160,9 +161,14 @@ $header-height: 65px;
   color: white;
 }
 
+.header-notifications-btn.bp3-button.bp3-minimal:hover {
+  background: transparent;
+}
+
 .header-notifications-btn .bp3-button-text{
   display: flex;
 }
+
 
 .role-item-txt {
   margin-top: 5px;
