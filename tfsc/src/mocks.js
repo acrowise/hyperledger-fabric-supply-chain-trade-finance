@@ -3,7 +3,7 @@ export const notifications = {
   acceptOrder: 'orders',
   shipmentRequested: 'shipments',
   shipmentConfirmed: 'shipments',
-  validateProof: 'reports',
+  validateProof: 'proofs',
   proofGenerated: 'proofs',
   contractCreated: 'contracts',
   placeInvoice: 'invoices',
@@ -11,7 +11,8 @@ export const notifications = {
   placeBid: 'bids',
   acceptBid: 'bids',
   documentUploaded: 'shipments',
-  invoiceRegistered: 'invoices'
+  invoiceRegistered: 'invoices',
+  reportGenerated: 'reports'
 };
 
 export const title = {
@@ -29,5 +30,6 @@ export const title = {
   documentUploaded: 'Document Uploaded',
   invoiceRegistered: 'Invoice Registered',
   cancelBid: 'Bid Cancelled',
-  placeInvoice: 'Invoice Signed'
+  placeInvoice: 'Invoice Signed',
+  reportGenerated: 'Report Created'
 };

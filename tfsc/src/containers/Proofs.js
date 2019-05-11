@@ -17,15 +17,12 @@ const Proofs = ({ role }) => {
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'proof') {
-      const newState = proofs.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.contractId === notification.contractId);
-      newState[itemToUpdateIndex] = notification;
+    if (notification.type === 'proofGenerated') {
+      const newState = proofs.result.concat(notification.data);
       setData({ result: newState });
     }
 
     if (notification.type === 'validateProof') {
-      console.log('notification', notification);
       const newState = proofs.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex] = notification.data;

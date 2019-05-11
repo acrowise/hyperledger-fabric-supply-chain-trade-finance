@@ -16,7 +16,7 @@ import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
 const ShipmentDetailPage = (props) => {
   // const [data, loading] = useFetch('documents');
-  const [proofs, loadingProofs, setData] = useFetch('listProofs');
+  const [proofs, loadingProofs, setData] = useFetch(`listProofs?id=${props.id}`);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
@@ -179,7 +179,10 @@ const ShipmentDetailPage = (props) => {
               ) : ( */}
                 {docs
                   && docs.map((doc, i) => (
-                    <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row', marginTop: '5px' }}>
+                    <div
+                      key={i.toString()}
+                      style={{ display: 'flex', flexDirection: 'row', marginTop: '5px' }}
+                    >
                       <Icon icon="document" />
                       <div style={{ marginLeft: '10px' }}>{doc.type}</div>
                     </div>

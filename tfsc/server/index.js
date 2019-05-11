@@ -17,19 +17,20 @@ const upload = multer();
 const PORT = process.env.PORT || 3000;
 // const API_PORT = process.env.API_PORT || 4002;
 
-db
-  .defaults({
-    orders: [],
-    invoices: [],
-    bids: [],
-    contracts: [],
-    shipments: [],
-    proofs: [],
-    reports: []
-  })
-  .write();
+db.defaults({
+  orders: [],
+  invoices: [],
+  bids: [],
+  contracts: [],
+  shipments: [],
+  proofs: [],
+  reports: []
+}).write();
 
-const get = (field, id) => db.get(field).value().find(i => i.key.id === id);
+const get = (field, id) => db
+  .get(field)
+  .value()
+  .find(i => i.key.id === id);
 
 const clients = [];
 const app = express();
@@ -54,8 +55,21 @@ router.use((_, __, next) => {
 
 router.use(bodyParser.json());
 
-router.get('/listProofs', (_, res) => {
-  res.json({ result: db.get('proofs').value() });
+router.get('/listProofs', (req, res) => {
+  if (req.query && req.query.id) {
+    const shipmentId = req.query.id;
+    res.json({
+      result: db
+        .get('proofs')
+        .value()
+        .filter(i => i.value.shipmentId === shipmentId)
+    });
+    return;
+  }
+
+  res.json({
+    result: db.get('proofs').value()
+  });
 });
 
 router.get('/shipments', (_, res) => {
@@ -128,7 +142,10 @@ router.post('/generateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       agency: req.body.reviewer,
       fields: req.body.data,
-      contract: db.get('contracts').value().find(i => i.key.id === req.body.contractId)
+      contract: db
+        .get('contracts')
+        .value()
+        .find(i => i.key.id === req.body.contractId)
     }
   };
 
@@ -145,12 +162,11 @@ router.post('/generateProof', (req, res) => {
   });
 
   db.set('shipments', shipments).write();
-  db.get('proofs').push(proof).write();
+  db.get('proofs')
+    .push(proof)
+    .write();
 
-  clients.forEach(c => c.emit(
-    'notification',
-    JSON.stringify(Object.assign({ data: proof, shipment, type: 'proofGenerated' }))
-  ));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'proofGenerated' })));
   res.end('ok');
 });
 
@@ -169,8 +185,7 @@ router.post('/placeOrder', (req, res) => {
     },
     type: 'place'
   };
-  db
-    .get('orders')
+  db.get('orders')
     .push(order)
     .write();
   clients.forEach(c => c.emit('notification', JSON.stringify(order)));
@@ -199,8 +214,7 @@ router.post('/requestShipment', (req, res) => {
       ]
     }
   });
-  db
-    .get('shipments')
+  db.get('shipments')
     .push(shipment)
     .write();
 
@@ -210,8 +224,7 @@ router.post('/requestShipment', (req, res) => {
 });
 
 const registerInvoice = (contract) => {
-  db
-    .get('invoices')
+  db.get('invoices')
     .push({
       key: { id: uuid() },
       value: {
@@ -282,20 +295,23 @@ router.post('/validateProof', (req, res) => {
   db.set('proofs', proofs).write();
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, type: 'validateProof' })));
 
-  db
-    .get('reports')
-    .push({
-      key: { id: uuid() },
-      value: {
-        state: 1,
-        shipmentId: req.body.shipmentId,
-        proofId: proof.key.id,
-        description: req.body.description,
-        contract: get('contracts', req.body.contractId),
-        factor: req.body.factor
-      }
-    })
+  const report = {
+    key: { id: uuid() },
+    value: {
+      state: 1,
+      shipmentId: req.body.shipmentId,
+      proofId: proof.key.id,
+      description: req.body.description,
+      contract: get('contracts', req.body.contractId),
+      factor: req.body.factor
+    }
+  };
+  db.get('reports')
+    .push(report)
     .write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: report, type: 'reportGenerated' })));
+
   if (req.body.shipmentId) {
     const shipments = db.get('shipments').value();
     const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
@@ -337,8 +353,7 @@ router.post('/acceptOrder', async (req, res) => {
     }
   };
 
-  db
-    .get('contracts')
+  db.get('contracts')
     .push(contract)
     .write();
 
@@ -376,8 +391,7 @@ router.post('/placeBid', (req, res) => {
     }
   };
 
-  db
-    .get('bids')
+  db.get('bids')
     .push(bid)
     .write();
 
@@ -401,9 +415,10 @@ router.post('/acceptBid', (req, res) => {
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: bid, type: 'acceptBid' })));
 
   try {
-    const bidsToCancel = db.get('bids').value().filter(
-      i => i.value.invoiceID === bid.value.invoiceID && i.value.state === 1
-    );
+    const bidsToCancel = db
+      .get('bids')
+      .value()
+      .filter(i => i.value.invoiceID === bid.value.invoiceID && i.value.state === 1);
     bidsToCancel.forEach((i) => {
       i.value.state = 3;
       setTimeout(() => {
