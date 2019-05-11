@@ -148,6 +148,10 @@ export const INPUTS = {
     {
       label: 'Payment Date',
       field: 'paymentDay'
+    },
+    {
+      label: 'Product Name',
+      field: 'productName'
     }
   ],
   PLACE_BID: [
@@ -187,7 +191,7 @@ export const TABLE_MAP = {
     productName: 'Product',
     quantity: 'Quantity',
     price: 'Price',
-    totalDue: 'Total Due',
+    totalDue: 'Amount, $',
     // timestamp: 'Last Updated',
     destination: 'Destination',
     dueDate: 'Delivery Date',
@@ -199,7 +203,7 @@ export const TABLE_MAP = {
     productName: 'Product',
     quantity: 'Quantity',
     price: 'Price',
-    totalDue: 'Total Amount',
+    totalDue: 'Amount, $',
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',
@@ -216,8 +220,8 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     // factor: 'Factor',
-    totalDue: 'Amount, USD',
     rate: 'Rate,%',
+    totalDue: 'Amount, $',
     dueDate: 'Payment Date',
     state: 'Status'
   },
@@ -225,7 +229,7 @@ export const TABLE_MAP = {
     id: 'Invoice ID',
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
-    totalDue: 'Total',
+    totalDue: 'Amount, $',
     dueDate: 'Payment Date',
     owner: 'Owner',
     state: 'Status'

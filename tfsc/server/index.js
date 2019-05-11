@@ -17,6 +17,8 @@ const upload = multer();
 const PORT = process.env.PORT || 3000;
 // const API_PORT = process.env.API_PORT || 4002;
 
+const capitalize = str => str[0].toUpperCase() + str.substring(1);
+
 db.defaults({
   orders: [],
   invoices: [],
@@ -120,7 +122,7 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
       id: uuid(),
       date: new Date().getTime(),
       action: `${req.body.type} uploaded`,
-      user: req.body.user,
+      user: req.body.user ? capitalize(req.body.user) : '',
       type: 'document',
       shipmentId: shipment.key.id
     };
@@ -194,6 +196,7 @@ router.post('/placeOrder', (req, res) => {
 });
 
 router.post('/requestShipment', (req, res) => {
+  const contract = get('contracts', req.body.args[1]);
   const shipment = Object.assign(req.body, {
     key: { id: uuid() },
     value: {
@@ -204,6 +207,7 @@ router.post('/requestShipment', (req, res) => {
       transport: req.body.args[4],
       description: req.body.args[5],
       timestamp: new Date().getTime(),
+      dueDate: contract.value.dueDate,
       documents: [],
       events: [
         {
@@ -250,7 +254,7 @@ router.post('/confirmDelivery', (req, res) => {
     id: uuid(),
     date: new Date().getTime(),
     action: 'Shipment Delivered',
-    user: req.body.user || 'Buyer'
+    user: req.body.user ? capitalize(req.body.user) : 'Buyer'
   });
 
   db.set('shipments', shipments).write();
@@ -304,7 +308,7 @@ router.post('/validateProof', (req, res) => {
       proofId: proof.key.id,
       description: req.body.description,
       contract: get('contracts', req.body.contractId),
-      factor: req.body.factor
+      factor: req.body.factor ? capitalize(req.body.factor) : 'Factor'
     }
   };
   db.get('reports')
@@ -321,7 +325,7 @@ router.post('/validateProof', (req, res) => {
       id: uuid(),
       date: new Date().getTime(),
       action: 'Proof Validated',
-      user: req.body.factor
+      user: req.body.factor ? capitalize(req.body.factor) : 'Factor'
     });
     db.set('shipments', shipments).write();
   }

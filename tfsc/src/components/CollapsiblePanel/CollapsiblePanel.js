@@ -19,26 +19,25 @@ const CollapsiblePanel = ({ history }) => {
         className="collapsible-panel-header"
       >
         <strong>View History</strong>
-        <Icon
-          icon={expanded ? 'caret-up' : 'caret-down'}
-          iconSize="30"
-        />
+        <Icon icon={expanded ? 'caret-up' : 'caret-down'} iconSize="30" />
       </div>
       {expanded && (
         <div className="collapsible-panel-body">
           <table className="history-table">
             <tbody>
-            {history.map(item => (
-              <tr key={item.id}>
-                <td className="history-table-bullet">
-                  <Icon icon="symbol-circle"/>
-                </td>
-                <td>{format(item.date, 'DD MMMM YYYY')}</td>
-                <td>{item.id}</td>
-                <td>{item.action}</td>
-                <td>{item.type}</td>
-              </tr>
-            ))}
+              {history
+                .sort((a, b) => b.date - a.date)
+                .map(item => (
+                  <tr key={item.id}>
+                    <td className="history-table-bullet">
+                      <Icon icon="symbol-circle" />
+                    </td>
+                    <td>{format(item.date, 'DD MMMM YYYY')}</td>
+                    <td>{item.id}</td>
+                    <td>{item.action}</td>
+                    <td>{item.type}</td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>

@@ -46,7 +46,7 @@ const ValidateProof = ({
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
-                <FormGroup className="form-group-horizontal" label="ContractId">
+                <FormGroup className="form-group-horizontal" label="Contract ID">
                   <InputGroup disabled value={cropId(proof.contract.key.id)} />
                 </FormGroup>
 

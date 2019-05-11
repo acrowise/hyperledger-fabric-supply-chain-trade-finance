@@ -137,7 +137,7 @@ const ShipmentDetailPage = (props) => {
                 <tr>
                   <td>{shipment.shipmentFrom}</td>
                   <td>{shipment.shipmentTo}</td>
-                  <td>{new Date().toLocaleDateString()}</td>
+                  <td>{shipment.dueDate}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
                 </tr>
