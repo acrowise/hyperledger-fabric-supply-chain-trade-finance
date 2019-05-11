@@ -37,7 +37,7 @@ const Timeline = ({ shipment, events }) => {
         <div className="timeline-finish">
           <div className="timeline-finish-text"></div>
           <div className="timeline-item-bottom-text">
-          <div>{shipment.shipmentTo}</div>
+            <div>{shipment.shipmentTo}</div>
           </div>
         </div>
 

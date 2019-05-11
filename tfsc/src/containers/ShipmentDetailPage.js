@@ -179,7 +179,7 @@ const ShipmentDetailPage = (props) => {
               ) : ( */}
                 {docs
                   && docs.map((doc, i) => (
-                    <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row' }}>
+                    <div key={i.toString()} style={{ display: 'flex', flexDirection: 'row', marginTop: '5px' }}>
                       <Icon icon="document" />
                       <div style={{ marginLeft: '10px' }}>{doc.type}</div>
                     </div>

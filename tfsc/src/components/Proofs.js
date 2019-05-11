@@ -4,7 +4,7 @@ import { Icon } from '@blueprintjs/core';
 import ProofDetail from './ProofDetail/ProofDetail';
 
 const Proofs = ({ data }) => {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [dialogIsOpen, setDialogOpenState] = useState(false);
   const [selectedProof, setSelectedProof] = useState({});
 
