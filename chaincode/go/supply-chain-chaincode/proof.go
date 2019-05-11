@@ -64,6 +64,12 @@ type Proof struct {
 	Value ProofValue `json:"value"`
 }
 
+type AttributeData struct {
+	AttributeName       string `json:"attributeName"`
+	AttributeValue      string `json:"attributeValue"`
+	AttributeDisclosure byte   `json:"attributeDisclosure"`
+}
+
 func CreateProof() LedgerData {
 	return new(Proof)
 }

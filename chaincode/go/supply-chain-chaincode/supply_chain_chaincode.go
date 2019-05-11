@@ -14,7 +14,7 @@ import (
 	"github.com/hyperledger/fabric/idemix"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
-	"strconv"
+	"math/rand"
 	"time"
 )
 
@@ -897,14 +897,41 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 
 	// making arrays of attributes names and values
 	rng, err := idemix.GetRand()
-	// attributes names
-	AttributeNames := []string{"Attr1", "Attr2", "Attr3", "Attr4", "Attr5"}
+
+	var attributesArray []AttributeData
+	err = json.Unmarshal([]byte(args[1]), &attributesArray)
+	if err != nil {
+		message := fmt.Sprintf("Input json is invalid. Error \"%s\"", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	AttributeNames := make([]string, len(attributesArray))
 	attrs := make([]*FP256BN.BIG, len(AttributeNames))
-	for i := range AttributeNames {
+	disclosure := make([]byte, len(attributesArray))
+	msg := make([]byte, len(attributesArray))
+	var rhindex int
+
+	for i := range attributesArray {
 		h := sha256.New()
 		// make hash from value of attribute
-		h.Write([]byte("hello world " + strconv.Itoa(i)))
+		h.Write([]byte(attributesArray[i].AttributeValue))
 		attrs[i] = FP256BN.FromBytes(h.Sum(nil))
+		AttributeNames[i] = attributesArray[i].AttributeName
+		disclosure[i] = attributesArray[i].AttributeDisclosure
+		msg[i] = byte(i)
+		if attributesArray[i].AttributeDisclosure == 0 {
+			rhindex = i
+			// fill hidden field random value
+			attrs[i] = FP256BN.NewBIGint(rand.Intn(10000))
+		}
+	}
+
+	// check Disclosure[rhIndex] == 0
+	if attributesArray[rhindex].AttributeDisclosure != 0 {
+		message := fmt.Sprintf("Idemix requires the revocation handle to remain undisclosed (i.e., Disclosure[rhIndex] == 0). But we have \"%d\"", attributesArray[rhindex].AttributeDisclosure)
+		Logger.Error(message)
+		return shim.Error(message)
 	}
 
 	// create a new key pair
@@ -944,11 +971,6 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 
 	// signing selective disclosure
 	Nym, RandNym := idemix.MakeNym(sk, key.Ipk, rng)
-	// make mask for hide values 0 - hide, 1 - show
-	disclosure := []byte{0, 1, 1, 1, 0}
-	msg := []byte{1, 2, 3, 4, 5}
-	rhindex := 4
-	// make signature
 	sig, err := idemix.NewSignature(cred, sk, Nym, RandNym, key.Ipk, disclosure, msg, rhindex, cri, rng)
 	if err != nil {
 		message := fmt.Sprintf("Idemix NewSignature return error: %s", err.Error())
@@ -956,9 +978,6 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	// fill hidden fields random value
-	attrs[0] = FP256BN.NewBIGint(1111)
-	attrs[4] = FP256BN.NewBIGint(1111)
 	attributeValuesBytes := make([][]byte, len(attrs))
 	for i := 0; i < len(attrs); i++ {
 		row := make([]byte, FP256BN.MODBYTES)
@@ -1052,10 +1071,6 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	proof.Value.State = stateProofValidated
 
 	// updating state in ledger
-	if bytes, err := json.Marshal(proof); err == nil {
-		Logger.Debug("proof: " + string(bytes))
-	}
-
 	if err := UpdateOrInsertIn(stub, &proof, "", []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
