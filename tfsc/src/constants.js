@@ -190,7 +190,7 @@ export const TABLE_MAP = {
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',
-    state: 'Satus'
+    state: 'Status'
   },
   ORDERS: {
     id: 'Order ID',

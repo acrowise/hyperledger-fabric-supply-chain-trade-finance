@@ -19,12 +19,15 @@ export const title = {
   acceptOrder: 'Order Accepted',
   shipmentRequested: 'Shipment Requested',
   shipmentConfirmed: 'Shipment Confirmed',
+  shipmentDelivered: 'Shipment Delivered',
   validateProof: 'Proof Validated',
   proofGenerated: 'Proof Generated',
   contractCreated: 'Contract Created',
   acceptInvoice: 'Invoice Accepted',
   placeBid: 'Bid Placed',
   acceptBid: 'Bid Accepted',
-  // documentUploaded: 'shipments',
-  invoiceRegistered: 'Invoice Registered'
+  documentUploaded: 'Document Uploaded',
+  invoiceRegistered: 'Invoice Registered',
+  cancelBid: 'Bid Cancelled',
+  placeInvoice: 'Invoice Signed'
 };

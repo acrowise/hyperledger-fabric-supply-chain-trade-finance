@@ -17,15 +17,15 @@ const Bids = ({ role, filter, search }) => {
   const onMessage = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'place') {
+    if (notification.type === 'placeBid') {
       const newState = { result: data.result.concat(notification) };
       setData(newState);
     }
 
-    if (notification.type === 'acceptBid') {
+    if (notification.type === 'acceptBid' || notification.type === 'cancelBid') {
       const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
-      newState[itemToUpdateIndex] = notification;
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex] = notification.data;
       setData({ result: newState });
     }
   };
