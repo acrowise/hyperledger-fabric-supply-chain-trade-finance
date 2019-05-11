@@ -1,17 +1,17 @@
-import React, { useState, useReducer } from 'react';
+import React, {useState, useReducer} from 'react';
 import PropTypes from 'prop-types';
 
 import {
   Button, Overlay, FormGroup, InputGroup, Card, TextArea, Label
 } from '@blueprintjs/core';
 
-import { post } from '../../helper/api';
+import {post} from '../../helper/api';
 
 import FileUploader from '../../components/FileUploader';
 
-import { INPUTS } from '../../constants';
+import {INPUTS} from '../../constants';
 
-import { formReducer } from '../../reducers';
+import {formReducer} from '../../reducers';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
@@ -22,7 +22,7 @@ const initialState = {
   description: ''
 };
 
-const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
+const TransportRequestForm = ({dialogIsOpen, setDialogOpenState}) => {
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [files, setFiles] = useState([]);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
@@ -50,27 +50,26 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
           paddingTop: '15vh'
         }}
       >
-        <Card className="modal" style={{ width: '340px' }}>
-          <ActionCompleted res={shipmentRequestRes} action="Shipment Requested" result="Accepted" />
-        </Card>
-        {!shipmentRequestRes.pending
-        && !shipmentRequestRes.complete
-        && !shipmentRequestRes.data ? (
-          <Card className="modal" style={{ width: '720px' }}>
+        <Card className="modal" style={{width: '720px'}}>
+          <ActionCompleted res={shipmentRequestRes} action="Shipment Requested" result="Accepted"/>
+          {!shipmentRequestRes.pending
+          && !shipmentRequestRes.complete
+          && !shipmentRequestRes.data ? (
+            <>
             <div className="modal-header">New shipment</div>
             <div className="modal-body">
               {/* <Label>ContractId: {dialogIsOpen.item.contractId}</Label> */}
               <div className="row">
                 <div className="col-6">
                   {INPUTS.TRANSPORT_REQUEST.map(({
-                    label, type, placeholder, field
-                  }) => (
+                                                   label, type, placeholder, field
+                                                 }) => (
                     <FormGroup key={label} label={label}>
                       <InputGroup
                         type={type}
                         placeholder={placeholder}
                         value={formState[field]}
-                        onChange={({ target: { value } }) => dispatch({
+                        onChange={({target: {value}}) => dispatch({
                           type: 'change',
                           payload: {
                             field,
@@ -88,7 +87,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     <TextArea
                       growVertically={true}
                       value={formState.description}
-                      onChange={({ target: { value } }) => dispatch({
+                      onChange={({target: {value}}) => dispatch({
                         type: 'change',
                         payload: {
                           field: 'description',
@@ -100,7 +99,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   </Label>
                   <Label>
                     Packing List
-                    <FileUploader files={files} setFiles={setFiles} />
+                    <FileUploader files={files} setFiles={setFiles}/>
                   </Label>
                 </div>
               </div>
@@ -115,7 +114,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     state: false,
                     item: {}
                   });
-                  dispatch({ type: 'reset', payload: initialState });
+                  dispatch({type: 'reset', payload: initialState});
                   setFiles([]);
                 }}
               >
@@ -145,16 +144,17 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   });
                   uploadDocs(form);
                   setFiles([]);
-                  dispatch({ type: 'reset', payload: initialState });
+                  dispatch({type: 'reset', payload: initialState});
                 }}
               >
                 Request
               </Button>
             </div>
-          </Card>
+            </>
           ) : (
-          <></>
+            <></>
           )}
+        </Card>
       </div>
     </Overlay>
   );

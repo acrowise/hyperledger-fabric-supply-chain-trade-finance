@@ -45,72 +45,71 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
           paddingTop: '15vh'
         }}
       >
-        <Card className="modal" style={{ width: '340px' }}>
+        <Card className="modal" style={{ width: '720px' }}>
           <ActionCompleted res={shipmentRes} action="Shipment Confirmed" result="Accepted" />
-        </Card>
-        {!shipmentRes.pending && !shipmentRes.complete && !shipmentRes.data ? (
-          <Card className="modal" style={{ width: '720px' }}>
-            <div className="modal-header">Confirm Shipment</div>
-            <div className="modal-body">
-              <div className="row">
-                {Object.keys(fields).map(field => (
-                  <Label className="col-6" key={field}>
-                    {fields[field]}
-                    <InputGroup type="text" value={ids.includes(field) ? cropId(shipment[field]) : shipment[field]} disabled />
+          {!shipmentRes.pending && !shipmentRes.complete && !shipmentRes.data ? (
+            <>
+              <div className="modal-header">Confirm Shipment</div>
+              <div className="modal-body">
+                <div className="row">
+                  {Object.keys(fields).map(field => (
+                    <Label className="col-6" key={field}>
+                      {fields[field]}
+                      <InputGroup type="text" value={ids.includes(field) ? cropId(shipment[field]) : shipment[field]} disabled />
+                    </Label>
+                  ))}
+                  <Label className="col-6">
+                    Description
+                    <TextArea
+                      growVertically={true}
+                      large={true}
+                      value={shipment.description}
+                      disabled
+                    />
                   </Label>
-                ))}
-                <Label className="col-6">
-                  Description
-                  <TextArea
-                    growVertically={true}
-                    large={true}
-                    value={shipment.description}
-                    disabled
-                  />
-                </Label>
-                <Label className="col-6">
-                  Upload Bill of Lading
-                  <FileUploader files={files} setFiles={setFiles} />
-                </Label>
+                  <Label className="col-6">
+                    Upload Bill of Lading
+                    <FileUploader files={files} setFiles={setFiles} />
+                  </Label>
+                </div>
               </div>
-            </div>
-
-            <div className="modal-footer">
-              <Button
-                large
-                intent="none"
-                className="btn-modal btn-default"
-                onClick={() => {
-                  setDialogOpenState(false);
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                large
-                intent="primary"
-                className="btn-modal"
-                onClick={() => {
-                  confirmShipment({
-                    fcn: 'confirmShipment',
-                    args: [shipment.id]
-                  });
-                  const form = new FormData();
-                  form.append('contractId', shipment.contractId);
-                  form.append('type', 'Bill of Landing');
-                  files.forEach((f) => {
-                    form.append('file', f);
-                  });
-                  uploadDocs(form);
-                }}
-              >
-                Confirm
-              </Button>
-            </div>
-          </Card>
-        ) : (
-          <></>
-        )}
+              <div className="modal-footer">
+                <Button
+                  large
+                  intent="none"
+                  className="btn-modal btn-default"
+                  onClick={() => {
+                    setDialogOpenState(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  large
+                  intent="primary"
+                  className="btn-modal"
+                  onClick={() => {
+                    confirmShipment({
+                      fcn: 'confirmShipment',
+                      args: [shipment.id]
+                    });
+                    const form = new FormData();
+                    form.append('contractId', shipment.contractId);
+                    form.append('type', 'Bill of Landing');
+                    files.forEach((f) => {
+                      form.append('file', f);
+                    });
+                    uploadDocs(form);
+                  }}
+                >
+                  Confirm
+                </Button>
+              </div>
+            </>
+          ) : (
+            <></>
+          )}
+        </Card>
       </div>
     </Overlay>
   );

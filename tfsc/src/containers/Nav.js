@@ -28,6 +28,7 @@ const Nav = ({ role, logout }) => {
             viewBox="0 0 18 15"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            style={{ flex: '0 0 18px' }}
           >
             <path
               d="M2 8.44828L6.42105 13L16 2"
@@ -37,7 +38,7 @@ const Nav = ({ role, logout }) => {
               strokeLinejoin="round"
             />
           </svg>
-          <p style={{ paddingLeft: '5px' }}>{title[n.type]}</p>
+          <p style={{ paddingLeft: '15px' }}>{title[n.type]}</p>
         </div>
       ))}
     </div>
