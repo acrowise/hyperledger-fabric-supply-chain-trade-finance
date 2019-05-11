@@ -1,19 +1,19 @@
-import React, { useReducer } from 'react';
+import React, {useReducer} from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Label
 } from '@blueprintjs/core';
-import { DateInput } from '@blueprintjs/datetime';
+import {DateInput} from '@blueprintjs/datetime';
 
-import { post } from '../../helper/api';
+import {post} from '../../helper/api';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
-import { INPUTS } from '../../constants';
+import {INPUTS} from '../../constants';
 
-import { formReducer } from '../../reducers';
+import {formReducer} from '../../reducers';
 
-const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
+const OrderForm = ({dialogIsOpen, setDialogOpenState}) => {
   const initialState = {
     productName: '',
     quantity: 0,
@@ -39,107 +39,107 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
 
   return (
     <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
-      <Card className="modal" style={{ width: '720px' }}>
-        <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted" />
-        {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
-          <>
-            <div className="modal-header">New Purchase Order</div>
-            <div className="modal-body">
-              <div className="row">
-                {INPUTS.NEW_PURCHASE_ORDER.map(({
-                  label, type, placeholder, field
-                }) => (
-                  <FormGroup className="col-6" key={label} label={label}>
-                    <InputGroup
-                      type={type}
-                      placeholder={placeholder}
-                      value={formState[field]}
-                      onChange={({ target: { value } }) => dispatch({
-                        type: 'change',
-                        payload: {
-                          field,
-                          value
-                        }
-                      })
+      <Card className="modal" style={{width: '340px'}}>
+        <ActionCompleted res={newOrder} action="New Order Purchased" result="Accepted"/>
+      </Card>
+      {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
+        <Card className="modal" style={{width: '720px'}}>
+          <div className="modal-header">New Purchase Order</div>
+          <div className="modal-body">
+            <div className="row">
+              {INPUTS.NEW_PURCHASE_ORDER.map(({
+                                                label, type, placeholder, field
+                                              }) => (
+                <FormGroup className="col-6" key={label} label={label}>
+                  <InputGroup
+                    type={type}
+                    placeholder={placeholder}
+                    value={formState[field]}
+                    onChange={({target: {value}}) => dispatch({
+                      type: 'change',
+                      payload: {
+                        field,
+                        value
                       }
-                    />
-                  </FormGroup>
-                ))}
+                    })
+                    }
+                  />
+                </FormGroup>
+              ))}
 
-                <div className="col-6">
-                  <div className="row">
-                    <Label className="col-6">
-                      Delivery Date
-                      <DateInput
-                        value={formState.dueDate}
-                        formatDate={date => date.toLocaleDateString()}
-                        onChange={(date) => {
-                          dispatch({
-                            type: 'change',
-                            payload: {
-                              field: 'dueDate',
-                              value: date
-                            }
-                          });
-                        }}
-                        timePrecision={undefined}
-                        parseDate={str => new Date(str)}
-                        placeholder={'D/M/YYYY'}
-                      />
-                    </Label>
-                    <Label className="col-6">
-                      Payment Date
-                      <DateInput
-                        value={formState.paymentDate}
-                        formatDate={date => date.toLocaleDateString()}
-                        onChange={(date) => {
-                          dispatch({
-                            type: 'change',
-                            payload: {
-                              field: 'paymentDate',
-                              value: date
-                            }
-                          });
-                        }}
-                        timePrecision={undefined}
-                        parseDate={str => new Date(str)}
-                        placeholder={'D/M/YYYY'}
-                      />
-                    </Label>
-                  </div>
+              <div className="col-6">
+                <div className="row">
+                  <Label className="col-6">
+                    Delivery Date
+                    <DateInput
+                      value={formState.dueDate}
+                      formatDate={date => date.toLocaleDateString()}
+                      onChange={(date) => {
+                        dispatch({
+                          type: 'change',
+                          payload: {
+                            field: 'dueDate',
+                            value: date
+                          }
+                        });
+                      }}
+                      timePrecision={undefined}
+                      parseDate={str => new Date(str)}
+                      placeholder={'D/M/YYYY'}
+                    />
+                  </Label>
+                  <Label className="col-6">
+                    Payment Date
+                    <DateInput
+                      value={formState.paymentDate}
+                      formatDate={date => date.toLocaleDateString()}
+                      onChange={(date) => {
+                        dispatch({
+                          type: 'change',
+                          payload: {
+                            field: 'paymentDate',
+                            value: date
+                          }
+                        });
+                      }}
+                      timePrecision={undefined}
+                      parseDate={str => new Date(str)}
+                      placeholder={'D/M/YYYY'}
+                    />
+                  </Label>
                 </div>
               </div>
             </div>
-            <div className="modal-footer">
-              <Button
-                large
-                intent="primary"
-                className="btn-modal"
-                onClick={() => {
-                  placeOrder({
-                    fcn: 'placeOrder',
-                    args: [
-                      '0',
-                      formState.productName,
-                      formState.quantity,
-                      formState.price,
-                      formState.destination,
-                      formState.dueDate.getTime(),
-                      formState.paymentDate.getTime(), // TODO: PaymentDate
-                      'a' // TODO: buyer Id
-                    ]
-                  });
-                  dispatch({ type: 'reset', payload: initialState });
-                }}
-              >
-                Order
-              </Button>
-            </div>
-          </>
-        ) : (
-          <></>
-        )}
-      </Card>
+          </div>
+          <div className="modal-footer">
+            <Button
+              large
+              intent="primary"
+              className="btn-modal"
+              onClick={() => {
+                placeOrder({
+                  fcn: 'placeOrder',
+                  args: [
+                    '0',
+                    formState.productName,
+                    formState.quantity,
+                    formState.price,
+                    formState.destination,
+                    formState.dueDate.getTime(),
+                    formState.paymentDate.getTime(), // TODO: PaymentDate
+                    'a' // TODO: buyer Id
+                  ]
+                });
+                dispatch({type: 'reset', payload: initialState});
+              }}
+            >
+              Order
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <></>
+      )}
     </Overlay>
   );
 };
