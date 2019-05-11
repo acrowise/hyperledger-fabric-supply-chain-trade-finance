@@ -6,6 +6,7 @@ import {
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
 import { title } from '../mocks';
+import Profile from '../components/Icon/Profile';
 
 const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
@@ -84,7 +85,7 @@ const Nav = ({ role, logout }) => {
 
             <Button
               className="bp3-minimal"
-              icon="user"
+              icon={<Profile name={role} />}
               style={{ textTransform: 'capitalize', marginLeft: 50 }}
             >
               {role}
