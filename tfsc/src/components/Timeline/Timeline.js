@@ -25,6 +25,10 @@ const TimelineDetails = ({ event }) => <Table fields={TABLE_MAP.SHIPMENT_DETAIL}
 const Timeline = ({ shipment, events }) => {
   const [selectedId, setSelected] = useState(events[0].id);
 
+  const isDelivered = events.find(i => i.action === 'Shipment Delivered');
+
+  console.log('isDelivered', isDelivered);
+
   return (
     <div className="timeline-wrap">
       <div className="timeline">
@@ -35,7 +39,7 @@ const Timeline = ({ shipment, events }) => {
           </div>
         </div>
         <div className="timeline-finish">
-          <div className="timeline-finish-text"></div>
+          <div className="timeline-finish-text" />
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipmentTo}</div>
           </div>
@@ -43,15 +47,17 @@ const Timeline = ({ shipment, events }) => {
 
         <div className="timeline-past">
           {events
-            && events.filter(i => i.type !== 'document').map(event => (
-              <TimelineItem
-                id={event.id}
-                key={event.id}
-                date={format(event.date, 'DD MMMM YYYY')}
-                timelineItemClickHandler={setSelected}
-                isSelected={event.id === selectedId}
-              />
-            ))}
+            && events
+              .filter(i => i.type !== 'document')
+              .map(event => (
+                <TimelineItem
+                  id={event.id}
+                  key={event.id}
+                  date={format(event.date, 'DD MMMM YYYY')}
+                  timelineItemClickHandler={setSelected}
+                  isSelected={event.id === selectedId}
+                />
+              ))}
         </div>
         <div className="timeline-future" />
       </div>

@@ -63,7 +63,7 @@ const ValidateProof = ({
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
                   <Icon icon="document" />
-                  <div style={{ marginLeft: '10px' }}>Bill of Landing</div>
+                  <div style={{ marginLeft: '10px' }}>Bill of Lading</div>
                 </div>
                 <br />
                 {proof.documents

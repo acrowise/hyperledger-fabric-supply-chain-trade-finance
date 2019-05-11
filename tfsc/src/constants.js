@@ -216,8 +216,8 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     // factor: 'Factor',
-    rate: 'Rate,%',
     totalDue: 'Amount, USD',
+    rate: 'Rate,%',
     dueDate: 'Payment Date',
     state: 'Status'
   },

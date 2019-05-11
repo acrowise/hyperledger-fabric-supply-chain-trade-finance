@@ -95,7 +95,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     });
                     const form = new FormData();
                     form.append('contractId', shipment.contractId);
-                    form.append('type', 'Bill of Landing');
+                    form.append('type', 'Bill of Lading');
                     files.forEach((f) => {
                       form.append('file', f);
                     });
