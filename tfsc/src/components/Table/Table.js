@@ -1,5 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { format } from 'date-fns';
+
 import './table.scss';
 
 import { cropId } from '../../helper/utils';
@@ -31,7 +33,7 @@ const Table = ({
               {Object.keys(fields).map((j) => {
                 let value = item[j];
                 if (dates.includes(j)) {
-                  value = new Date(item[j]).toLocaleDateString();
+                  value = format(item[j], 'DD MMMM YYYY');
                 }
                 if (ids.includes(j)) {
                   value = cropId(item[j]);

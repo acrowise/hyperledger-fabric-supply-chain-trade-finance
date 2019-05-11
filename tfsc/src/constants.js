@@ -156,7 +156,7 @@ export const INPUTS = {
   ],
   PLACE_BID: [
     {
-      label: 'Rate,%',
+      label: 'Rate, %',
       placeholder: 'Rate',
       type: 'number',
       field: 'rate'
@@ -190,7 +190,7 @@ export const TABLE_MAP = {
     consigneeName: 'Consignee',
     productName: 'Product',
     quantity: 'Quantity',
-    price: 'Price',
+    price: 'Price, $',
     totalDue: 'Amount, $',
     // timestamp: 'Last Updated',
     destination: 'Destination',
@@ -202,7 +202,7 @@ export const TABLE_MAP = {
     id: 'Order ID',
     productName: 'Product',
     quantity: 'Quantity',
-    price: 'Price',
+    price: 'Price, $',
     totalDue: 'Amount, $',
     destination: 'Destination',
     dueDate: 'Delivery Date',
@@ -220,7 +220,7 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     // factor: 'Factor',
-    rate: 'Rate,%',
+    rate: 'Rate, %',
     totalDue: 'Amount, $',
     dueDate: 'Payment Date',
     state: 'Status'

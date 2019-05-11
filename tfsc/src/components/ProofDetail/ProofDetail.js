@@ -22,8 +22,8 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
         <div className="modal-body">
           <table className="proof-detail-table">
             <tr>
-              <th>ProofId</th>
-              <td>{proof.key ? proof.key.id : 'No data'}</td>
+              <th>Proof ID</th>
+              <td>{proof.key ? cropId(proof.key.id) : 'No data'}</td>
             </tr>
             <tr>
               <th>Agency</th>
@@ -31,7 +31,13 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
             </tr>
             <tr>
               <th>Status</th>
-              <td>{proof.value ? STATUSES.PROOF[proof.value.state] : 'No data'}</td>
+              <td
+                style={{
+                  backgroundColor: proof.value && proof.value.state === 2 ? '#D3F3E8' : 'white'
+                }}
+              >
+                {proof.value ? STATUSES.PROOF[proof.value.state] : 'No data'}
+              </td>
             </tr>
           </table>
         </div>
