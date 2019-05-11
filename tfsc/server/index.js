@@ -6,22 +6,30 @@ const multer = require('multer');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 
+const low = require('lowdb');
+const FileSync = require('lowdb/adapters/FileSync');
+
+const adapter = new FileSync('db.json');
+const db = low(adapter);
+
 const upload = multer();
 
 const PORT = process.env.PORT || 3000;
 // const API_PORT = process.env.API_PORT || 4002;
 
-const db = {
-  orders: [],
-  invoices: [],
-  bids: [],
-  contracts: [],
-  shipments: [],
-  proofs: [],
-  reports: []
-};
+db
+  .defaults({
+    orders: [],
+    invoices: [],
+    bids: [],
+    contracts: [],
+    shipments: [],
+    proofs: [],
+    reports: []
+  })
+  .write();
 
-const get = (field, id) => db[field].find(i => i.key.id === id);
+const get = (field, id) => db.get(field).value().find(i => i.key.id === id);
 
 const clients = [];
 const app = express();
@@ -47,31 +55,31 @@ router.use((_, __, next) => {
 router.use(bodyParser.json());
 
 router.get('/listProofs', (_, res) => {
-  res.json({ result: db.proofs });
+  res.json({ result: db.get('proofs').value() });
 });
 
 router.get('/shipments', (_, res) => {
-  res.json({ result: db.shipments });
+  res.json({ result: db.get('shipments').value() });
 });
 
 router.get('/listContracts', (_, res) => {
-  res.json({ result: db.contracts });
+  res.json({ result: db.get('contracts').value() });
 });
 
 router.get('/listOrders', (_, res) => {
-  res.json({ result: db.orders });
+  res.json({ result: db.get('orders').value() });
 });
 
 router.get('/listInvoices', (_, res) => {
-  res.json({ result: db.invoices });
+  res.json({ result: db.get('invoices').value() });
 });
 
 router.get('/listBids', (_, res) => {
-  res.json({ result: db.bids });
+  res.json({ result: db.get('bids').value() });
 });
 
 router.get('/listReports', (_, res) => {
-  res.json({ result: db.reports });
+  res.json({ result: db.get('reports').value() });
 });
 
 router.post('/uploadDocuments', upload.array('file'), (req, res) => {
@@ -90,7 +98,9 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
       name: f.originalname,
       type: req.body.type
     };
-    const shipment = db.shipments.find(i => i.value.contractId === doc.contractId);
+    const shipments = db.get('shipments').value();
+    const shipment = shipments.find(i => i.value.contractId === doc.contractId);
+
     shipment.value.documents.push(doc);
     const event = {
       id: uuid(),
@@ -101,6 +111,8 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
       shipmentId: shipment.key.id
     };
     shipment.value.events.push(event);
+
+    db.set('shipments', shipments).write();
 
     clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, event, type: 'documentUploaded' })));
   });
@@ -116,17 +128,25 @@ router.post('/generateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       agency: req.body.reviewer,
       fields: req.body.data,
-      contract: get('contracts', req.body.contractId)
+      contract: db.get('contracts').value().find(i => i.key.id === req.body.contractId)
     }
   };
-  const shipment = get('shipments', req.body.shipmentId);
+
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+
+  // const shipment = get('shipments', req.body.shipmentId);
+
   shipment.value.events.push({
     id: uuid(),
     date: new Date().getTime(),
     action: 'Proof generated',
     user: req.body.user || 'Supplier'
   });
-  db.proofs.push(proof);
+
+  db.set('shipments', shipments).write();
+  db.get('proofs').push(proof).write();
+
   clients.forEach(c => c.emit(
     'notification',
     JSON.stringify(Object.assign({ data: proof, shipment, type: 'proofGenerated' }))
@@ -149,7 +169,10 @@ router.post('/placeOrder', (req, res) => {
     },
     type: 'place'
   };
-  db.orders.push(order);
+  db
+    .get('orders')
+    .push(order)
+    .write();
   clients.forEach(c => c.emit('notification', JSON.stringify(order)));
   res.end('ok');
 });
@@ -176,29 +199,38 @@ router.post('/requestShipment', (req, res) => {
       ]
     }
   });
-  db.shipments.push(shipment);
+  db
+    .get('shipments')
+    .push(shipment)
+    .write();
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentRequested' }))));
+
   res.end('ok');
 });
 
 const registerInvoice = (contract) => {
-  db.invoices.push({
-    key: { id: uuid() },
-    value: {
-      contractId: contract.key.id,
-      debtor: 'Buyer',
-      beneficiary: 'Supplier',
-      totalDue: contract.value.totalDue,
-      dueDate: contract.value.dueDate,
-      owner: 'Supplier',
-      state: 2
-    }
-  });
+  db
+    .get('invoices')
+    .push({
+      key: { id: uuid() },
+      value: {
+        contractId: contract.key.id,
+        debtor: 'Buyer',
+        beneficiary: 'Supplier',
+        totalDue: contract.value.totalDue,
+        dueDate: contract.value.dueDate,
+        owner: 'Supplier',
+        state: 2
+      }
+    })
+    .write();
 };
 
 router.post('/confirmDelivery', (req, res) => {
-  const shipment = db.shipments.find(i => i.key.id === req.body.shipmentId);
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+
   shipment.value.state = 4;
   shipment.value.events.push({
     id: uuid(),
@@ -206,9 +238,15 @@ router.post('/confirmDelivery', (req, res) => {
     action: 'Shipment Delivered',
     user: req.body.user || 'Buyer'
   });
+
+  db.set('shipments', shipments).write();
+
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentDelivered' })));
 
-  const contract = db.contracts.find(i => i.key.id === shipment.value.contractId);
+  const contract = db
+    .get('contracts')
+    .value()
+    .find(i => i.key.id === shipment.value.contractId);
   registerInvoice(contract);
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: contract, type: 'invoiceRegistered' })));
 
@@ -216,7 +254,10 @@ router.post('/confirmDelivery', (req, res) => {
 });
 
 router.post('/confirmShipment', (req, res) => {
-  const shipment = get('shipments', req.body.args[0]);
+  // const shipment = get('shipments', req.body.args[0]);
+
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.args[0]);
 
   shipment.value.state = 2;
   shipment.value.events.push({
@@ -225,43 +266,59 @@ router.post('/confirmShipment', (req, res) => {
     date: new Date().getTime(),
     user: 'Transporter'
   });
+
+  db.set('shipments', shipments).write();
+
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentConfirmed' })));
   res.end('ok');
 });
 
 router.post('/validateProof', (req, res) => {
-  const proof = get('proofs', req.body.args[0]);
+  const proofs = db.get('proofs').value();
+
+  const proof = proofs.find(i => i.key.id === req.body.args[0]); // get('proofs', req.body.args[0]);
 
   proof.value.state = 2;
+  db.set('proofs', proofs).write();
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, type: 'validateProof' })));
 
-  db.reports.push({
-    key: { id: uuid() },
-    value: {
-      state: 1,
-      shipmentId: req.body.shipmentId,
-      proofId: proof.key.id,
-      description: req.body.description,
-      contract: get('contracts', req.body.contractId),
-      factor: req.body.factor
-    }
-  });
+  db
+    .get('reports')
+    .push({
+      key: { id: uuid() },
+      value: {
+        state: 1,
+        shipmentId: req.body.shipmentId,
+        proofId: proof.key.id,
+        description: req.body.description,
+        contract: get('contracts', req.body.contractId),
+        factor: req.body.factor
+      }
+    })
+    .write();
   if (req.body.shipmentId) {
-    const shipment = get('shipments', req.body.shipmentId);
+    const shipments = db.get('shipments').value();
+    const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+
     shipment.value.events.push({
       id: uuid(),
       date: new Date().getTime(),
       action: 'Proof Validated',
       user: req.body.user
     });
+    db.set('shipments', shipments).write();
   }
   res.end('ok');
 });
 
 router.post('/acceptOrder', async (req, res) => {
-  const order = get('orders', req.body.args[0]);
+  const orders = db.get('orders').value();
+  const order = orders.find(i => i.key.id === req.body.args[0]);
 
   order.value.state = 1;
+
+  db.set('orders', orders).write();
+
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'acceptOrder' }))));
   const contract = {
     key: {
@@ -279,22 +336,31 @@ router.post('/acceptOrder', async (req, res) => {
       paymentDate: order.value.paymentDate
     }
   };
-  db.contracts.push(contract);
+
+  db
+    .get('contracts')
+    .push(contract)
+    .write();
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
   res.end('ok');
 });
 
 router.post('/placeInvoice', (req, res) => {
-  const invoice = get('invoices', req.body.args[0]);
+  const invoices = db.get('invoices').value();
+  const invoice = invoices.find(i => i.key.id === req.body.args[0]);
 
   invoice.value.state = 3;
+
+  db.set('invoices', invoices).write();
+
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoice' }))));
   res.end('ok');
 });
 
 router.post('/placeBid', (req, res) => {
-  const invoice = get('invoices', req.body.args[3]);
+  const invoices = db.get('invoices').value();
+  const invoice = invoices.find(i => i.key.id === req.body.args[3]);
 
   const bid = {
     key: { id: uuid() },
@@ -310,25 +376,54 @@ router.post('/placeBid', (req, res) => {
     }
   };
 
-  db.bids.push(bid);
+  db
+    .get('bids')
+    .push(bid)
+    .write();
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'placeBid' }))));
   res.end('ok');
 });
 
 router.post('/acceptBid', (req, res) => {
-  const bid = get('bids', req.body.id);
+  const bids = db.get('bids').value();
+  const bid = bids.find(i => i.key.id === req.body.id);
+
+  const invoices = db.get('invoices').value();
+  const invoice = invoices.find(i => i.key.id === bid.value.invoiceID);
 
   bid.value.state = 2;
+  invoice.value.state = 4;
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'acceptBid' }))));
+  db.set('bids', bids).write();
+  db.set('invoices', invoices).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: bid, type: 'acceptBid' })));
+
+  try {
+    const bidsToCancel = db.get('bids').value().filter(
+      i => i.value.invoiceID === bid.value.invoiceID && i.value.state === 1
+    );
+    bidsToCancel.forEach((i) => {
+      i.value.state = 3;
+      setTimeout(() => {
+        clients.forEach(c => c.emit('notification', JSON.stringify({ data: i, type: 'cancelBid' })));
+      }, 500);
+    });
+  } catch (e) {}
+
+  db.set('bids', bids).write();
+
   res.end('ok');
 });
 
 router.post('/acceptInvoice', (req, res) => {
-  const invoice = get('invoices', req.body.args[0]);
+  const invoices = db.get('invoices').value();
+  const invoice = invoices.find(i => i.key.id === req.body.args[0]);
+  // const invoice = get('invoices', req.body.args[0]);
 
   invoice.value.state = 2;
+  db.set('invoices', invoices).write();
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'acceptInvoice' }))));
   res.end('ok');
 });
