@@ -345,12 +345,14 @@ router.post('/acceptOrder', async (req, res) => {
       consignorName: 'Buyer',
       consigneeName: 'Supplier',
       totalDue: order.value.price * order.value.quantity, // FIXME
+      price: order.value.price,
       quantity: order.value.quantity,
       dueDate: order.value.dueDate,
       state: 1,
       destination: order.value.destination,
       timestamp: new Date().getTime(),
-      paymentDate: order.value.paymentDate
+      paymentDate: order.value.paymentDate,
+      productName: order.value.productName
     }
   };
 
