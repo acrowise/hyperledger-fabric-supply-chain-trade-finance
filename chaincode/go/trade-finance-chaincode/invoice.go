@@ -15,7 +15,7 @@ const (
 
 const (
 	invoiceKeyFieldsNumber      = 1
-	invoiceBasicArgumentsNumber = 6
+	invoiceBasicArgumentsNumber = 4
 )
 
 // Invoice state constants (from 0 to 5)
@@ -71,8 +71,8 @@ func CreateInvoice() LedgerData {
 }
 
 //argument order
-//0		1		2			3			4			5		6
-//ID	Debtor	Beneficiary	TotalDue	DueDate		State	Owner
+//0		1		2			3			4
+//ID	Debtor	Beneficiary	TotalDue	DueDate
 func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < invoiceBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", invoiceBasicArgumentsNumber))
@@ -118,16 +118,6 @@ func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args 
 		return errors.New("dueDate must be larger than zero")
 	}
 	entity.Value.DueDate = int64(dueDate)
-
-	//checking state
-	state, err := strconv.Atoi(args[5])
-	if err != nil {
-		return errors.New(fmt.Sprintf("invoice state is invalid: %s (must be int)", args[5]))
-	}
-	if !Contains(invoiceStateLegal, state) {
-		return errors.New(fmt.Sprintf("invoice state is invalid: %d (must be from 0 to %d)", state, len(invoiceStateLegal)))
-	}
-	entity.Value.State = state
 
 	return nil
 }

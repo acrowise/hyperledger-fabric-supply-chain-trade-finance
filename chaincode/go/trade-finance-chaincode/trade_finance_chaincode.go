@@ -85,8 +85,8 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0				1		2			3			4			5	6
-//ContractID    Debtor	Beneficiary	TotalDue	DueDate		0	Owner
+//0				1		2			3			4
+//ContractID    Debtor	Beneficiary	TotalDue	DueDate
 func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice fields
 	// check role == Supplier
@@ -127,24 +127,16 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		return shim.Error(fmt.Sprintf("invoice with the key %s already exists", compositeKey))
 	}
 
-	//additional checking
-	invoice.Value.Owner = args[6]
-
-	creator, err := GetCreatorOrganization(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's Organization from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("Organization: " + creator)
-
-	if invoice.Value.Owner != creator {
-		message := fmt.Sprintf("only invoice owner can register invoice")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
 	//setting automatic values
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	invoice.Value.Owner = creator
 	invoice.Value.State = stateInvoiceIssued
 	invoice.Value.Timestamp = time.Now().UTC().Unix()
 
@@ -227,9 +219,9 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -333,9 +325,9 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -427,9 +419,9 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -527,9 +519,9 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -630,22 +622,16 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(fmt.Sprintf("bid with the key %s already exist", compositeKey))
 	}
 
-	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	//setting automatic values
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 	Logger.Debug("Creator: " + creator)
 
-	if bid.Value.FactorID != creator {
-		message := fmt.Sprintf("each factor can place bid only from itself")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//setting automatic values
+	bid.Value.FactorID = creator
 	bid.Value.State = stateBidIssued
 	bid.Value.Timestamp = time.Now().UTC().Unix()
 
@@ -733,9 +719,9 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -1120,9 +1106,9 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 		return errors.New(message)
 	}
 
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)
 	}

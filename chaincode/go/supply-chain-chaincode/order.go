@@ -15,7 +15,7 @@ const (
 
 const (
 	orderKeyFieldsNumber      = 1
-	orderBasicArgumentsNumber = 7
+	orderBasicArgumentsNumber = 6
 )
 
 //order state constants (from 0 to 3)
@@ -66,8 +66,8 @@ func CreateOrder() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5		6			7
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID
+//0		1			2			3		4			5		6
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate
 func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < orderBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", orderBasicArgumentsNumber))
@@ -117,14 +117,6 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 		return errors.New("paymentDate must be larger than zero")
 	}
 	entity.Value.PaymentDate = int64(paymentDate)
-
-	//TODO: checking buyer by CA
-	buyer := args[7]
-	if buyer == "" {
-		message := fmt.Sprintf("buyer must be not empty")
-		return errors.New(message)
-	}
-	entity.Value.BuyerID = buyer
 
 	return nil
 }

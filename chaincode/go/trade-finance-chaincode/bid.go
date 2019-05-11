@@ -82,14 +82,6 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 	}
 	entity.Value.Rate = float32(rate)
 
-	//TODO: checking factor by CA
-	factor := args[2]
-	if factor == "" {
-		message := fmt.Sprintf("factor must be not empty")
-		return errors.New(message)
-	}
-	entity.Value.FactorID = factor
-
 	// checking invoice
 	invoice := Invoice{}
 	if err := invoice.FillFromCompositeKeyParts([]string{args[3]}); err != nil {

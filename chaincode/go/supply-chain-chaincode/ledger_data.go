@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim/ext/cid"
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	"strings"
 )
@@ -83,10 +84,6 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collect
 	value, err := data.ToLedgerValue()
 	if err != nil {
 		return err
-	}
-
-	for key, value := range endorsers {
-		endorsers[key] = value + "MSP"
 	}
 
 	if collection != "" {
@@ -292,6 +289,22 @@ func GetCreatorOrganizationalUnit(stub shim.ChaincodeStubInterface) (string, err
 		return "", err
 	}
 	return getOrganizationlUnit(certificate)
+}
+
+func GetMSPID(stub shim.ChaincodeStubInterface) (string, error) {
+	// Get the client ID object
+	mspid := ""
+	id, err := cid.New(stub)
+	if err != nil {
+		message := fmt.Sprintf("Failure getting client ID object: %s", err.Error())
+		return mspid, errors.New(message)
+	}
+	mspid, err = id.GetMSPID()
+	if err != nil {
+		message := fmt.Sprintf("Failure getting MSPID from client ID object: %s", err.Error())
+		return mspid, errors.New(message)
+	}
+	return mspid, nil
 }
 
 func Contains(m map[int][]int, key int) bool {

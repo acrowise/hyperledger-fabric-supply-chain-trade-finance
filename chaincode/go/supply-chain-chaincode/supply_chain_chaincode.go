@@ -106,8 +106,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0		1			2			3		4			5		6			7
-//0		ProductName	Quantity	Price	Destination	DueDate	PaymentDate	BuyerID
+//0		1			2			3		4			5		6
+//0		ProductName	Quantity	Price	Destination	DueDate	PaymentDate
 func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: <order fields>
 	// check role == Buyer
@@ -155,24 +155,18 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(fmt.Sprintf("order with the key %s already exist", compositeKey))
 	}
 
-	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	//setting automatic values
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 	Logger.Debug("Creator: " + creator)
 
-	if order.Value.BuyerID != creator {
-		message := fmt.Sprintf("each buyer can place order only from itself")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//setting automatic values
 	order.Value.State = stateOrderNew
 	order.Value.Timestamp = time.Now().UTC().Unix()
+	order.Value.BuyerID = creator
 
 	//setting optional values
 	destination := args[4]
@@ -258,9 +252,9 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	}
 
 	//additional checking
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -362,9 +356,9 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -466,9 +460,9 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -522,7 +516,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	invoiceTotalDue := fmt.Sprintf("%f", contract.Value.TotalDue)
 	invoiceDueDate := fmt.Sprintf("%d", contract.Value.DueDate)
 
-	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoiceDueDate), []byte("0"), []byte(creator)}
+	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoiceDueDate), []byte("0")}
 
 	for _, oneArg := range args {
 		argsByte = append(argsByte, []byte(oneArg))
@@ -1527,9 +1521,9 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 		return errors.New(message)
 	}
 
-	creator, err := GetCreatorOrganization(stub)
+	creator, err := GetMSPID(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's name from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)
 	}
