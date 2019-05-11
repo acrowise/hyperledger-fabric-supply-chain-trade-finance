@@ -11,7 +11,7 @@ export const useFetch = (method) => {
   function fetchUrl() {
     const url = newApi
       ? `api/channels/common/chaincodes/trade-finance-chaincode?fcn=${method}`
-      : `http://localhost:3000/${method}`;
+      : `http://0.0.0.0:3000/${method}`;
     fetch(url).then((res) => {
       res.json().then((d) => {
         setData(d);

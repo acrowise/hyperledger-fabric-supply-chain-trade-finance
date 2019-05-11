@@ -46,7 +46,7 @@ router.use((_, __, next) => {
 // router.use(
 //   '/api',
 //   proxy({
-//     target: `http://localhost:${API_PORT}`,
+//     target: `http://0.0.0.0:${API_PORT}`,
 //     changeOrigin: true,
 //     logLevel: 'debug'
 //   })
