@@ -118,6 +118,7 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
     const shipment = shipments.find(i => i.value.contractId === doc.contractId);
 
     shipment.value.documents.push(doc);
+
     const event = {
       id: uuid(),
       date: new Date().getTime(),
@@ -196,8 +197,10 @@ router.post('/placeOrder', (req, res) => {
 });
 
 router.post('/requestShipment', (req, res) => {
-  const contract = get('contracts', req.body.args[1]);
-  const shipment = Object.assign(req.body, {
+  const contracts = db.get('contracts').value();
+  const contract = contracts.find(i => i.key.id === req.body.args[1]);
+
+  const shipment = {
     key: { id: uuid() },
     value: {
       state: 1,
@@ -218,12 +221,16 @@ router.post('/requestShipment', (req, res) => {
         }
       ]
     }
-  });
+  };
   db.get('shipments')
     .push(shipment)
     .write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(shipment, { type: 'shipmentRequested' }))));
+  contract.value.state = 2;
+
+  db.set('contracts', contracts).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, contract, type: 'shipmentRequested' })));
 
   res.end('ok');
 });
@@ -278,13 +285,6 @@ router.post('/confirmShipment', (req, res) => {
   const shipments = db.get('shipments').value();
   const shipment = shipments.find(i => i.key.id === req.body.args[0]);
 
-  const contracts = db.get('contracts').value();
-  const contract = contracts.find(i => i.key.id === shipment.value.contractId);
-
-  contract.value.state = 2;
-
-  db.set('contracts', contracts).write();
-
   shipment.value.state = 2;
   shipment.value.events.push({
     id: uuid(),
@@ -295,7 +295,7 @@ router.post('/confirmShipment', (req, res) => {
 
   db.set('shipments', shipments).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, contract, type: 'shipmentConfirmed' })));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentConfirmed' })));
   res.end('ok');
 });
 
@@ -306,7 +306,6 @@ router.post('/validateProof', (req, res) => {
 
   proof.value.state = 2;
   db.set('proofs', proofs).write();
-  clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, type: 'validateProof' })));
 
   const report = {
     key: { id: uuid() },
@@ -325,18 +324,21 @@ router.post('/validateProof', (req, res) => {
 
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: report, type: 'reportGenerated' })));
 
-  if (req.body.shipmentId) {
-    const shipments = db.get('shipments').value();
-    const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+  // if (req.body.shipmentId) {
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
 
-    shipment.value.events.push({
-      id: uuid(),
-      date: new Date().getTime(),
-      action: 'Proof Validated',
-      user: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
-    });
-    db.set('shipments', shipments).write();
-  }
+  shipment.value.events.push({
+    id: uuid(),
+    date: new Date().getTime(),
+    action: 'Proof Validated',
+    user: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
+  });
+  db.set('shipments', shipments).write();
+  // }
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'validateProof' })));
+
   res.end('ok');
 });
 
@@ -439,7 +441,7 @@ router.post('/acceptBid', (req, res) => {
       i.value.state = 3;
       setTimeout(() => {
         clients.forEach(c => c.emit('notification', JSON.stringify({ data: i, type: 'cancelBid' })));
-      }, 500);
+      }, 450);
     });
   } catch (e) {}
 

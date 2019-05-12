@@ -182,13 +182,15 @@ const ValidateProof = ({
                       args: [proof.id]
                     });
 
-                    const form = new FormData();
-                    form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
-                    form.append('contractId', proof.contract.key.id);
-                    files.forEach((f) => {
-                      form.append('file', f);
-                    });
-                    uploadDocs(form);
+                    setTimeout(() => {
+                      const form = new FormData();
+                      form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
+                      form.append('contractId', proof.contract.key.id);
+                      files.forEach((f) => {
+                        form.append('file', f);
+                      });
+                      uploadDocs(form);
+                    }, 600);
                   }}
                 >
                   {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}

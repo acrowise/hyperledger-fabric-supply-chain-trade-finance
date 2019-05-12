@@ -52,7 +52,7 @@ const Shipments = ({ role, content, setContent }) => {
     }
 
     if (notification.type === 'shipmentRequested') {
-      const newState = shipments.result.concat(notification);
+      const newState = shipments.result.concat(notification.data);
       setData({ result: newState });
     }
 

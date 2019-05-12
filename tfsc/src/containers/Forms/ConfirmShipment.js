@@ -55,7 +55,11 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   {Object.keys(fields).map(field => (
                     <Label className="col-6" key={field}>
                       {fields[field]}
-                      <InputGroup type="text" value={ids.includes(field) ? cropId(shipment[field]) : shipment[field]} disabled />
+                      <InputGroup
+                        type="text"
+                        value={ids.includes(field) ? cropId(shipment[field]) : shipment[field]}
+                        disabled
+                      />
                     </Label>
                   ))}
                   <Label className="col-6">
@@ -93,13 +97,15 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                       fcn: 'confirmShipment',
                       args: [shipment.id]
                     });
-                    const form = new FormData();
-                    form.append('contractId', shipment.contractId);
-                    form.append('type', 'Bill of Lading');
-                    files.forEach((f) => {
-                      form.append('file', f);
-                    });
-                    uploadDocs(form);
+                    setTimeout(() => {
+                      const form = new FormData();
+                      form.append('contractId', shipment.contractId);
+                      form.append('type', 'Bill of Lading');
+                      files.forEach((f) => {
+                        form.append('file', f);
+                      });
+                      uploadDocs(form);
+                    }, 600);
                   }}
                 >
                   Confirm

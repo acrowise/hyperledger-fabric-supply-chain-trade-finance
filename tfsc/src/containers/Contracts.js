@@ -24,7 +24,7 @@ const Contracts = ({ role }) => {
       setData({ result: newState });
     }
 
-    if (notification.type === 'shipmentConfirmed') {
+    if (notification.type === 'shipmentRequested') {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.contract.key.id);
       newState[itemToUpdateIndex] = notification.contract;

@@ -59,15 +59,17 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               onClick={() => {
                 confirmDelivery({ shipmentId: shipment.id });
 
-                const form = new FormData();
-                form.append('type', 'Shipment Acceptance Act');
-                form.append('contractId', shipment.contractId);
-                files.forEach((f) => {
-                  form.append('file', f);
-                });
-                uploadDocs(form);
-                setFiles([]);
-                setDialogOpenState(false);
+                setTimeout(() => {
+                  const form = new FormData();
+                  form.append('type', 'Shipment Acceptance Act');
+                  form.append('contractId', shipment.contractId);
+                  files.forEach((f) => {
+                    form.append('file', f);
+                  });
+                  uploadDocs(form);
+                  setFiles([]);
+                  setDialogOpenState(false);
+                }, 600);
               }}
             >
               Submit
