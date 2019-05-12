@@ -238,7 +238,7 @@ const registerInvoice = (contract) => {
         beneficiary: 'Supplier',
         totalDue: contract.value.totalDue,
         dueDate: contract.value.dueDate,
-        paymentDate: contract.paymentDate,
+        paymentDate: contract.value.paymentDate,
         owner: 'Supplier',
         state: 2
       }
@@ -326,7 +326,7 @@ router.post('/validateProof', (req, res) => {
       id: uuid(),
       date: new Date().getTime(),
       action: 'Proof Validated',
-      user: req.body.factor ? capitalize(req.body.factor) : 'Factor'
+      user: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
     });
     db.set('shipments', shipments).write();
   }

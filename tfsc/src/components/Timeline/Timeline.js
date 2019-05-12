@@ -48,7 +48,7 @@ const Timeline = ({ shipment, events }) => {
         <div className="timeline-past">
           {events
             && events
-              .sort((a, b) => a.timestamp - b.timestamp)
+              .sort((a, b) => a.date - b.bate)
               .filter(i => i.type !== 'document' && i.action !== 'Proof generated')
               .map(event => (
                 <TimelineItem

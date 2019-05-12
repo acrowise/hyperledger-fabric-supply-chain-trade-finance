@@ -53,26 +53,39 @@ const Orders = ({ role, filter, search }) => {
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
-        actions={item => (role === 'supplier' && item.state === 'New' ? (
-            <div className="nowrap">
-              <Button
-                onClick={() => {
-                  acceptOrder({
-                    fcn: 'acceptOrder',
-                    args: [item.id, '0', '0', '0', '0', '0', '0', '0']
-                  });
-                }}
-                style={{ marginRight: '5px' }}
-                intent="primary"
-              >
-                Accept
-              </Button>
-              {/* <Button intent="danger">Decline</Button> */}
-            </div>
-        ) : (
-            <></>
-        ))
-        }
+        actions={item => (
+          <>
+            {role === 'supplier' && item.state === 'New' ? (
+              <div className="nowrap">
+                <Button
+                  onClick={() => {
+                    acceptOrder({
+                      fcn: 'acceptOrder',
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                    });
+                  }}
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                >
+                  Accept
+                </Button>
+                {/* <Button intent="danger">Decline</Button> */}
+              </div>
+            ) : (
+              <></>
+            )}
+            {role === 'buyer' && item.state === 'New' ? (
+              <div className="nowrap">
+                <Button style={{ marginRight: '5px' }} intent="primary">
+                  Edit
+                </Button>
+                <Button intent="danger">Cancel</Button>
+              </div>
+            ) : (
+              <></>
+            )}
+          </>
+        )}
       />
     </div>
   );
