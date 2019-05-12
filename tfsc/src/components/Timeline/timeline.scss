@@ -35,6 +35,13 @@
   top: -15px;
 }
 
+.timeline-finish {
+  .timeline-item-bottom-text {
+    right: 0;
+    width: auto;
+  }
+}
+
 .timeline-start {
   background-color: $color-secondary;
   left: 0;
@@ -109,4 +116,12 @@
 
 .timeline-details {
   padding-top: 7px;
+
+  .table-wrap {
+    padding-bottom: 5px;
+
+    .table tr:last-child td {
+      border-bottom: 0;
+    }
+  }
 }

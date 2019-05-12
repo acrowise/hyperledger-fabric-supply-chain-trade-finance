@@ -25,6 +25,10 @@ body {
   line-height: 1.2;
 }
 
+.margin-left-auto {
+  margin-left: auto;
+}
+
 .nowrap {
   white-space: nowrap;
 }
@@ -311,7 +315,7 @@ $header-height: 65px;
   box-shadow: none !important;
   min-height: 38px !important;
   text-transform: uppercase;
-  font-size: $fs-normal !important;
+  font-size: $fs-smaller !important;
   border-radius: 20px;
 }
 
@@ -344,8 +348,8 @@ $header-height: 65px;
 .table .bp3-button {
   padding: 3px 15px;
   min-height: 25px !important;
-  font-size: $fs-smaller;
-  font-weight: bold;
+  font-size: $fs-smaller!important;
+  font-weight: 500;
   white-space: nowrap;
 }
 
