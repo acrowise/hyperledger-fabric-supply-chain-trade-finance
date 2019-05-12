@@ -80,14 +80,30 @@ const ShipmentDetailPage = (props) => {
         shipment={shipment}
       />
       <div
-        style={{ display: 'flex', flexDirection: 'row' }}
+        style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}
         onClick={() => {
           props.showShipmentDetail(null);
           props.setContent(false);
         }}
       >
-        <Icon icon="arrow-left" />
-        <p>Back</p>
+        <svg
+          width="9"
+          height="10"
+          viewBox="0 0 9 10"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M8 1L1 5L8 9"
+            stroke="#3FBEA5"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <p style={{ marginLeft: '10px', color: '#3FBEA5', fontWeight: 'bold' }}>
+          Return to Shipments
+        </p>
       </div>
 
       <div className="layout-container">

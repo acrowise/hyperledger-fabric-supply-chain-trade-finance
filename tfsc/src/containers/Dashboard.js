@@ -73,7 +73,7 @@ const tabs = role => [
     panel: (
       <Filter
         filterBy={['Debtor', 'Beneficiary', 'Payment Date', 'Owner']}
-        statuses={['Issued', 'Signed', 'For Sale', 'Sold']}
+        statuses={['Issued', 'Signed', 'For Sale', 'Sold', 'Removed']}
       >
         <Invoices role={role} />
       </Filter>
@@ -85,7 +85,7 @@ const tabs = role => [
     panel: (
       <Filter
         filterBy={['From', 'To', 'Transport']}
-        statuses={['Requested', 'Confirmed']}
+        statuses={['Requested', 'Confirmed', 'Delivered']}
       >
         <Shipments role={role} />
       </Filter>
@@ -106,7 +106,7 @@ const tabs = role => [
     panel: (
       <Filter
         filterBy={['Proof ID', 'Shipment ID', 'Report ID']}
-        statuses={['Generated', 'Validated']}
+        statuses={['Accepted', 'Declined']}
       >
         <Reports role={role} />
       </Filter>
@@ -118,7 +118,7 @@ const tabs = role => [
     panel: (
       <Filter
         filterBy={['Debtor', 'Beneficiary', 'Rate', 'Payment Date']}
-        statuses={['Offered', 'Accepted', 'Cancelled']}
+        statuses={['Issued', 'Accepted', 'Cancelled', 'Removed']}
       >
         <Bids role={role} />
       </Filter>

@@ -27,8 +27,6 @@ const Timeline = ({ shipment, events }) => {
 
   const isDelivered = events.find(i => i.action === 'Shipment Delivered');
 
-  console.log('isDelivered', isDelivered);
-
   return (
     <div className="timeline-wrap">
       <div className="timeline">
@@ -38,14 +36,17 @@ const Timeline = ({ shipment, events }) => {
             <div>{shipment.shipmentFrom}</div>
           </div>
         </div>
-        <div className="timeline-finish">
+        <div style={isDelivered ? { backgroundColor: '#69D7BC' } : {}} className="timeline-finish">
           <div className="timeline-finish-text" />
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipmentTo}</div>
           </div>
         </div>
 
-        <div className="timeline-past">
+        <div
+          className="timeline-past"
+          style={isDelivered ? { maxWidth: '85%', flexBasis: '85%' } : {}}
+        >
           {events
             && events
               .sort((a, b) => a.date - b.bate)
@@ -60,7 +61,12 @@ const Timeline = ({ shipment, events }) => {
                 />
               ))}
         </div>
-        <div className="timeline-future" />
+        <div
+          style={
+            isDelivered ? { backgroundColor: '#69D7BC', maxWidth: '15%', flexBasis: '15%' } : {}
+          }
+          className="timeline-future"
+        />
       </div>
       <div className="timeline-details">
         {events && (
