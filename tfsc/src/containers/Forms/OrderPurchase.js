@@ -72,6 +72,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                       Delivery Date
                       <DateInput
                         minDate={new Date()}
+                        maxDate={new Date(new Date().getFullYear() + 2, new Date().getMonth(), new Date().getDate())}
                         value={formState.dueDate}
                         formatDate={date => date.toLocaleDateString()}
                         onChange={(date) => {

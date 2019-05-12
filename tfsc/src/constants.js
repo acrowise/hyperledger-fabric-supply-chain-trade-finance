@@ -147,7 +147,7 @@ export const INPUTS = {
     },
     {
       label: 'Payment Date',
-      field: 'paymentDay'
+      field: 'paymentDate'
     },
     {
       label: 'Product Name',
@@ -210,8 +210,8 @@ export const TABLE_MAP = {
     state: 'Status'
   },
   PROOFS: {
-    shipmentId: 'Shipment ID',
     id: 'Proof ID',
+    shipmentId: 'Shipment ID',
     // reportId: 'Report ID',
     state: 'Status'
   },
@@ -222,7 +222,7 @@ export const TABLE_MAP = {
     // factor: 'Factor',
     rate: 'Rate, %',
     totalDue: 'Amount, $',
-    dueDate: 'Payment Date',
+    paymentDate: 'Payment Date',
     state: 'Status'
   },
   INVOICES: {
@@ -230,14 +230,14 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     totalDue: 'Amount, $',
-    dueDate: 'Payment Date',
+    paymentDate: 'Payment Date',
     owner: 'Owner',
     state: 'Status'
   },
   REPORTS: {
-    shipmentId: 'Shipment ID',
-    proofId: 'Proof ID',
     id: 'Report ID',
+    proofId: 'Proof ID',
+    shipmentId: 'Shipment ID',
     state: 'Status'
   },
   SHIPMENT_DETAIL: {

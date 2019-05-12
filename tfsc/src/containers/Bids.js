@@ -69,7 +69,8 @@ const Bids = ({ role, filter, search }) => {
                     acceptBid({
                       fcn: 'acceptBid',
                       args: [item.id, '0', '0', '0'],
-                      id: item.id // FIXME:
+                      id: item.id, // FIXME:
+                      user: role
                     });
                   }}
                   style={{ marginRight: '5px' }}

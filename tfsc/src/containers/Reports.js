@@ -17,8 +17,7 @@ const Reports = ({ role, filter, search }) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'reportGenerated') {
-      const newState = { result: data.result.concat(notification) };
-      setData(newState);
+      setData({ result: data.result.concat(notification.data) });
     }
 
     if (notification.type === 'reportValidated') {
@@ -34,10 +33,10 @@ const Reports = ({ role, filter, search }) => {
   let filteredData = data.result;
 
   if (filteredData) {
-    filteredData = filteredData.filter(i => i.value.factor === role).map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
+    filteredData = filteredData.filter(i => i.value.factor.toLowerCase() === role).map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
   }
 
-  console.log(filteredData);
+  console.log('reports', filteredData);
 
   if (!loading) {
     if (filter) {
@@ -63,6 +62,7 @@ const Reports = ({ role, filter, search }) => {
             <div>
               <Button
                 onClick={() => {
+                  return;
                   setSelectedProof(item);
                   setVpDialogOpenState(true);
                 }}

@@ -6,8 +6,12 @@ import './table.scss';
 
 import { cropId } from '../../helper/utils';
 
-const ids = ['id', 'contractId', 'shipmentId', 'invoiceID'];
+const capitalize = str => str[0].toUpperCase() + str.substring(1);
+
+const ids = ['id', 'contractId', 'shipmentId', 'invoiceID', 'proofId'];
 const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
+const amount = ['price', 'totalDue'];
+const users = ['factor'];
 
 const Table = ({
   fields, data, actions, onSelect
@@ -28,15 +32,23 @@ const Table = ({
             <td colSpan="100%">No Data</td>
           </tr>
         ) : (
-          data && data.map((item, index) => (
+          data
+          && data.map((item, index) => (
             <tr key={index}>
               {Object.keys(fields).map((j) => {
                 let value = item[j];
+                if (users.includes(j)) {
+                  value = capitalize(value);
+                }
                 if (dates.includes(j)) {
-                  value = format(item[j], 'DD MMMM YYYY');
+                  value = format(value, 'DD MMM YYYY');
                 }
                 if (ids.includes(j)) {
-                  value = cropId(item[j]);
+                  value = cropId(value);
+                }
+                if (amount.includes(j) && value) {
+                  console.log(j, value);
+                  value = value.toLocaleString('en-us');
                 }
                 return (
                   <td

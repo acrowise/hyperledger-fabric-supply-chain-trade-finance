@@ -55,6 +55,14 @@ const Shipments = ({ role, content, setContent }) => {
       const newState = shipments.result.concat(notification);
       setData({ result: newState });
     }
+
+    if (notification.type === 'documentUploaded') {
+      const newState = shipments.result.concat([]);
+      const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentId);
+      itemToUpdate.value.documents.push(notification.data);
+      itemToUpdate.value.events.push(notification.event);
+      setData({ result: newState });
+    }
   };
 
   useSocket('notification', onNotification);

@@ -238,6 +238,7 @@ const registerInvoice = (contract) => {
         beneficiary: 'Supplier',
         totalDue: contract.value.totalDue,
         dueDate: contract.value.dueDate,
+        paymentDate: contract.paymentDate,
         owner: 'Supplier',
         state: 2
       }
@@ -308,7 +309,7 @@ router.post('/validateProof', (req, res) => {
       proofId: proof.key.id,
       description: req.body.description,
       contract: get('contracts', req.body.contractId),
-      factor: req.body.factor ? capitalize(req.body.factor) : 'Factor'
+      factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
     }
   };
   db.get('reports')
@@ -391,7 +392,7 @@ router.post('/placeBid', (req, res) => {
       rate: req.body.args[1],
       invoiceID: req.body.args[3],
       totalDue: invoice.value.totalDue,
-      dueDate: invoice.value.dueDate,
+      paymentDate: invoice.value.paymentDate,
       debtor: invoice.value.debtor,
       beneficiary: invoice.value.beneficiary,
       state: 1
@@ -415,6 +416,7 @@ router.post('/acceptBid', (req, res) => {
 
   bid.value.state = 2;
   invoice.value.state = 4;
+  invoice.value.owner = capitalize(bid.value.factor);
 
   db.set('bids', bids).write();
   db.set('invoices', invoices).write();

@@ -25,7 +25,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card className="modal" style={{ width: '600px' }}>
-          <div className="modal-header">Upload Shipment Acceptance Act</div>
+          <div className="modal-header">Upload Delivery Acceptance Form</div>
 
           {/* <p>ShipmentId: {shipment.shipmentId}</p> */}
           {/* <p>ContractId: {shipment.contractId}</p> */}
@@ -36,9 +36,9 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              Shipment Acceptance Act
+              Delivery Acceptance Form
               <FileUploader withPreview files={files} setFiles={setFiles} />
-              <FormGroup label="Details">
+              <FormGroup label="Description">
                 <TextArea growVertically={true} large={true} />
               </FormGroup>
             </Label>

@@ -18,7 +18,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
     quantity: false,
     destination: false,
     dueDate: false,
-    paymentDay: false,
+    paymentDate: false,
     reviewer: null
   };
 

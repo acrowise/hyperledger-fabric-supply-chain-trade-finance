@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
+import { format } from 'date-fns';
 
 import { useFetch } from '../hooks';
 
@@ -33,7 +34,8 @@ const ShipmentDetailPage = (props) => {
     description: props.description,
     state: props.state,
     documents: docs,
-    timestamp: props.timestamp
+    timestamp: props.timestamp,
+    dueDate: props.dueDate
   };
 
   const onNotification = (message) => {
@@ -91,7 +93,7 @@ const ShipmentDetailPage = (props) => {
       <div className="layout-container">
         <div className="layout-main">
           <h3>Shipment Number: {cropId(shipment.id)}</h3>
-          {props.role === 'buyer' ? (
+          {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
             <div>
               <Button
                 style={{ marginBottom: '10px' }}
@@ -137,7 +139,7 @@ const ShipmentDetailPage = (props) => {
                 <tr>
                   <td>{shipment.shipmentFrom}</td>
                   <td>{shipment.shipmentTo}</td>
-                  <td>{shipment.dueDate}</td>
+                  <td>{format(shipment.dueDate, 'DD MMM YYYY')}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
                 </tr>

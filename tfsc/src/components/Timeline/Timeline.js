@@ -33,7 +33,7 @@ const Timeline = ({ shipment, events }) => {
     <div className="timeline-wrap">
       <div className="timeline">
         <div className="timeline-start">
-          <div className="timeline-start-text">{format(shipment.timestamp, 'DD MMMM YYYY')}</div>
+          <div className="timeline-start-text">{format(shipment.timestamp, 'DD MMM YYYY')}</div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipmentFrom}</div>
           </div>
@@ -48,12 +48,13 @@ const Timeline = ({ shipment, events }) => {
         <div className="timeline-past">
           {events
             && events
+              .sort((a, b) => a.timestamp - b.timestamp)
               .filter(i => i.type !== 'document' && i.action !== 'Proof generated')
               .map(event => (
                 <TimelineItem
                   id={event.id}
                   key={event.id}
-                  date={format(event.date, 'DD MMMM YYYY')}
+                  date={format(event.date, 'DD MMM YYYY')}
                   timelineItemClickHandler={setSelected}
                   isSelected={event.id === selectedId}
                 />

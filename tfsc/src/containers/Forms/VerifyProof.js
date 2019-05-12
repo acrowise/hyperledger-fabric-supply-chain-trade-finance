@@ -16,6 +16,8 @@ import { post } from '../../helper/api';
 import { cropId } from '../../helper/utils';
 import FileUploader from '../../components/FileUploader';
 
+import { INPUTS } from '../../constants';
+
 const ValidateProof = ({
   dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
@@ -27,6 +29,19 @@ const ValidateProof = ({
   if (!proof || !proof.contract) {
     return <></>;
   }
+
+  const requestedFields = Object.keys(proof.fields).filter(i => proof.fields[i] === true);
+  const requestedInputs = [];
+  const requestedDocs = [];
+
+  requestedFields.forEach((f) => {
+    if (INPUTS.GENERATE_PROOF.find(i => i.field === f)) {
+      requestedInputs.push(f);
+    } else {
+      requestedDocs.push(f);
+    }
+  });
+
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -46,25 +61,30 @@ const ValidateProof = ({
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
-                <FormGroup className="form-group-horizontal" label="Contract ID">
-                  <InputGroup disabled value={cropId(proof.contract.key.id)} />
-                </FormGroup>
-
-                <FormGroup className="form-group-horizontal" label="Consignor">
-                  <InputGroup disabled value={proof.contract.value.consignorName} />
-                </FormGroup>
-
-                <FormGroup className="form-group-horizontal" label="Consignee">
-                  <InputGroup disabled value={proof.contract.value.consigneeName} />
-                </FormGroup>
-                <div style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
-                  <Icon icon="document" />
-                  <div style={{ marginLeft: '10px' }}>Packing List</div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
-                  <Icon icon="document" />
-                  <div style={{ marginLeft: '10px' }}>Bill of Lading</div>
-                </div>
+                {requestedInputs.map((field) => {
+                  if (field === 'contractId') {
+                    return (
+                      <FormGroup className="form-group-horizontal" label="Contract ID">
+                        <InputGroup disabled value={cropId(proof.contract.key.id)} />
+                      </FormGroup>
+                    );
+                  }
+                  const proofField = INPUTS.GENERATE_PROOF.find(i => i.field === field);
+                  if (proofField) {
+                    return (
+                      <FormGroup className="form-group-horizontal" label={proofField.label}>
+                        <InputGroup disabled value={proof.contract.value[field]} />
+                      </FormGroup>
+                    );
+                  }
+                  return <></>;
+                })}
+                {requestedDocs.map(d => (
+                  <div key={d} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                    <Icon icon="document" />
+                    <div style={{ marginLeft: '10px' }}>{d}</div>
+                  </div>
+                ))}
                 <br />
                 {proof.documents
                   && proof.documents.map(i => (
@@ -158,7 +178,7 @@ const ValidateProof = ({
                       fcn: 'validateProof',
                       contractId: proof.contract.key.id,
                       shipmentId: proof.shipmentId,
-                      factor: role,
+                      user: role,
                       args: [proof.id]
                     });
 
