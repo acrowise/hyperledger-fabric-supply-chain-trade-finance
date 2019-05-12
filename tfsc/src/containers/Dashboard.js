@@ -61,7 +61,7 @@ const tabs = role => [
     panel: (
       <Filter
         filterBy={['Consignor', 'Consignee', 'Total Due', 'Delivery Date', 'Payment Date']}
-        statuses={['Signed', 'Completed']}
+        statuses={['Signed', 'Processed', 'Completed']}
       >
         <Contracts role={role} />
       </Filter>

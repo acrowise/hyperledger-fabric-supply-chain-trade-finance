@@ -278,6 +278,13 @@ router.post('/confirmShipment', (req, res) => {
   const shipments = db.get('shipments').value();
   const shipment = shipments.find(i => i.key.id === req.body.args[0]);
 
+  const contracts = db.get('contracts').value();
+  const contract = contracts.find(i => i.key.id === shipment.value.contractId);
+
+  contract.value.state = 2;
+
+  db.set('contracts', contracts).write();
+
   shipment.value.state = 2;
   shipment.value.events.push({
     id: uuid(),
@@ -288,7 +295,7 @@ router.post('/confirmShipment', (req, res) => {
 
   db.set('shipments', shipments).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentConfirmed' })));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, contract, type: 'shipmentConfirmed' })));
   res.end('ok');
 });
 

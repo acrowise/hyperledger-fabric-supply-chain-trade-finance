@@ -32,7 +32,8 @@ export const STATUSES = {
   CONTRACT: {
     0: 'Unknown',
     1: 'Signed',
-    2: 'Completed'
+    2: 'Processed',
+    3: 'Completed'
   },
   INVOICE: {
     0: 'Unknown',
