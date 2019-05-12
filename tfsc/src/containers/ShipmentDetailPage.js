@@ -140,7 +140,7 @@ const ShipmentDetailPage = (props) => {
           ) : (
             <></>
           )}
-          <div className="table-wrap">
+          <div className="table-wrap" style={{ paddingBottom: '0px' }}>
             <table className="table">
               <thead>
                 <tr>
