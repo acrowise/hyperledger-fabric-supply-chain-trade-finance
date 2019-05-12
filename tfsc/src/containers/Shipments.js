@@ -37,7 +37,7 @@ const Shipments = ({ role, content, setContent }) => {
       }
     }
 
-    if (notification.type === 'proofGenerated' || notification.type === 'proofValidated') {
+    if (notification.type === 'proofGenerated' || notification.type === 'validateProof') {
       const newState = shipments.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.shipment.key.id);
       newState[itemToUpdateIndex] = notification.shipment;

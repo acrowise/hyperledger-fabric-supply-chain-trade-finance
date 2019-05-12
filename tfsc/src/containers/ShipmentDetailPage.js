@@ -164,7 +164,7 @@ const ShipmentDetailPage = (props) => {
           </div>
 
           <Timeline shipment={shipment} events={props.events} />
-          <CollapsiblePanel history={props.events} />
+          <CollapsiblePanel history={props.events ? props.events.concat([]) : []} />
         </div>
 
         <div className="layout-aside">

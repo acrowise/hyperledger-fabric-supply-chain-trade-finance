@@ -48,7 +48,7 @@ const Timeline = ({ shipment, events }) => {
           style={isDelivered ? { maxWidth: '85%', flexBasis: '85%' } : {}}
         >
           {events
-            && events
+            && events.concat([])
               .sort((a, b) => a.date - b.bate)
               .filter(i => i.type !== 'document' && i.action !== 'Proof generated')
               .map(event => (
