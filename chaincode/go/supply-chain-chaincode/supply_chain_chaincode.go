@@ -36,7 +36,22 @@ func (cc *SupplyChainChaincode) Init(stub shim.ChaincodeStubInterface) pb.Respon
 		return shim.Error(message)
 	}
 
-	if err := UpdateOrInsertIn(stub, &config, []string{}, ""); err != nil {
+	compositeKey, err := config.ToCompositeKey(stub)
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	value, err := config.ToLedgerValue()
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Logger.Debug("PutState")
+	if err = stub.PutState(compositeKey, value); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -153,7 +168,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &order) {
+	if ExistsIn(stub, &order, orderIndex) {
 		compositeKey, _ := order.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("order with the key %s already exist", compositeKey))
 	}
@@ -180,7 +195,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &order, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &order, orderIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -240,7 +255,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &order) {
+	if !ExistsIn(stub, &order, orderIndex) {
 		compositeKey, _ := order.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
 	}
@@ -248,7 +263,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	//loading current state from ledger
 	orderToUpdate := Order{}
 	orderToUpdate.Key = order.Key
-	if err := LoadFrom(stub, &orderToUpdate); err != nil {
+	if err := LoadFrom(stub, &orderToUpdate, orderIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -285,7 +300,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -338,7 +353,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &order) {
+	if !ExistsIn(stub, &order, orderIndex) {
 		compositeKey, _ := order.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
 	}
@@ -346,7 +361,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	//loading current state from ledger
 	orderToUpdate := Order{}
 	orderToUpdate.Key = order.Key
-	if err := LoadFrom(stub, &orderToUpdate); err != nil {
+	if err := LoadFrom(stub, &orderToUpdate, orderIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -381,7 +396,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -442,7 +457,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &order) {
+	if !ExistsIn(stub, &order, orderIndex) {
 		compositeKey, _ := order.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
 	}
@@ -450,7 +465,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	//loading current state from ledger
 	orderToUpdate := Order{}
 	orderToUpdate.Key = order.Key
-	if err := LoadFrom(stub, &orderToUpdate); err != nil {
+	if err := LoadFrom(stub, &orderToUpdate, orderIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -482,7 +497,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if ExistsIn(stub, &contract) {
+	if ExistsIn(stub, &contract, contractIndex) {
 		compositeKey, _ := contract.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("contract with the key %s already exist", compositeKey))
 	}
@@ -503,7 +518,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -536,7 +551,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -597,7 +612,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &shipment) {
+	if ExistsIn(stub, &shipment, shipmentIndex) {
 		compositeKey, _ := shipment.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("shipment with the key %s already exist", compositeKey))
 	}
@@ -612,7 +627,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipment, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipment, shipmentIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -665,7 +680,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &shipment) {
+	if !ExistsIn(stub, &shipment, shipmentIndex) {
 		compositeKey, _ := shipment.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
 	}
@@ -673,7 +688,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	//loading current state from ledger
 	shipmentToUpdate := Shipment{}
 	shipmentToUpdate.Key = shipment.Key
-	if err := LoadFrom(stub, &shipmentToUpdate); err != nil {
+	if err := LoadFrom(stub, &shipmentToUpdate, shipmentIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -694,7 +709,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, shipmentIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -773,7 +788,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &document) {
+	if ExistsIn(stub, &document, documentIndex) {
 		compositeKey, _ := document.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("document with the key %s already exists", compositeKey))
 	}
@@ -803,7 +818,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		Logger.Debug("Document: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &document, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -813,17 +828,17 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	case TypeShipment:
 		entityType := Shipment{}
 		entityType.Key.ID = document.Value.EntityID
-		if !ExistsIn(stub, &entityType) {
+		if !ExistsIn(stub, &entityType, shipmentIndex) {
 			compositeKey, _ := entityType.ToCompositeKey(stub)
 			return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
 		}
-		if err := LoadFrom(stub, &entityType); err != nil {
+		if err := LoadFrom(stub, &entityType, shipmentIndex); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, []string{}, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, shipmentIndex, []string{}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -831,17 +846,17 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	case TypeAgencyReport:
 		entityType := AgencyReport{}
 		entityType.Key.ID = document.Value.EntityID
-		if !ExistsIn(stub, &entityType) {
+		if !ExistsIn(stub, &entityType, agencyReportIndex) {
 			compositeKey, _ := entityType.ToCompositeKey(stub)
 			return shim.Error(fmt.Sprintf("agencyReport with the key %s doesn't exist", compositeKey))
 		}
-		if err := LoadFrom(stub, &entityType); err != nil {
+		if err := LoadFrom(stub, &entityType, agencyReportIndex); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, []string{}, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, agencyReportIndex, []string{}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -885,7 +900,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &proof) {
+	if ExistsIn(stub, &proof, proofIndex) {
 		compositeKey, _ := proof.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("proof with the key %s already exists", compositeKey))
 	}
@@ -996,7 +1011,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Value.DataForVerification.Epoch = epoch
 
 	// updating state in ledger
-	if err := UpdateOrInsertIn(stub, &proof, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1030,14 +1045,14 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &proof) {
+	if !ExistsIn(stub, &proof, proofIndex) {
 		compositeKey, _ := proof.ToCompositeKey(stub)
 		message := fmt.Sprintf("proof with the key %s doesn't exist", compositeKey)
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	if err := LoadFrom(stub, &proof); err != nil {
+	if err := LoadFrom(stub, &proof, proofIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1071,7 +1086,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	proof.Value.State = stateProofValidated
 
 	// updating state in ledger
-	if err := UpdateOrInsertIn(stub, &proof, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1132,7 +1147,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &agencyReport) {
+	if ExistsIn(stub, &agencyReport, agencyReportIndex) {
 		compositeKey, _ := agencyReport.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
 	}
@@ -1147,7 +1162,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &agencyReport, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &agencyReport, agencyReportIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1445,12 +1460,12 @@ func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 404, Message: message}
 	}
 
-	if !ExistsIn(stub, &event) {
+	if !ExistsIn(stub, &event, eventIndex) {
 		compositeKey, _ := event.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("event with the key %s doesn't exist", compositeKey))
 	}
 
-	if err := LoadFrom(stub, &event); err != nil {
+	if err := LoadFrom(stub, &event, eventIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1496,12 +1511,12 @@ func (cc *SupplyChainChaincode) getDocument(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 404, Message: message}
 	}
 
-	if !ExistsIn(stub, &document) {
+	if !ExistsIn(stub, &document, documentIndex) {
 		compositeKey, _ := document.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("document with the key %s doesn't exist", compositeKey))
 	}
 
-	if err := LoadFrom(stub, &document); err != nil {
+	if err := LoadFrom(stub, &document, documentIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1626,7 +1641,7 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	}
 
 	config := Config{}
-	if err := LoadFrom(stub, &config); err != nil {
+	if err := LoadFrom(stub, &config, eventIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 
 		return errors.New(message)
@@ -1647,7 +1662,7 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	}
 	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
 
-	if err := UpdateOrInsertIn(stub, event, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, event, eventIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)

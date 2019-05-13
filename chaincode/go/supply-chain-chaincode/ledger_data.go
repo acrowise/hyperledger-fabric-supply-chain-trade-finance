@@ -32,19 +32,12 @@ type LedgerData interface {
 	ToLedgerValue() ([]byte, error)
 }
 
-func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData) bool {
+func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, index string) bool {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return false
 	}
-
-	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
-	if err != nil {
-		return false
-	}
-
-	dataIndex := compositeKeyParts[0]
-	collection, err := GetCollectionName(stub, dataIndex)
+	collection, err := GetCollectionName(stub, index)
 	if err != nil {
 		return false
 	}
@@ -64,21 +57,14 @@ func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData) bool {
 	return true
 }
 
-func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData) error {
+func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, index string) error {
 	var bytes []byte
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
 	}
 
-	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
-	if err != nil {
-		message := fmt.Sprintf("cannot split composite key into composite key parts slice: %s", err.Error())
-		return errors.New(message)
-	}
-
-	dataIndex := compositeKeyParts[0]
-	collection, err := GetCollectionName(stub, dataIndex)
+	collection, err := GetCollectionName(stub, index)
 	if err != nil {
 		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return errors.New(message)
@@ -99,7 +85,7 @@ func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData) error {
 	return data.FillFromLedgerValue(bytes)
 }
 
-func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, endorsers []string, endorserRoleType statebased.RoleType) error {
+func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, index string, endorsers []string, endorserRoleType statebased.RoleType) error {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -110,14 +96,7 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, endorse
 		return err
 	}
 
-	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
-	if err != nil {
-		message := fmt.Sprintf("cannot split composite key into composite key parts slice: %s", err.Error())
-		return errors.New(message)
-	}
-
-	dataIndex := compositeKeyParts[0]
-	collection, err := GetCollectionName(stub, dataIndex)
+	collection, err := GetCollectionName(stub, index)
 	if err != nil {
 		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return errors.New(message)
@@ -383,7 +362,7 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 	}
 }
 
-func GetCollectionName(stub shim.ChaincodeStubInterface, suffix string) (string, error) {
+func GetCollectionName(stub shim.ChaincodeStubInterface, index string) (string, error) {
 	collectionName := ""
 
 	creator, err := GetMSPID(stub)
@@ -393,20 +372,40 @@ func GetCollectionName(stub shim.ChaincodeStubInterface, suffix string) (string,
 		return collectionName, errors.New(message)
 	}
 
-	config := Config{}
-	if err := LoadFrom(stub, &config); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
+	Logger.Debug(fmt.Sprintf("Participiant: %s", creator))
 
+	config := Config{}
+	var bytes []byte
+	compositeKey, err := config.ToCompositeKey(stub)
+	if err != nil {
+		return collectionName, err
+	}
+
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return collectionName, errors.New(message)
+	}
+
+	Logger.Debug("GetState")
+	bytes, err = stub.GetState(compositeKey)
+	if err != nil {
+		return collectionName, err
+	}
+
+	if err = config.FillFromLedgerValue(bytes); err != nil {
+		return collectionName, err
 	}
 
 	collections := config.Value.Collections
 
 	for _, col := range collections {
-		if strings.Contains(col.Name, suffix) && strings.Contains(col.Policy, creator) {
+		if strings.Contains(col.Name, index) && strings.Contains(col.Policy, creator) {
+			Logger.Debug(fmt.Sprintf("For debug: %s", col.Name))
 			collectionName = col.Name
 		}
 	}
+
+	Logger.Debug(fmt.Sprintf("Got collection name: %s", collectionName))
 
 	return collectionName, nil
 }
