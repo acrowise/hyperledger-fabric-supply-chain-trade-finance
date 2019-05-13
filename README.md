@@ -56,14 +56,14 @@ Deploy docker containers of all member organizations to one host, for developmen
 
 After all containers are up, web interfaces will be at:
 
-- org1 [http://localhost:4001](http://localhost:4001/)
-- org2 [http://localhost:4002](http://localhost:4002/)
-- org3 [http://localhost:4003](http://localhost:4003/)
-- org4 [http://localhost:4004](http://localhost:4004/)
-- org5 [http://localhost:4005](http://localhost:4005/)
-- org6 [http://localhost:4006](http://localhost:4006/)
-- org7 [http://localhost:4007](http://localhost:4007/)
-- org8 [http://localhost:4008](http://localhost:4008/)
+- org1 [http://localhost:3001](http://localhost:3001/)
+- org2 [http://localhost:3002](http://localhost:3002/)
+- org3 [http://localhost:3003](http://localhost:3003/)
+- org4 [http://localhost:3004](http://localhost:3004/)
+- org5 [http://localhost:3005](http://localhost:3005/)
+- org6 [http://localhost:3006](http://localhost:3006/)
+- org7 [http://localhost:3007](http://localhost:3007/)
+- org8 [http://localhost:3008](http://localhost:3008/)
 
 
 

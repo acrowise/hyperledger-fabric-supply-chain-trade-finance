@@ -97,7 +97,7 @@ LITERAL_LEVELDB="leveldb"
 STATE_DATABASE="${LITERAL_COUCHDB}"
 
 DEFAULT_ORDERER_PORT=7050
-DEFAULT_WWW_PORT=4000
+DEFAULT_WWW_PORT=3000
 DEFAULT_API_PORT=8080
 DEFAULT_CA_PORT=7054
 DEFAULT_PEER0_PORT=7051
@@ -822,15 +822,15 @@ elif [ "${MODE}" == "generate" ]; then
   echo "===Generating api-network-config"
   make_network_template ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
 
-  #                     org     www_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
-  generatePeerArtifacts ${ORG1} 4001     7054    7051       7053             7056       7058            7001       7984         ${BUYER}
-  generatePeerArtifacts ${ORG2} 4002     8054    8051       8053             8056       8058            8001       8984         ${SUPPLIER}
-  generatePeerArtifacts ${ORG3} 4003     9054    9051       9053             9056       9058            9001       9984         ${SUPPLIER}
-  generatePeerArtifacts ${ORG4} 4004     10054   10051      1053             10056      10058           10001      10984        ${AUDITOR}
-  generatePeerArtifacts ${ORG5} 4005     11054   11051      11053            11056      11058           11001      11984        ${AUDITOR}
-  generatePeerArtifacts ${ORG6} 4006     12054   12051      12053            12056      12058           12001      12984        ${FACTOR}
-  generatePeerArtifacts ${ORG7} 4007     13054   13051      13053            13056      13058           13001      13984        ${FACTOR}
-  generatePeerArtifacts ${ORG8} 4008     14054   14051      14053            14056      14058           14001      14984        ${TRANSPORT_AGENCY}
+  #                     org     proxy_port ca_port peer0_port peer0_event_port peer1_port peer1_event_port ipfs_port couchdb_port org_unit
+  generatePeerArtifacts ${ORG1} 3001       7054    7051       7053             7056       7058            7001       7984         ${BUYER}
+  generatePeerArtifacts ${ORG2} 3002       8054    8051       8053             8056       8058            8001       8984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG3} 3003       9054    9051       9053             9056       9058            9001       9984         ${SUPPLIER}
+  generatePeerArtifacts ${ORG4} 3004       10054   10051      1053             10056      10058           10001      10984        ${AUDITOR}
+  generatePeerArtifacts ${ORG5} 3005       11054   11051      11053            11056      11058           11001      11984        ${AUDITOR}
+  generatePeerArtifacts ${ORG6} 3006       12054   12051      12053            12056      12058           12001      12984        ${FACTOR}
+  generatePeerArtifacts ${ORG7} 3007       13054   13051      13053            13056      13058           13001      13984        ${FACTOR}
+  generatePeerArtifacts ${ORG8} 3008       14054   14051      14053            14056      14058           14001      14984        ${TRANSPORT_AGENCY}
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts
 
