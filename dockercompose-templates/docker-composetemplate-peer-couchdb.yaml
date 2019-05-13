@@ -149,3 +149,19 @@ services:
       - "IPFS_API:5001" # expose if needed/wanted
     volumes:
       - ../artifacts/ipfs.ORG.DOMAIN:/data/ipfs
+
+  tsupply-app.ORG.DOMAIN:
+    container_name: tsupply-app.ORG.DOMAIN
+    image: tsupply-app:latest
+    environment:
+      PORT: 3000
+
+  proxy.ORG.DOMAIN:
+    container_name: proxy.ORG.DOMAIN
+    image: nginx
+    ports:
+      - PROXY_PORT:80
+    volumes:
+      - ../artifacts/nginx-ORG.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api.ORG.DOMAIN
