@@ -13,8 +13,8 @@ const Profile = ({ name }) => {
     case 'uscts':
       return <Auditor />;
 
-    case 'factor-1':
-    case 'factor-2':
+    case 'factor 1':
+    case 'factor 2':
       return <Factor />;
 
     default:

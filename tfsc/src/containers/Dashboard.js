@@ -69,7 +69,7 @@ const tabs = role => [
   },
   {
     name: 'Invoices',
-    actors: ['buyer', 'supplier', 'factor-1', 'factor-2'],
+    actors: ['buyer', 'supplier', 'factor 1', 'factor 2'],
     panel: (
       <Filter
         filterBy={['Debtor', 'Beneficiary', 'Payment Date', 'Owner']}
@@ -114,7 +114,7 @@ const tabs = role => [
   },
   {
     name: 'Bids',
-    actors: ['factor-1', 'factor-2', 'supplier'],
+    actors: ['factor 1', 'factor 2', 'supplier'],
     panel: (
       <Filter
         filterBy={['Debtor', 'Beneficiary', 'Rate', 'Payment Date']}
