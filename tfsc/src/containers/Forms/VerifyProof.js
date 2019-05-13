@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 import {
-  Button,
-  Overlay,
-  Card,
-  Label,
-  TextArea,
-  FormGroup,
-  InputGroup,
-  Icon
+  Button, Overlay, Card, Label, TextArea, FormGroup, InputGroup
 } from '@blueprintjs/core';
+
+import { format } from 'date-fns';
 
 import { post } from '../../helper/api';
 import { cropId } from '../../helper/utils';
@@ -25,7 +20,6 @@ const ValidateProof = ({
   const [, validateProof] = post('validateProof')();
   const [, uploadDocs] = post('uploadDocuments')();
 
-  console.log('proof', proof);
   if (!proof || !proof.contract) {
     return <></>;
   }
@@ -71,6 +65,16 @@ const ValidateProof = ({
                   }
                   const proofField = INPUTS.GENERATE_PROOF.find(i => i.field === field);
                   if (proofField) {
+                    if (field === 'dueDate' || field === 'paymentDate') {
+                      return (
+                        <FormGroup className="form-group-horizontal" label={proofField.label}>
+                          <InputGroup
+                            disabled
+                            value={format(proof.contract.value[field], 'DD MMM YYYY')}
+                          />
+                        </FormGroup>
+                      );
+                    }
                     return (
                       <FormGroup className="form-group-horizontal" label={proofField.label}>
                         <InputGroup disabled value={proof.contract.value[field]} />
