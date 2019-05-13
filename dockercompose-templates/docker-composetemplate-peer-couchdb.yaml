@@ -115,13 +115,12 @@ services:
       - peer1.ORG.DOMAIN
     API_EXTRA_HOSTS
 
-  www.ORG.DOMAIN:
-    container_name: www.ORG.DOMAIN
+  proxy.ORG.DOMAIN:
+    container_name: proxy.ORG.DOMAIN
     image: nginx
     ports:
       - WWW_PORT:80
     volumes:
-      - ../client/build:/usr/share/nginx/html:ro
       - ../artifacts/nginx-ORG.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - api.ORG.DOMAIN
@@ -149,3 +148,9 @@ services:
       - "IPFS_API:5001" # expose if needed/wanted
     volumes:
       - ../artifacts/ipfs.ORG.DOMAIN:/data/ipfs
+
+  tsupply-app.ORG.DOMAIN:
+    container_name: tsupply-app.ORG.DOMAIN
+    image: tsupply-app:latest
+    environment:
+      PORT: 3000
