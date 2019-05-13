@@ -37,7 +37,9 @@ const Timeline = ({ shipment, events }) => {
           </div>
         </div>
         <div style={isDelivered ? { backgroundColor: '#69D7BC' } : {}} className="timeline-finish">
-          <div className="timeline-finish-text" />
+          <div className="timeline-finish-text">
+            {isDelivered ? format(isDelivered.date, 'DD MMM YYYY') : ''}
+          </div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipmentTo}</div>
           </div>
@@ -48,7 +50,8 @@ const Timeline = ({ shipment, events }) => {
           style={isDelivered ? { maxWidth: '85%', flexBasis: '85%' } : {}}
         >
           {events
-            && events.concat([])
+            && events
+              .concat([])
               .sort((a, b) => a.date - b.bate)
               .filter(i => i.type !== 'document' && i.action !== 'Proof generated')
               .map(event => (
