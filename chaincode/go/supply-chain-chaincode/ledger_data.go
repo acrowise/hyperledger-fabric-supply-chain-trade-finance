@@ -86,6 +86,15 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collect
 		return err
 	}
 
+	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
+	if err != nil {
+		message := fmt.Sprintf("cannot split composite key into composite key parts slice: %s", err.Error())
+		return errors.New(message)
+	}
+
+	dataIndex := compositeKeyParts[0]
+	collectionName, err := GetCollectionName(stub, dataIndex)
+
 	if collection != "" {
 		Logger.Debug("PutPrivateData")
 
@@ -342,4 +351,32 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 	default:
 		Logger.Debug("Unknown typeNotice: %d", typeNotice)
 	}
+}
+
+func GetCollectionName(stub shim.ChaincodeStubInterface, suffix string) (string, error) {
+	collectionName := ""
+
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return collectionName, errors.New(message)
+	}
+
+	config := Config{}
+	if err := LoadFrom(stub, &config, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+
+		return collectionName, errors.New(message)
+	}
+
+	collections := config.Value.Collections
+
+	for _, col := range collections {
+		if strings.Contains(col.Name, suffix) && strings.Contains(col.Policy, creator) {
+			collectionName = col.Name
+		}
+	}
+
+	return collectionName, nil
 }
