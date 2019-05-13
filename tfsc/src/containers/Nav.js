@@ -44,6 +44,11 @@ const Nav = ({ role, logout }) => {
     </div>
   );
 
+  let profileName = role;
+  if (role === 'ggcb' || role === 'uscts') {
+    profileName = role.toUpperCase();
+  }
+
   return (
     <Navbar fixedToTop className="header">
       <div className="container">
@@ -89,7 +94,7 @@ const Nav = ({ role, logout }) => {
               icon={<Profile name={role} />}
               style={{ textTransform: 'capitalize', marginLeft: 50 }}
             >
-              {role}
+              {profileName}
             </Button>
           </Navbar.Group>
         )}

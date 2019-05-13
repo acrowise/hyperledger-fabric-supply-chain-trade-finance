@@ -118,7 +118,7 @@ const ShipmentDetailPage = (props) => {
                   setCdDialogOpenState(true);
                 }}
               >
-                Confirm Delivery
+                Accept Delivery
               </Button>
               {/* <Button>Cancel Delivery</Button> */}
             </div>
