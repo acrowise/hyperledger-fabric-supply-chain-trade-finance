@@ -109,39 +109,8 @@ const ShipmentDetailPage = (props) => {
       <div className="layout-container">
         <div className="layout-main">
           <h3>Shipment Number: {cropId(shipment.id)}</h3>
-          {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
-            <div>
-              <Button
-                style={{ marginBottom: '10px' }}
-                intent="primary"
-                onClick={() => {
-                  setCdDialogOpenState(true);
-                }}
-              >
-                Accept Delivery
-              </Button>
-              {/* <Button>Cancel Delivery</Button> */}
-            </div>
-          ) : (
-            <></>
-          )}
-          {props.role === 'transporter' && shipment.state === 'Requested' ? (
-            <div>
-              <Button
-                style={{ marginBottom: '10px' }}
-                intent="primary"
-                onClick={() => {
-                  setCsDialogOpenState(true);
-                }}
-              >
-                Confirm Shipment
-              </Button>
-            </div>
-          ) : (
-            <></>
-          )}
           <div className="table-wrap" style={{ paddingBottom: '0px' }}>
-            <table className="table">
+            <table className="table shipment-info-table">
               <thead>
                 <tr>
                   <th>Ship From</th>
@@ -161,6 +130,39 @@ const ShipmentDetailPage = (props) => {
                 </tr>
               </tbody>
             </table>
+            <div style={{paddingTop: 15, paddingBottom: 18}}>
+              {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
+                <div>
+                  <Button
+                    style={{paddingLeft: 30, paddingRight: 30}}
+                    intent="primary"
+                    onClick={() => {
+                      setCdDialogOpenState(true);
+                    }}
+                  >
+                    Accept Delivery
+                  </Button>
+                  {/* <Button>Cancel Delivery</Button> */}
+                </div>
+              ) : (
+                <></>
+              )}
+              {props.role === 'transporter' && shipment.state === 'Requested' ? (
+                <div>
+                  <Button
+                    style={{paddingLeft: 30, paddingRight: 30}}
+                    intent="primary"
+                    onClick={() => {
+                      setCsDialogOpenState(true);
+                    }}
+                  >
+                    Confirm Shipment
+                  </Button>
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
           </div>
 
           <Timeline shipment={shipment} events={props.events} />
