@@ -141,7 +141,7 @@ function FileUploader({ files, setFiles, withPreview }) {
       </div>
       <ul
         style={{
-          padding: '10px 0 0 0',
+          padding: '5px 0 0 0',
           margin: '5px 0 0 0',
           color: '#69D7BC',
           listStyle: 'none'
