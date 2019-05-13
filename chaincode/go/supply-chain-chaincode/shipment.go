@@ -82,7 +82,7 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 
-	if !ExistsIn(stub, &contract, "") {
+	if !ExistsIn(stub, &contract) {
 		compositeKey, _ := contract.ToCompositeKey(stub)
 		return errors.New(fmt.Sprintf("contract with the key %s doesn't exist", compositeKey))
 	}

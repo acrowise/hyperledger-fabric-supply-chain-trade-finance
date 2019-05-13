@@ -32,8 +32,19 @@ type LedgerData interface {
 	ToLedgerValue() ([]byte, error)
 }
 
-func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string) bool {
+func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData) bool {
 	compositeKey, err := data.ToCompositeKey(stub)
+	if err != nil {
+		return false
+	}
+
+	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
+	if err != nil {
+		return false
+	}
+
+	dataIndex := compositeKeyParts[0]
+	collection, err := GetCollectionName(stub, dataIndex)
 	if err != nil {
 		return false
 	}
@@ -53,11 +64,24 @@ func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, collection stri
 	return true
 }
 
-func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, collection string) error {
+func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData) error {
 	var bytes []byte
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
+	}
+
+	_, compositeKeyParts, err := stub.SplitCompositeKey(compositeKey)
+	if err != nil {
+		message := fmt.Sprintf("cannot split composite key into composite key parts slice: %s", err.Error())
+		return errors.New(message)
+	}
+
+	dataIndex := compositeKeyParts[0]
+	collection, err := GetCollectionName(stub, dataIndex)
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return errors.New(message)
 	}
 
 	if collection != "" {
@@ -75,7 +99,7 @@ func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, collection stri
 	return data.FillFromLedgerValue(bytes)
 }
 
-func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string, endorsers []string, endorserRoleType statebased.RoleType) error {
+func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, endorsers []string, endorserRoleType statebased.RoleType) error {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -93,7 +117,11 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collect
 	}
 
 	dataIndex := compositeKeyParts[0]
-	collectionName, err := GetCollectionName(stub, dataIndex)
+	collection, err := GetCollectionName(stub, dataIndex)
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return errors.New(message)
+	}
 
 	if collection != "" {
 		Logger.Debug("PutPrivateData")
@@ -166,31 +194,33 @@ func EmptyFilter(data LedgerData) bool {
 }
 
 func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
-	createEntry FactoryMethod, filterEntry FilterFunction, collections []string) ([]byte, error) {
+	createEntry FactoryMethod, filterEntry FilterFunction) ([]byte, error) {
 
 	ledgerDataLogger.Info(fmt.Sprintf("Query(%s) is running", index))
 	ledgerDataLogger.Debug("Query " + index)
 
+	collection, err := GetCollectionName(stub, index)
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return nil, errors.New(message)
+	}
+
 	entries := []LedgerData{}
-	if len(collections) != 0 && collections[0] != "" {
-		for _, collection := range collections {
-			it, err := stub.GetPrivateDataByPartialCompositeKey(collection, index, partialKey)
-			if err != nil {
-				message := fmt.Sprintf("unable to get state by partial composite key %s: %s", index, err.Error())
-				ledgerDataLogger.Error(message)
-				return nil, errors.New(message)
-			}
-
-			iteratorEntries, err := queryImpl(it, createEntry, stub, filterEntry)
-			if err != nil {
-				ledgerDataLogger.Error(err.Error())
-				return nil, err
-			}
-
-			entries = append(entries, iteratorEntries...)
-
-			it.Close()
+	if collection != "" {
+		it, err := stub.GetPrivateDataByPartialCompositeKey(collection, index, partialKey)
+		if err != nil {
+			message := fmt.Sprintf("unable to get state by partial composite key %s: %s", index, err.Error())
+			ledgerDataLogger.Error(message)
+			return nil, errors.New(message)
 		}
+		defer it.Close()
+
+		entries, err = queryImpl(it, createEntry, stub, filterEntry)
+		if err != nil {
+			ledgerDataLogger.Error(err.Error())
+			return nil, err
+		}
+
 	} else {
 		it, err := stub.GetStateByPartialCompositeKey(index, partialKey)
 		if err != nil {
@@ -364,7 +394,7 @@ func GetCollectionName(stub shim.ChaincodeStubInterface, suffix string) (string,
 	}
 
 	config := Config{}
-	if err := LoadFrom(stub, &config, ""); err != nil {
+	if err := LoadFrom(stub, &config); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 
 		return collectionName, errors.New(message)
