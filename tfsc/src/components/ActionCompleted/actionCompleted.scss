@@ -1,0 +1,17 @@
+@import "../../styles/variables";
+
+.action-completed {
+  padding: 40px;
+  text-align: center;
+  background-color: white;
+}
+
+.action-completed-result {
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: $fs-big;
+}
+
+.action-completed-icon {
+  margin-bottom: 15px;
+}

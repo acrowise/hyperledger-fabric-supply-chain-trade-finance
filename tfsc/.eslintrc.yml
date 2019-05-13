@@ -1,0 +1,19 @@
+extends:
+  - eslint:recommended
+  - airbnb-base
+  - plugin:react/recommended
+env:
+  es6: true
+  node: true
+  browser: true
+  jest: true
+rules:
+  no-console: 'off'
+  no-plusplus: 'off'
+  no-param-reassign: ['error', { props: false }]
+  class-methods-use-this: 'off'
+  curly: [error, all ]
+  comma-dangle: [error, never]
+parserOptions:
+  ecmaVersion: 8
+  sourceType: module

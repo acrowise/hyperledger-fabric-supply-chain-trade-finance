@@ -1,0 +1,37 @@
+@import "../../styles/variables";
+.table-wrap {
+  padding: 10px 20px 65px;
+  box-shadow: $box-shadow;
+  background: white;
+}
+.table {
+  width: 100%;
+  font-size: $fs-bigger;
+  border-collapse: collapse;
+
+  tbody tr:hover {
+    background-color: #D3F3E8;
+  }
+
+  tbody tr.no-data-cell {
+    td {
+      padding-top: 60px;
+      text-align: center;
+      border-bottom: 0;
+    }
+    &:hover {
+      outline: none;
+      background-color: transparent;
+      box-shadow: none;
+    }
+  }
+
+  th {
+    padding: 8px 10px;
+    text-align: left;
+  }
+  td {
+    padding: 5px 10px;
+    border-bottom: 2px solid $color-bg-gray;
+  }
+}
