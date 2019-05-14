@@ -19,7 +19,12 @@ const initialState = {
   shipmentFrom: '',
   shipmentTo: '',
   transport: '',
-  description: ''
+  description: '',
+  touched: {
+    shipmentFrom: false,
+    shipmentTo: false,
+    transport: false
+  }
 };
 
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
@@ -27,6 +32,14 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [files, setFiles] = useState([]);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
   const [, uploadDocs] = post('uploadDocuments')();
+
+  const errors = {
+    shipmentFrom: formState.shipmentFrom.length === 0,
+    shipmentTo: formState.shipmentTo.length === 0,
+    transport: formState.transport.length === 0,
+    description: formState.description.length === 0,
+    files: files.length === 0
+  };
 
   if (!shipmentRequestRes.pending) {
     if (shipmentRequestRes.complete) {
@@ -39,6 +52,20 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
       }, 1500);
     }
   }
+
+  const shouldShowError = (field) => {
+    const hasError = errors[field];
+    const shouldShow = formState.touched[field];
+
+    return hasError ? shouldShow : false;
+  };
+
+  const onBlur = field => () => {
+    dispatch({
+      type: 'touch',
+      fields: [field]
+    });
+  };
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen.state}>
@@ -66,6 +93,8 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     }) => (
                       <FormGroup key={label} label={label}>
                         <InputGroup
+                          className={shouldShowError(field) ? 'bp3-intent-danger' : ''}
+                          onBlur={onBlur(field)}
                           type={type}
                           placeholder={placeholder}
                           value={formState[field]}
@@ -85,7 +114,6 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     <Label>
                       Description
                       <TextArea
-                        growVertically={true}
                         className="textarea"
                         value={formState.description}
                         onChange={({ target: { value } }) => dispatch({
@@ -128,29 +156,37 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   intent="primary"
                   className="btn-modal"
                   onClick={() => {
-                    requestShipment({
-                      fcn: 'requestShipment',
-                      args: [
-                        '0',
-                        dialogIsOpen.item.id,
-                        formState.shipmentFrom,
-                        formState.shipmentTo,
-                        formState.transport,
-                        formState.description
-                      ]
-                    });
-                    setTimeout(() => {
-                      const form = new FormData();
-                      form.append('contractId', dialogIsOpen.item.id);
-                      form.append('type', 'Packing List');
-                      files.forEach((f) => {
-                        form.append('file', f);
+                    const hasErrors = Object.keys(errors).find(i => errors[i] === true);
+                    if (!hasErrors) {
+                      requestShipment({
+                        fcn: 'requestShipment',
+                        args: [
+                          '0',
+                          dialogIsOpen.item.id,
+                          formState.shipmentFrom,
+                          formState.shipmentTo,
+                          formState.transport,
+                          formState.description
+                        ]
                       });
-                      uploadDocs(form);
-                    }, 600);
+                      setTimeout(() => {
+                        const form = new FormData();
+                        form.append('contractId', dialogIsOpen.item.id);
+                        form.append('type', 'Packing List');
+                        files.forEach((f) => {
+                          form.append('file', f);
+                        });
+                        uploadDocs(form);
+                      }, 600);
 
-                    setFiles([]);
-                    dispatch({ type: 'reset', payload: initialState });
+                      setFiles([]);
+                      dispatch({ type: 'reset', payload: initialState });
+                    } else {
+                      dispatch({
+                        type: 'touch',
+                        fields: Object.keys(errors).filter(j => errors[j])
+                      });
+                    }
                   }}
                 >
                   Request

@@ -19,13 +19,34 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
     destination: false,
     dueDate: false,
     paymentDate: false,
-    reviewer: null
+    reviewer: null,
+    touched: {
+      reviewer: false
+    }
   };
 
   shipment.documents.forEach(doc => (initialState[doc.type] = false));
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [, generateProof] = post('generateProof')();
+
+  const errors = {
+    reviewer: formState.reviewer === null
+  };
+
+  const onBlur = field => () => {
+    dispatch({
+      type: 'touch',
+      fields: [field]
+    });
+  };
+
+  const shouldShowError = (field) => {
+    const hasError = errors[field];
+    const shouldShow = formState.touched[field];
+
+    return hasError ? shouldShow : false;
+  };
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
@@ -87,18 +108,21 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                   )}
                   items={REVIEWERS}
                   filterable={false}
-                  popoverProps={{ minimal: true }}
+                  popoverProps={{ minimal: true }} // #db3737
                 >
                   <Button
                     style={{
                       padding: '15px',
                       backgroundColor: 'white',
-                      border: '1px solid #D3DAE0',
+                      border: shouldShowError('reviewer')
+                        ? '1px solid #db3737'
+                        : '1px solid #D3DAE0',
                       color: '#1B263C',
                       font: '300 14px "Proxima Nova", sans-serif',
                       borderRadius: 2,
                       cursor: 'pointer'
                     }}
+                    onBlur={onBlur('reviewer')}
                     text={(formState.reviewer && formState.reviewer.title) || 'Select Reviewer'}
                     rightIcon="double-caret-vertical"
                   />
@@ -123,16 +147,24 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
               intent="primary"
               className="btn-modal"
               onClick={() => {
-                setDialogOpenState(false);
-                generateProof({
-                  fcn: 'generateProof',
-                  user: 'supplier',
-                  shipmentId: shipment.id,
-                  data: formState,
-                  reviewer: formState.reviewer,
-                  contractId: shipment.contractId
-                });
-                dispatch({ type: 'reset', payload: initialState });
+                const hasErrors = Object.keys(errors).find(i => errors[i] === true);
+                if (('hasErrors', hasErrors)) {
+                  generateProof({
+                    fcn: 'generateProof',
+                    user: 'supplier',
+                    shipmentId: shipment.id,
+                    data: formState,
+                    reviewer: formState.reviewer,
+                    contractId: shipment.contractId
+                  });
+                  setDialogOpenState(false);
+                  dispatch({ type: 'reset', payload: initialState });
+                } else {
+                  dispatch({
+                    type: 'touch',
+                    fields: Object.keys(errors).filter(j => errors[j])
+                  });
+                }
               }}
             >
               Submit
