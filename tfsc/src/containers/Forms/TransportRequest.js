@@ -32,13 +32,13 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [files, setFiles] = useState([]);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
   const [, uploadDocs] = post('uploadDocuments')();
+  const [fileRequired, setFileRequired] = useState(false);
 
   const errors = {
     shipmentFrom: formState.shipmentFrom.length === 0,
     shipmentTo: formState.shipmentTo.length === 0,
     transport: formState.transport.length === 0,
-    description: formState.description.length === 0,
-    files: files.length === 0
+    description: formState.description.length === 0
   };
 
   if (!shipmentRequestRes.pending) {
@@ -48,6 +48,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
           isOpen: false,
           item: {}
         });
+        setFileRequired(false);
         reset();
       }, 1500);
     }
@@ -129,7 +130,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     <Label>
                       Packing List
                       <div style={{ marginTop: 5 }}>
-                        <FileUploader files={files} setFiles={setFiles} />
+                        <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
                       </div>
                     </Label>
                   </div>
@@ -145,6 +146,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                       state: false,
                       item: {}
                     });
+                    setFileRequired(false);
                     dispatch({ type: 'reset', payload: initialState });
                     setFiles([]);
                   }}
@@ -157,6 +159,9 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   className="btn-modal"
                   onClick={() => {
                     const hasErrors = Object.keys(errors).find(i => errors[i] === true);
+                    if (files.length === 0) {
+                      setFileRequired(true);
+                    }
                     if (!hasErrors) {
                       requestShipment({
                         fcn: 'requestShipment',

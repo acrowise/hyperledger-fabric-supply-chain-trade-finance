@@ -108,7 +108,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                   )}
                   items={REVIEWERS}
                   filterable={false}
-                  popoverProps={{ minimal: true }} // #db3737
+                  popoverProps={{ minimal: true }}
                 >
                   <Button
                     style={{
@@ -148,7 +148,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
               className="btn-modal"
               onClick={() => {
                 const hasErrors = Object.keys(errors).find(i => errors[i] === true);
-                if (('hasErrors', hasErrors)) {
+                if (!hasErrors) {
                   generateProof({
                     fcn: 'generateProof',
                     user: 'supplier',

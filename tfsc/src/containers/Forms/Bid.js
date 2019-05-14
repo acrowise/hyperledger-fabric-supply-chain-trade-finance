@@ -11,9 +11,29 @@ import { INPUTS } from '../../constants';
 const PlaceBidForm = ({
   dialogIsOpen, setDialogOpenState, invoiceId, role, rate = 0
 }) => {
-  const defaultFormState = { rate, invoiceId, role };
+  const defaultFormState = {
+    rate,
+    invoiceId,
+    role,
+    touched: { rate: false }
+  };
   const [formState, setFormState] = useState(defaultFormState);
   const [postRes, postAction] = post(`${dialogIsOpen.action}Bid`)();
+
+  const errors = {
+    rate: formState.rate <= 0
+  };
+
+  const shouldShowError = (field) => {
+    const hasError = errors[field];
+    const shouldShow = formState.touched[field];
+
+    return hasError ? shouldShow : false;
+  };
+
+  const onBlur = () => {
+    setFormState(Object.assign({}, formState, { touched: { rate: true } }));
+  };
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen.isOpen}>
@@ -34,6 +54,8 @@ const PlaceBidForm = ({
             }) => (
               <FormGroup key={label} label={label}>
                 <InputGroup
+                  className={shouldShowError(field) ? 'bp3-intent-danger' : ''}
+                  onBlur={onBlur}
                   type={type}
                   placeholder={placeholder}
                   value={formState[field]}
@@ -51,15 +73,21 @@ const PlaceBidForm = ({
                 large
                 intent="primary"
                 onClick={() => {
-                  postAction({
-                    fcn: `${dialogIsOpen.action}Bid`,
-                    args: ['0', formState.rate, role, invoiceId]
-                  }); // FIXME:  'f' === factor-id
-                  setDialogOpenState({
-                    isOpen: false,
-                    action: null
-                  });
-                  setFormState(defaultFormState);
+                  const hasErrors = Object.keys(errors).find(i => errors[i] === true);
+
+                  if (!hasErrors) {
+                    postAction({
+                      fcn: `${dialogIsOpen.action}Bid`,
+                      args: ['0', formState.rate, role, invoiceId]
+                    }); // FIXME:  'f' === factor-id
+                    setDialogOpenState({
+                      isOpen: false,
+                      action: null
+                    });
+                    setFormState(defaultFormState);
+                  } else {
+                    setFormState(Object.assign({}, formState, { touched: { rate: true } }));
+                  }
                 }}
               >
                 Confirm
