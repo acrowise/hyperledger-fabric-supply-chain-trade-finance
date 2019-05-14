@@ -7,6 +7,7 @@ import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
 import { title } from '../mocks';
 import Profile from '../components/Icon/Profile';
+import Icon from '../components/Icon/Icon';
 
 const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
@@ -22,22 +23,7 @@ const Nav = ({ role, logout }) => {
     <div className="header-notifications">
       {notifications.map((n, i) => (
         <div key={i.toString()} className="header-notifications-item">
-          <svg
-            width="18"
-            height="15"
-            viewBox="0 0 18 15"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            style={{ flex: '0 0 18px' }}
-          >
-            <path
-              d="M2 8.44828L6.42105 13L16 2"
-              stroke="#69D7BC"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <Icon name="tick" />
           <p style={{ paddingLeft: '15px' }}>{title[n.type]}</p>
         </div>
       ))}
