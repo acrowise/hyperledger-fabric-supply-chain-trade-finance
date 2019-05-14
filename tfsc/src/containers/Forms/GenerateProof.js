@@ -25,7 +25,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   shipment.documents.forEach(doc => (initialState[doc.type] = false));
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
-  const [proofRes, generateProof] = post('generateProof')();
+  const [, generateProof] = post('generateProof')();
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>

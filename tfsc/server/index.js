@@ -20,6 +20,14 @@ const PORT = process.env.PORT || 3000;
 
 const path = require('path');
 
+const documents = [
+  'Bill of Lading',
+  'Delivery Acceptance Form',
+  'Packing List',
+  'USCTS Report',
+  'GGCB Report'
+];
+
 const capitalize = str => str[0].toUpperCase() + str.substring(1);
 
 db.defaults({
@@ -150,6 +158,16 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
 });
 
 router.post('/generateProof', (req, res) => {
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+
+  const requestedDocuments = [];
+  documents.forEach((d) => {
+    if (req.body.data[d]) {
+      requestedDocuments.push(shipment.value.documents.find(i => i.type === d));
+    }
+  });
+
   const proof = {
     key: { id: uuid() },
     value: {
@@ -157,15 +175,13 @@ router.post('/generateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       agency: req.body.reviewer,
       fields: req.body.data,
+      documents: requestedDocuments,
       contract: db
         .get('contracts')
         .value()
         .find(i => i.key.id === req.body.contractId)
     }
   };
-
-  const shipments = db.get('shipments').value();
-  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
 
   // const shipment = get('shipments', req.body.shipmentId);
 

@@ -33,9 +33,23 @@ const Proofs = ({ data }) => {
                 setSelectedProof(proof);
               }}
               key={proof.key.id}
-              style={{ display: 'flex', flexDirection: 'column', cursor: 'pointer' }}
+              style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
             >
               <p>Proof: {proof.value.agency.id.toUpperCase()}</p>
+              {proof.new ? (
+                <div
+                  style={{
+                    marginLeft: '3px',
+                    marginBottom: '7px',
+                    borderRadius: '100%',
+                    height: '8px',
+                    width: '8px',
+                    backgroundColor: '#69D7BC'
+                  }}
+                />
+              ) : (
+                <></>
+              )}
             </div>
           ))}
         </div>

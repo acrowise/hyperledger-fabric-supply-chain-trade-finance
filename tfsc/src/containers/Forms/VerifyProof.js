@@ -28,13 +28,11 @@ const ValidateProof = ({
 
   const requestedFields = Object.keys(proof.fields).filter(i => proof.fields[i] === true);
   const requestedInputs = [];
-  const requestedDocs = [];
+  const requestedDocs = proof.documents;
 
   requestedFields.forEach((f) => {
     if (INPUTS.GENERATE_PROOF.find(i => i.field === f)) {
       requestedInputs.push(f);
-    } else {
-      requestedDocs.push(f);
     }
   });
 
@@ -87,27 +85,19 @@ const ValidateProof = ({
                   }
                   return <></>;
                 })}
-                {requestedDocs.map(d => (
-                  <div key={d} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
-                    <Icon name="proofDocument" />
-                    <div style={{ marginLeft: '10px', marginTop: '2px' }}>{d}</div>
+                {requestedDocs.map((d, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                    <Icon name="proof-document" />
+                    <a
+                      style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
+                      href={`/document?contractId=${d.contractId}&name=${d.name}`}
+                      target="_blank"
+                    >
+                      {d.type}
+                    </a>
                   </div>
                 ))}
                 <br />
-                {proof.documents
-                  && proof.documents.map(i => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: 15
-                      }}
-                    >
-                      <Icon name="proofDocument" />
-                      {i}
-                    </div>
-                  ))}
               </div>
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="Shipment number">
