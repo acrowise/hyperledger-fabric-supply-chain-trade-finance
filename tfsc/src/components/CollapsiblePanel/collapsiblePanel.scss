@@ -3,10 +3,11 @@
 
 .collapsible-panel {
   box-shadow: $box-shadow;
+  margin-top: 16px;
 }
 
 .collapsible-panel-header {
-  padding: 4px 30px;
+  padding: 8px 30px;
   background-color: $color-secondary;
   color: white;
   user-select: none;

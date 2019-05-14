@@ -61,7 +61,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
                 setTimeout(() => {
                   const form = new FormData();
-                  form.append('type', 'Shipment Acceptance Act');
+                  form.append('type', 'Delivery Acceptance Form');
                   form.append('contractId', shipment.contractId);
                   files.forEach((f) => {
                     form.append('file', f);

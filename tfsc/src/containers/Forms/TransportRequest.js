@@ -86,6 +86,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                       Description
                       <TextArea
                         growVertically={true}
+                        className="textarea"
                         value={formState.description}
                         onChange={({ target: { value } }) => dispatch({
                           type: 'change',

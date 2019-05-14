@@ -135,7 +135,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   dispatch({ type: 'reset', payload: initialState });
                 }}
               >
-                Order
+                Submit
               </Button>
             </div>
           </>

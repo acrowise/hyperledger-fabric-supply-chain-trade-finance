@@ -55,7 +55,7 @@ const Bids = ({ role, filter, search }) => {
     <div>
       <Table
         fields={
-          role === 'factor-1' || role === 'factor-2'
+          role === 'factor 1' || role === 'factor 2'
             ? TABLE_MAP.BIDS
             : Object.assign({}, TABLE_MAP.BIDS, { factor: 'Factor' })
         }

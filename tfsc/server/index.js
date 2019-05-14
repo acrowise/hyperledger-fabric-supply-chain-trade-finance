@@ -5,6 +5,7 @@ const multer = require('multer');
 // const proxy = require('http-proxy-middleware');
 const uuid = require('uuid/v4');
 const fs = require('fs');
+const mime = require('mime-types');
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -16,6 +17,8 @@ const upload = multer();
 
 const PORT = process.env.PORT || 3000;
 // const API_PORT = process.env.API_PORT || 4002;
+
+const path = require('path');
 
 const capitalize = str => str[0].toUpperCase() + str.substring(1);
 
@@ -56,6 +59,15 @@ router.use((_, __, next) => {
 // );
 
 router.use(bodyParser.json());
+
+router.get('/document', (req, res) => {
+  if (req.query && req.query.contractId && req.query.name) {
+    res.set({ 'Content-type': mime.contentType(req.query.name) });
+    res.sendFile(path.resolve(`./.docs/${req.query.contractId}/${req.query.name}`));
+    return;
+  }
+  res.end(500);
+});
 
 router.get('/listProofs', (req, res) => {
   if (req.query && req.query.id) {

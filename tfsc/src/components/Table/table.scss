@@ -35,3 +35,15 @@
     border-bottom: 2px solid $color-bg-gray;
   }
 }
+
+.shipment-info-table,
+.timeline-details {
+  padding-top: 7px;
+  .table-wrap {
+    padding-bottom: 5px;
+
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+}

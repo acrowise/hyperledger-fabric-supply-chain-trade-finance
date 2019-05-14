@@ -105,6 +105,10 @@ $header-height: 65px;
   margin-top: 6px;
 }
 
+.bp3-navbar-group .bp3-button{
+  font-weight: $fw-normal;
+}
+
 // Login
 .login {
   height: 100vh;
@@ -315,8 +319,12 @@ $header-height: 65px;
   box-shadow: none !important;
   min-height: 38px !important;
   text-transform: uppercase;
-  font-size: $fs-smaller !important;
+  font-weight: $fw-semibold;
   border-radius: 20px;
+  font-family: $ff-primary;
+}
+.bp3-button.bp3-large, .bp3-large .bp3-button {
+  font-size: $fs-normal;
 }
 
 .bp3-intent-danger,
@@ -348,7 +356,7 @@ $header-height: 65px;
 .table .bp3-button {
   padding: 3px 15px;
   min-height: 25px !important;
-  font-size: $fs-smaller!important;
+  font-size: $fs-smaller;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -367,6 +375,7 @@ $header-height: 65px;
   padding: 14px 40px;
   text-transform: none;
   border-radius: 25px;
+  font-size: $fs-normal;
 }
 
 //Sidebar panel
@@ -448,7 +457,13 @@ $header-height: 65px;
   align-items: center;
 
   .bp3-label {
-    margin-bottom: 0!important;
+    margin-bottom: 0 !important;
     margin-right: 15px;
   }
+}
+
+.textarea.bp3-input {
+  height: 56px!important;
+  font: $fw-normal $fs-normal $ff-primary;
+  resize: none;
 }

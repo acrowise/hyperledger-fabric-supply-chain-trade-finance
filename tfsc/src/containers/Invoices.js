@@ -137,7 +137,7 @@ const Invoices = ({ role, filter, search }) => {
           ) : (
             <></>
           )}
-          {(role === 'factor-1' || role === 'factor-2') && item.state === 'For Sale' ? (
+          {(role === 'factor 1' || role === 'factor 2') && item.state === 'For Sale' ? (
             <div>
               <BidForm
                 dialogIsOpen={invoiceBidDialogIsOpen}

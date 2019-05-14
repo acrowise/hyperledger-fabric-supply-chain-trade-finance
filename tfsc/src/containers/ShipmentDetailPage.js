@@ -15,6 +15,8 @@ import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 
 import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
+import Icons from '../components/Icon/Icon';
+
 const ShipmentDetailPage = (props) => {
   // const [data, loading] = useFetch('documents');
   const [proofs, loadingProofs, setData] = useFetch(`listProofs?id=${props.id}`);
@@ -86,21 +88,7 @@ const ShipmentDetailPage = (props) => {
           props.setContent(false);
         }}
       >
-        <svg
-          width="9"
-          height="10"
-          viewBox="0 0 9 10"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M8 1L1 5L8 9"
-            stroke="#3FBEA5"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <Icons name="left-arrow" />
         <p style={{ marginLeft: '10px', color: '#3FBEA5', fontWeight: 'bold' }}>
           Return to Shipments
         </p>
@@ -109,39 +97,8 @@ const ShipmentDetailPage = (props) => {
       <div className="layout-container">
         <div className="layout-main">
           <h3>Shipment Number: {cropId(shipment.id)}</h3>
-          {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
-            <div>
-              <Button
-                style={{ marginBottom: '10px' }}
-                intent="primary"
-                onClick={() => {
-                  setCdDialogOpenState(true);
-                }}
-              >
-                Confirm Delivery
-              </Button>
-              {/* <Button>Cancel Delivery</Button> */}
-            </div>
-          ) : (
-            <></>
-          )}
-          {props.role === 'transporter' && shipment.state === 'Requested' ? (
-            <div>
-              <Button
-                style={{ marginBottom: '10px' }}
-                intent="primary"
-                onClick={() => {
-                  setCsDialogOpenState(true);
-                }}
-              >
-                Confirm Shipment
-              </Button>
-            </div>
-          ) : (
-            <></>
-          )}
           <div className="table-wrap" style={{ paddingBottom: '0px' }}>
-            <table className="table">
+            <table className="table shipment-info-table">
               <thead>
                 <tr>
                   <th>Ship From</th>
@@ -161,6 +118,39 @@ const ShipmentDetailPage = (props) => {
                 </tr>
               </tbody>
             </table>
+            <div style={{ paddingTop: 15, paddingBottom: 18 }}>
+              {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
+                <div>
+                  <Button
+                    style={{ paddingLeft: 30, paddingRight: 30 }}
+                    intent="primary"
+                    onClick={() => {
+                      setCdDialogOpenState(true);
+                    }}
+                  >
+                    Accept Delivery
+                  </Button>
+                  {/* <Button>Cancel Delivery</Button> */}
+                </div>
+              ) : (
+                <></>
+              )}
+              {props.role === 'transporter' && shipment.state === 'Requested' ? (
+                <div>
+                  <Button
+                    style={{ paddingLeft: 30, paddingRight: 30 }}
+                    intent="primary"
+                    onClick={() => {
+                      setCsDialogOpenState(true);
+                    }}
+                  >
+                    Confirm Shipment
+                  </Button>
+                </div>
+              ) : (
+                <></>
+              )}
+            </div>
           </div>
 
           <Timeline shipment={shipment} events={props.events} />
@@ -201,8 +191,14 @@ const ShipmentDetailPage = (props) => {
                       key={i.toString()}
                       style={{ display: 'flex', flexDirection: 'row', marginTop: '5px' }}
                     >
-                      <Icon icon="document" />
-                      <div style={{ marginLeft: '10px' }}>{doc.type}</div>
+                      <Icons name="proof-document" />
+                      <a
+                        style={{ marginLeft: '10px', marginTop: '2px' }}
+                        href={`/document?contractId=${doc.contractId}&name=${doc.name}`}
+                        target="_blank"
+                      >
+                        {doc.type}
+                      </a>
                     </div>
                   ))}
               </div>
