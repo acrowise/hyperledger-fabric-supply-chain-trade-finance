@@ -47,7 +47,6 @@ const Table = ({
                   value = cropId(value);
                 }
                 if (amount.includes(j) && value) {
-                  console.log(j, value);
                   value = value.toLocaleString('en-us');
                 }
                 return (

@@ -32,6 +32,9 @@ const Orders = ({ role, filter, search }) => {
   useSocket('notification', onMessage);
 
   let filteredData = data.result;
+  if (filteredData) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.ORDER[i.value.state] }));
+  }
 
   if (!loading) {
     if (filter) {
@@ -40,10 +43,6 @@ const Orders = ({ role, filter, search }) => {
     if (search) {
       filteredData = filteredData.filter(item => item.productName.toLowerCase().includes(search));
     }
-  }
-
-  if (filteredData) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.ORDER[i.value.state] }));
   }
 
   return loading ? (

@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Label
@@ -20,11 +20,20 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
     price: 0,
     destination: '',
     dueDate: new Date(),
-    paymentDate: new Date()
+    paymentDate: new Date(),
+    touched: {}
   };
-  const [formState, dispatch] = useReducer(formReducer, initialState);
 
+  const [formState, dispatch] = useReducer(formReducer, initialState);
   const [newOrder, placeOrder, reset] = post('placeOrder')();
+  // const [needValidaton, setNeedValidation] = useState(false);
+
+  const errors = {
+    productName: formState.productName.length === 0,
+    destination: formState.destination.length === 0,
+    price: formState.price <= 0,
+    quantity: formState.quantity <= 0
+  };
 
   if (!newOrder.pending) {
     if (newOrder.complete) {
@@ -35,7 +44,24 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
     }
   }
 
-  const handleOverlayClose = () => setDialogOpenState(false);
+  const shouldShowError = (field) => {
+    const hasError = errors[field];
+    const shouldShow = formState.touched[field];
+
+    return hasError ? shouldShow : false;
+  };
+
+  const onBlur = field => () => {
+    dispatch({
+      type: 'touch',
+      fields: [field]
+    });
+  };
+
+  const handleOverlayClose = () => {
+    setDialogOpenState(false);
+    dispatch({ type: 'reset', payload: initialState });
+  };
 
   return (
     <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
@@ -51,6 +77,8 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 }) => (
                   <FormGroup className="col-6" key={label} label={label}>
                     <InputGroup
+                      onBlur={onBlur(field)}
+                      className={shouldShowError(field) ? 'bp3-intent-danger' : ''}
                       type={type}
                       placeholder={placeholder}
                       value={formState[field]}
@@ -72,7 +100,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                       Delivery Date
                       <DateInput
                         minDate={new Date()}
-                        maxDate={new Date(new Date().getFullYear() + 2, new Date().getMonth(), new Date().getDate())}
+                        maxDate={
+                          new Date(
+                            new Date().getFullYear() + 2,
+                            new Date().getMonth(),
+                            new Date().getDate()
+                          )
+                        }
                         value={formState.dueDate}
                         formatDate={date => date.toLocaleDateString()}
                         onChange={(date) => {
@@ -119,20 +153,28 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                 intent="primary"
                 className="btn-modal"
                 onClick={() => {
-                  placeOrder({
-                    fcn: 'placeOrder',
-                    args: [
-                      '0',
-                      formState.productName,
-                      formState.quantity,
-                      formState.price,
-                      formState.destination,
-                      formState.dueDate.getTime(),
-                      formState.paymentDate.getTime(), // TODO: PaymentDate
-                      'a' // TODO: buyer Id
-                    ]
-                  });
-                  dispatch({ type: 'reset', payload: initialState });
+                  const hasErrors = Object.keys(errors).find(i => errors[i] === true);
+                  if (!hasErrors) {
+                    placeOrder({
+                      fcn: 'placeOrder',
+                      args: [
+                        '0',
+                        formState.productName,
+                        formState.quantity,
+                        formState.price,
+                        formState.destination,
+                        formState.dueDate.getTime(),
+                        formState.paymentDate.getTime(), // TODO: PaymentDate
+                        'a' // TODO: buyer Id
+                      ]
+                    });
+                    dispatch({ type: 'reset', payload: initialState });
+                  } else {
+                    dispatch({
+                      type: 'touch',
+                      fields: Object.keys(errors).filter(j => errors[j])
+                    });
+                  }
                 }}
               >
                 Submit
