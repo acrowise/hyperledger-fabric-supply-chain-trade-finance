@@ -14,6 +14,7 @@ const ActionCompleted = ({ res, action, result }) => {
   if (!res.pending && !res.complete && !res.data) {
     return <></>;
   }
+
   return (
     <div className="action-completed">
       {res.pending ? (

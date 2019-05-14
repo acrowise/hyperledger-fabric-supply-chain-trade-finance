@@ -192,7 +192,13 @@ const ShipmentDetailPage = (props) => {
                       style={{ display: 'flex', flexDirection: 'row', marginTop: '5px' }}
                     >
                       <Icons name="proof-document" />
-                      <div style={{ marginLeft: '10px', marginTop: '2px' }}>{doc.type}</div>
+                      <a
+                        style={{ marginLeft: '10px', marginTop: '2px' }}
+                        href={`/document?contractId=${doc.contractId}&name=${doc.name}`}
+                        target="_blank"
+                      >
+                        {doc.type}
+                      </a>
                     </div>
                   ))}
               </div>
