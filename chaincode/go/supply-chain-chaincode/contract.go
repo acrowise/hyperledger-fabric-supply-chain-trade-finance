@@ -22,19 +22,22 @@ const (
 const (
 	stateContractUnknown = iota
 	stateContractSigned
+	stateContractShipmentRequested
 	stateContractCompleted
 )
 
 var contractStateLegal = map[int][]int{
-	stateContractUnknown:   {},
-	stateContractSigned:    {},
-	stateContractCompleted: {},
+	stateContractUnknown:           {},
+	stateContractSigned:            {},
+	stateContractShipmentRequested: {},
+	stateContractCompleted:         {},
 }
 
 var contractStateMachine = map[int][]int{
-	stateContractUnknown:   {stateContractUnknown},
-	stateContractSigned:    {stateContractCompleted},
-	stateContractCompleted: {stateContractCompleted},
+	stateContractUnknown:           {stateContractUnknown},
+	stateContractSigned:            {stateContractShipmentRequested},
+	stateContractShipmentRequested: {stateContractCompleted},
+	stateContractCompleted:         {stateContractCompleted},
 }
 
 type ContractKey struct {

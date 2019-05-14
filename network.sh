@@ -83,8 +83,6 @@ fi
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG="/opt/gopath/src/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json"}
 : ${SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT=$(cat "chaincode/go/${CHAINCODE_SUPPLY_CHAIN_NAME}/collections_config.json" | sed 's/"/\\"/g' | tr -d ' \t\n\r')}
 
-#: ${SUPPLY_CHAIN_POLICY=$(printf "AND(OR(\'%sMSP.member\',\'%sMSP.member\',\'%sMSP.member\'),OR(\'%sMSP.member\',\'%sMSP.member\',\'%sMSP.member\'))" $ORG1 $ORG2 $ORG3 $ORG4 $ORG5 $ORG8)}
-#: ${TRADE_FINANCE_POLICY=$(printf "AND(OR(\'%sMSP.member\',\'%sMSP.member\'),OR(\'%sMSP.member\',\'%sMSP.member\'))" $ORG6 $ORG7 $ORG2 $ORG3)}
 : ${SUPPLY_CHAIN_POLICY=$(printf "OR(\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\')" $ORG1 $ORG2 $ORG3 $ORG4 $ORG5 $ORG6 $ORG7 $ORG8)}
 : ${TRADE_FINANCE_POLICY=$(printf "OR(\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\')" $ORG1 $ORG2 $ORG3 $ORG4 $ORG5 $ORG6 $ORG7 $ORG8)}
 
