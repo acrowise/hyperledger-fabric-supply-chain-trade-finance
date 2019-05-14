@@ -1,4 +1,4 @@
-import React, { useReducer, useState } from 'react';
+import React, { useReducer } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Label
@@ -21,7 +21,12 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
     destination: '',
     dueDate: new Date(),
     paymentDate: new Date(),
-    touched: {}
+    touched: {
+      productName: false,
+      destination: false,
+      price: false,
+      quantity: false
+    }
   };
 
   const [formState, dispatch] = useReducer(formReducer, initialState);

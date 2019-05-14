@@ -7,6 +7,13 @@ export const formReducer = (state, action) => {
       });
     case 'reset':
       return action.payload;
+    case 'touch':
+      const { fields } = action;
+      const touched = Object.assign({}, state.touched);
+      fields.forEach((f) => {
+        touched[f] = true;
+      });
+      return Object.assign({}, state, { touched });
     default:
       throw new Error();
   }
