@@ -142,7 +142,7 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
     const event = {
       id: uuid(),
       date: new Date().getTime(),
-      action: `${req.body.type} uploaded`,
+      action: `${req.body.type} Uploaded`,
       user: req.body.user ? capitalize(req.body.user) : '',
       type: 'document',
       shipmentId: shipment.key.id
@@ -168,6 +168,10 @@ router.post('/generateProof', (req, res) => {
     }
   });
 
+  const contract = db
+    .get('contracts')
+    .value()
+    .find(i => i.key.id === req.body.contractId);
   const proof = {
     key: { id: uuid() },
     value: {
@@ -176,10 +180,9 @@ router.post('/generateProof', (req, res) => {
       agency: req.body.reviewer,
       fields: req.body.data,
       documents: requestedDocuments,
-      contract: db
-        .get('contracts')
-        .value()
-        .find(i => i.key.id === req.body.contractId)
+      contract,
+      consigneeName: contract.value.consigneeName,
+      consignorName: contract.value.consignorName
     }
   };
 
@@ -335,6 +338,7 @@ router.post('/validateProof', (req, res) => {
   proof.value.state = 2;
   db.set('proofs', proofs).write();
 
+  const contract = get('contracts', req.body.contractId)
   const report = {
     key: { id: uuid() },
     value: {
@@ -342,8 +346,10 @@ router.post('/validateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       proofId: proof.key.id,
       description: req.body.description,
-      contract: get('contracts', req.body.contractId),
-      factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
+      contract,
+      factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor',
+      consigneeName: contract.value.consigneeName,
+      consignorName: contract.value.consignorName
     }
   };
   db.get('reports')
@@ -384,8 +390,8 @@ router.post('/acceptOrder', async (req, res) => {
       id: order.key.id
     },
     value: {
-      consignorName: 'Buyer',
-      consigneeName: 'Supplier',
+      consignorName: 'Supplier',
+      consigneeName: 'Buyer',
       totalDue: order.value.price * order.value.quantity, // FIXME
       price: order.value.price,
       quantity: order.value.quantity,

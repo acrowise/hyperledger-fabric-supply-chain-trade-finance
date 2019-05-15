@@ -9,7 +9,11 @@ import VerifyProof from './Forms/VerifyProof';
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
-const Proofs = ({ role }) => {
+import { filterData } from '../helper/utils';
+
+const Proofs = ({
+  role, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [proofs, loading, setData] = useFetch('listProofs');
 
@@ -38,6 +42,14 @@ const Proofs = ({ role }) => {
     dataToDisplay = dataToDisplay
       .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }))
       .filter(i => i.agency.id === role);
+
+    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
+      setDataForFilter(dataToDisplay);
+    }
+
+    if (filterOptions) {
+      dataToDisplay = filterData(filterOptions, dataToDisplay);
+    }
   }
 
   return loading ? (

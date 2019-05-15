@@ -10,6 +10,7 @@ const Filter = ({
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({});
 
   const [dataForFilter, setDataForFilter] = useState([]);
 
@@ -26,7 +27,8 @@ const Filter = ({
     filter,
     search,
     dataForFilter,
-    setDataForFilter
+    setDataForFilter,
+    filterOptions
   }));
 
   return content ? (
@@ -65,9 +67,21 @@ const Filter = ({
       <div className="dashboard-panel-body layout-container">
         <aside className="layout-aside">
           <h4>Filter by</h4>
-          {filterBy.map(f => (
-            <div key={f} className="filter-select-wrap">
-              <FilterBy type={f} data={data[f]} />
+          {filterBy.map((f, i) => (
+            <div key={i} className="filter-select-wrap">
+              <FilterBy
+                type={f}
+                data={data[f]}
+                setFilter={(filterItem) => {
+                  const newState = Object.assign({}, filterOptions);
+                  if (typeof filterItem === 'object') {
+                    newState[f] = Object.assign({}, newState[f], filterItem);
+                  } else {
+                    newState[f] = filterItem;
+                  }
+                  setFilterOptions(newState);
+                }}
+              />
             </div>
           ))}
         </aside>

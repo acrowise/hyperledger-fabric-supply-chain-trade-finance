@@ -10,9 +10,13 @@ import Table from '../components/Table/Table';
 
 import Icon from '../components/Icon/Icon';
 
+import { filterData } from '../helper/utils';
+
 import { TABLE_MAP, STATUSES } from '../constants';
 
-const Contracts = ({ role, dataForFilter, setDataForFilter }) => {
+const Contracts = ({
+  role, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [data, loading, setData] = useFetch('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
     state: false,
@@ -40,10 +44,14 @@ const Contracts = ({ role, dataForFilter, setDataForFilter }) => {
 
   if (dataToDisplay) {
     dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
-  }
 
-  if (dataForFilter.length === 0 && dataToDisplay && dataToDisplay.length > 0) {
-    setDataForFilter(dataForFilter);
+    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
+      setDataForFilter(dataToDisplay);
+    }
+
+    if (filterOptions) {
+      dataToDisplay = filterData(filterOptions, dataToDisplay);
+    }
   }
 
   return loading ? (

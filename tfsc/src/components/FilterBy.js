@@ -8,17 +8,25 @@ import { TABLE_MAP } from '../constants';
 const TITLES = Object.assign(
   Object.keys(TABLE_MAP).reduce((res, a) => Object.assign(res, TABLE_MAP[a]), {}),
   {
-    proofId: 'Proof ID',
-    shipmentId: 'Shipment ID',
-    reportId: 'Report ID'
+    shipmentId: 'Shipment ID'
   }
 );
 
 const getFilterType = (type) => {
   const types = {
     date: ['dueDate', 'paymentDate'],
-    select: ['destination', 'transport', 'shipmentFrom', 'shipmentTo'],
-    range: ['price', 'totalDue']
+    select: [
+      'destination',
+      'transport',
+      'shipmentFrom',
+      'shipmentTo',
+      'consignorName',
+      'consigneeName',
+      'debtor',
+      'beneficiary',
+      'owner'
+    ],
+    range: ['totalDue', 'rate']
   };
   let filter = null;
   Object.keys(types).forEach((t) => {
@@ -30,7 +38,7 @@ const getFilterType = (type) => {
   return filter;
 };
 
-const FilterBy = ({ type, data }) => {
+const FilterBy = ({ type, data, setFilter }) => {
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState(false);
 
@@ -40,6 +48,10 @@ const FilterBy = ({ type, data }) => {
     <div className="sidebar-panel">
       <div
         onClick={() => {
+          if (expanded) {
+            setSelected(false);
+            setFilter(false);
+          }
           setExpanded(!expanded);
         }}
         className="sidebar-panel-header"
@@ -57,11 +69,11 @@ const FilterBy = ({ type, data }) => {
       {expanded ? (
         <div className="sidebar-panel-body">
           {getFilterType(type) === 'select' ? (
-            data.map((item, i) => (
+            [...new Set(data)].map((item, i) => (
               <div
                 onClick={() => {
+                  setFilter(item);
                   setSelected(item);
-                  setExpanded(!expanded);
                 }}
                 key={i}
                 style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
@@ -75,7 +87,7 @@ const FilterBy = ({ type, data }) => {
           {getFilterType(type) === 'date' ? (
             <div>
               <div className="filter-range">
-                <p className="filter-range-item">{'min'}</p>
+                <p className="filter-range-item">{'from'}</p>
                 <DateInput
                   minDate={new Date()}
                   maxDate={
@@ -86,14 +98,16 @@ const FilterBy = ({ type, data }) => {
                     )
                   }
                   formatDate={date => date.toLocaleDateString()}
-                  onChange={(date) => {}}
+                  onChange={(date) => {
+                    setFilter({ from: date.getTime() });
+                  }}
                   timePrecision={undefined}
                   parseDate={str => new Date(str)}
-                  placeholder={'D/M/YYYY'}
+                  placeholder={'M/D/YYYY'}
                 />
               </div>
               <div className="filter-range">
-                <p className="filter-range-item">{'max'}</p>
+                <p className="filter-range-item">{'to'}</p>
                 <DateInput
                   minDate={new Date()}
                   maxDate={
@@ -104,10 +118,12 @@ const FilterBy = ({ type, data }) => {
                     )
                   }
                   formatDate={date => date.toLocaleDateString()}
-                  onChange={(date) => {}}
+                  onChange={(date) => {
+                    setFilter({ to: date.getTime() });
+                  }}
                   timePrecision={undefined}
                   parseDate={str => new Date(str)}
-                  placeholder={'D/M/YYYY'}
+                  placeholder={'M/D/YYYY'}
                 />
               </div>
             </div>
@@ -117,12 +133,24 @@ const FilterBy = ({ type, data }) => {
           {getFilterType(type) === 'range' ? (
             <div>
               <div className="filter-range">
-                <p className="filter-range-item">{'min'}</p>
-                <InputGroup type="number" placeholder={'min'} onChange={({ target }) => {}} />
+                <p className="filter-range-item">{'from'}</p>
+                <InputGroup
+                  type="number"
+                  placeholder={'from'}
+                  onChange={({ target }) => {
+                    setFilter({ from: target.value });
+                  }}
+                />
               </div>
               <div className="filter-range">
-                <p className="filter-range-item">{'max'}</p>
-                <InputGroup type="number" placeholder={'max'} onChange={({ target }) => {}} />
+                <p className="filter-range-item">{'to'}</p>
+                <InputGroup
+                  type="number"
+                  placeholder={'to'}
+                  onChange={({ target }) => {
+                    setFilter({ to: target.value });
+                  }}
+                />
               </div>
             </div>
           ) : (

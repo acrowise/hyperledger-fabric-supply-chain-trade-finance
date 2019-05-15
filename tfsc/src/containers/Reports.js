@@ -8,7 +8,11 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 import VerifyProof from './Forms/VerifyProof';
 
-const Reports = ({ role, filter, search }) => {
+import { filterData } from '../helper/utils';
+
+const Reports = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('listReports');
   const [selectedProof, setSelectedProof] = useState({});
@@ -32,11 +36,20 @@ const Reports = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
+  // FIXME:
   if (filteredData) {
-    filteredData = filteredData.filter(i => i.value.factor.toLowerCase() === role).map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
-  }
+    filteredData = filteredData
+      .filter(i => i.value.factor.toLowerCase() === role)
+      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
 
-  console.log('reports', filteredData);
+    if (dataForFilter.length === 0 && filteredData.length > 0) {
+      setDataForFilter(filteredData);
+    }
+
+    if (filterOptions) {
+      filteredData = filterData(filterOptions, filteredData);
+    }
+  }
 
   if (!loading) {
     if (filter) {

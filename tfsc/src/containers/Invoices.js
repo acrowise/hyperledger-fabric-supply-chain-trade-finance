@@ -8,10 +8,13 @@ import BidForm from './Forms/Bid';
 
 import { post } from '../helper/api';
 import { STATUSES, TABLE_MAP } from '../constants';
+import { filterData } from '../helper/utils';
 
 import Table from '../components/Table/Table';
 
-const Invoices = ({ role, filter, search }) => {
+const Invoices = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState({
     isOpen: false,
     action: null
@@ -48,17 +51,24 @@ const Invoices = ({ role, filter, search }) => {
 
   useSocket('notification', onMessage);
 
-  let dataToDisplay = [];
-  if (data.result) {
-    dataToDisplay = data.result;
-  }
+  let dataToDisplay = data.result;
 
   if (filter) {
     dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.state] === filter);
   }
 
   // FIXME:
-  dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
+  if (dataToDisplay) {
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
+
+    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
+      setDataForFilter(dataToDisplay);
+    }
+
+    if (filterOptions) {
+      dataToDisplay = filterData(filterOptions, dataToDisplay);
+    }
+  }
 
   return loading ? (
     <>Loading...</>

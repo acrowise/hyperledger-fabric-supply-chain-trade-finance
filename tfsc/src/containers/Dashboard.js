@@ -47,7 +47,7 @@ const tabs = role => [
     actors: ['buyer', 'supplier'],
     panel: (
       <Filter
-        filterBy={['price', 'destination', 'dueDate', 'paymentDate']}
+        filterBy={['totalDue', 'destination', 'dueDate', 'paymentDate']}
         statuses={['New', 'Accepted', 'Cancelled']}
         actionComponent={<NewPurchaseOrder role={role} />}
       >
@@ -95,7 +95,7 @@ const tabs = role => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter filterBy={['proofId', 'shipmentId']} statuses={['Generated', 'Validated']}>
+      <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Generated', 'Validated']}>
         <Proofs role={role} />
       </Filter>
     )
@@ -104,10 +104,7 @@ const tabs = role => [
     name: 'Reports',
     actors: ['ggcb', 'uscts'],
     panel: (
-      <Filter
-        filterBy={['proofId', 'shipmentId', 'reportId']}
-        statuses={['Accepted', 'Declined']}
-      >
+      <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Accepted', 'Declined']}>
         <Reports role={role} />
       </Filter>
     )

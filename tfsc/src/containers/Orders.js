@@ -6,11 +6,13 @@ import { useFetch } from '../hooks';
 
 import { post } from '../helper/api';
 
+import { filterData } from '../helper/utils';
+
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
 const Orders = ({
-  role, filter, search, dataForFilter, setDataForFilter
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = useFetch('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
@@ -47,6 +49,10 @@ const Orders = ({
     }
     if (dataForFilter.length === 0 && filteredData.length > 0) {
       setDataForFilter(filteredData);
+    }
+
+    if (filterOptions) {
+      filteredData = filterData(filterOptions, filteredData);
     }
   }
 

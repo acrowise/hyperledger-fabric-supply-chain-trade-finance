@@ -10,8 +10,16 @@ import ShipmentDetailPage from './ShipmentDetailPage';
 import Table from '../components/Table/Table';
 
 import { TABLE_MAP, STATUSES } from '../constants';
+import { filterData } from '../helper/utils';
 
-const Shipments = ({ role, content, setContent }) => {
+const Shipments = ({
+  role,
+  content,
+  setContent,
+  dataForFilter,
+  setDataForFilter,
+  filterOptions
+}) => {
   // const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
   const [shipments, loading, setData] = useFetch('shipments');
@@ -69,12 +77,20 @@ const Shipments = ({ role, content, setContent }) => {
 
   let dataToDisplay = shipments.result;
 
-  if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
-  }
-
   if (loading) {
     return <>Loading...</>;
+  }
+
+  if (dataToDisplay) {
+    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+
+    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
+      setDataForFilter(dataToDisplay);
+    }
+
+    if (filterOptions) {
+      dataToDisplay = filterData(filterOptions, dataToDisplay);
+    }
   }
 
   return shipment ? (

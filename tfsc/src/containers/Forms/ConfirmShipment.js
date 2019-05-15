@@ -47,7 +47,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <ActionCompleted res={shipmentRes} action="Shipment Confirmed" result="Accepted" />
+          <ActionCompleted res={shipmentRes} action="Shipment" result="Comfirmed" />
           {!shipmentRes.pending && !shipmentRes.complete && !shipmentRes.data ? (
             <>
               <div className="modal-header">Confirm Shipment</div>
