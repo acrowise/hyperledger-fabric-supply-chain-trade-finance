@@ -12,7 +12,7 @@ import Icon from '../components/Icon/Icon'
 
 import { TABLE_MAP, STATUSES } from '../constants';
 
-const Contracts = ({ role }) => {
+const Contracts = ({ role, dataForFilter, setDataForFilter }) => {
   const [data, loading, setData] = useFetch('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
     state: false,
@@ -40,6 +40,10 @@ const Contracts = ({ role }) => {
 
   if (dataToDisplay) {
     dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
+  }
+
+  if (dataForFilter.length === 0 && dataToDisplay) {
+    setDataForFilter(dataForFilter);
   }
 
   return loading ? (

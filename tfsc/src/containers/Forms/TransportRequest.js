@@ -162,7 +162,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     if (files.length === 0) {
                       setFileRequired(true);
                     }
-                    if (!hasErrors) {
+                    if (!hasErrors && files.length !== 0) {
                       requestShipment({
                         fcn: 'requestShipment',
                         args: [

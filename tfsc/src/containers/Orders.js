@@ -9,7 +9,9 @@ import { post } from '../helper/api';
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
-const Orders = ({ role, filter, search }) => {
+const Orders = ({
+  role, filter, search, dataForFilter, setDataForFilter
+}) => {
   const [data, loading, setData] = useFetch('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
 
@@ -42,6 +44,10 @@ const Orders = ({ role, filter, search }) => {
     }
     if (search) {
       filteredData = filteredData.filter(item => item.productName.toLowerCase().includes(search));
+    }
+
+    if (dataForFilter.length === 0 && filteredData) {
+      setDataForFilter(filteredData);
     }
   }
 

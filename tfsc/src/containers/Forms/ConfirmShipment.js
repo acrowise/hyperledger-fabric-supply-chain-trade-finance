@@ -72,7 +72,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                       disabled
                     />
                   </Label>
-                  <Label className="col-6 margin-left-auto">
+                  <Label className="col-6 margin-right-auto">
                     Upload Bill of Lading
                     <div style={{ marginTop: 5 }}>
                       <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
