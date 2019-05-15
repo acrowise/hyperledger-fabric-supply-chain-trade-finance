@@ -38,7 +38,9 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              Delivery Acceptance Form
+              <div style={{marginBottom: 5}}>
+                Delivery Acceptance Form
+              </div>
               <FileUploader withPreview files={files} setFiles={setFiles} error={fileRequired} />
               <FormGroup label="Description">
                 <TextArea growVertically={true} large={true} />
