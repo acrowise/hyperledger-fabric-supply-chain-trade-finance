@@ -45,8 +45,7 @@ const Orders = ({
     if (search) {
       filteredData = filteredData.filter(item => item.productName.toLowerCase().includes(search));
     }
-
-    if (dataForFilter.length === 0 && filteredData) {
+    if (dataForFilter.length === 0 && filteredData.length > 0) {
       setDataForFilter(filteredData);
     }
   }

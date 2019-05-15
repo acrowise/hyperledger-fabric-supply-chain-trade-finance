@@ -8,7 +8,7 @@ import { useFetch } from '../hooks';
 import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
-import Icon from '../components/Icon/Icon'
+import Icon from '../components/Icon/Icon';
 
 import { TABLE_MAP, STATUSES } from '../constants';
 
@@ -42,7 +42,7 @@ const Contracts = ({ role, dataForFilter, setDataForFilter }) => {
     dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
   }
 
-  if (dataForFilter.length === 0 && dataToDisplay) {
+  if (dataForFilter.length === 0 && dataToDisplay && dataToDisplay.length > 0) {
     setDataForFilter(dataForFilter);
   }
 
