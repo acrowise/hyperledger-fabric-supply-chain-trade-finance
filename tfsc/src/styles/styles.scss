@@ -452,6 +452,7 @@ $header-height: 65px;
   border-radius: 1px;
   border: 1px solid $color-border;
   box-shadow: none;
+  font: $fw-normal $fs-normal $ff-primary!important;
 }
 
 .bp3-input:disabled {
