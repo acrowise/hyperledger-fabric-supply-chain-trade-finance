@@ -51,23 +51,22 @@ const Invoices = ({
 
   useSocket('notification', onMessage);
 
-  let dataToDisplay = data.result;
+  let filteredData = data.result;
 
-  if (filter) {
-    dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.state] === filter);
-  }
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
 
-  // FIXME:
-  if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
-
-    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
-      setDataForFilter(dataToDisplay);
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
     }
 
-    if (filterOptions) {
-      dataToDisplay = filterData(filterOptions, dataToDisplay);
-    }
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (
@@ -75,7 +74,7 @@ const Invoices = ({
   ) : (
     <Table
       fields={TABLE_MAP.INVOICES}
-      data={dataToDisplay}
+      data={filteredData}
       actions={item => (
         <div>
           {role === 'buyer' && item.state === 'Issued' ? (

@@ -16,6 +16,7 @@ const Orders = ({
 }) => {
   const [data, loading, setData] = useFetch('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
+  const [, cancelOrder] = post('cancelOrder')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -25,7 +26,11 @@ const Orders = ({
       setData(newState);
     }
 
-    if (notification.type === 'acceptOrder') {
+    if (
+      notification.type === 'acceptOrder'
+      || notification.type === 'cancelOrder'
+      || notification.type === 'updateOrder'
+    ) {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
       newState[itemToUpdateIndex] = notification;
@@ -36,24 +41,21 @@ const Orders = ({
   useSocket('notification', onMessage);
 
   let filteredData = data.result;
-  if (filteredData) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.ORDER[i.value.state] }));
-  }
 
-  if (!loading) {
-    if (filter) {
-      filteredData = filteredData.filter(item => item.state === filter);
-    }
-    if (search) {
-      filteredData = filteredData.filter(item => item.productName.toLowerCase().includes(search));
-    }
-    if (dataForFilter.length === 0 && filteredData.length > 0) {
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.ORDER[i.value.state] }));
+
+    if (dataForFilter.length === 0) {
       setDataForFilter(filteredData);
     }
 
-    if (filterOptions) {
-      filteredData = filterData(filterOptions, filteredData);
-    }
+    filteredData = filterData({
+      type: 'productName',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (
@@ -89,7 +91,17 @@ const Orders = ({
                 <Button style={{ marginRight: '5px' }} intent="primary">
                   Edit
                 </Button>
-                <Button intent="danger">Cancel</Button>
+                <Button
+                  intent="danger"
+                  onClick={() => {
+                    cancelOrder({
+                      fcn: 'cancelOrder',
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
               </div>
             ) : (
               <></>

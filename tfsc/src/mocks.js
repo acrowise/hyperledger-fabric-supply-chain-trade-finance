@@ -1,6 +1,8 @@
 export const notifications = {
   place: 'orders',
   acceptOrder: 'orders',
+  cancelOrder: 'orders',
+  updateOrder: 'orders',
   shipmentRequested: 'shipments',
   shipmentConfirmed: 'shipments',
   validateProof: 'proofs',
@@ -18,6 +20,8 @@ export const notifications = {
 export const title = {
   place: 'Order Created',
   acceptOrder: 'Order Accepted',
+  cancelOrder: 'Order Cancelled',
+  updateOrder: 'Order Updated',
   shipmentRequested: 'Shipment Requested',
   shipmentConfirmed: 'Shipment Confirmed',
   shipmentDelivered: 'Shipment Delivered',

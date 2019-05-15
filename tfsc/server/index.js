@@ -338,7 +338,7 @@ router.post('/validateProof', (req, res) => {
   proof.value.state = 2;
   db.set('proofs', proofs).write();
 
-  const contract = get('contracts', req.body.contractId)
+  const contract = get('contracts', req.body.contractId);
   const report = {
     key: { id: uuid() },
     value: {
@@ -373,6 +373,18 @@ router.post('/validateProof', (req, res) => {
 
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'validateProof' })));
 
+  res.end('ok');
+});
+
+router.post('/cancelOrder', async (req, res) => {
+  const orders = db.get('orders').value();
+  const order = orders.find(i => i.key.id === req.body.args[0]);
+
+  order.value.state = 2;
+
+  db.set('orders', orders).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'cancelOrder' }))));
   res.end('ok');
 });
 

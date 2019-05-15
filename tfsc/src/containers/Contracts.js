@@ -15,7 +15,7 @@ import { filterData } from '../helper/utils';
 import { TABLE_MAP, STATUSES } from '../constants';
 
 const Contracts = ({
-  role, dataForFilter, setDataForFilter, filterOptions
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = useFetch('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
@@ -40,18 +40,22 @@ const Contracts = ({
 
   useSocket('notification', onMessage);
 
-  let dataToDisplay = data.result;
+  let filteredData = data.result;
 
-  if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
 
-    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
-      setDataForFilter(dataToDisplay);
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
     }
 
-    if (filterOptions) {
-      dataToDisplay = filterData(filterOptions, dataToDisplay);
-    }
+    filteredData = filterData({
+      type: 'productName',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (
@@ -64,7 +68,7 @@ const Contracts = ({
       />
       <Table
         fields={TABLE_MAP.CONTRACTS}
-        data={dataToDisplay}
+        data={filteredData}
         actions={item => (role === 'supplier' && item.state === 'Signed' ? (
             <div>
               <Button

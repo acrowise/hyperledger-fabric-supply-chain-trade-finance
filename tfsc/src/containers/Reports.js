@@ -37,24 +37,20 @@ const Reports = ({
   let filteredData = data.result;
 
   // FIXME:
-  if (filteredData) {
-    filteredData = filteredData
-      .filter(i => i.value.factor.toLowerCase() === role)
-      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
 
-    if (dataForFilter.length === 0 && filteredData.length > 0) {
+    if (dataForFilter.length === 0) {
       setDataForFilter(filteredData);
     }
 
-    if (filterOptions) {
-      filteredData = filterData(filterOptions, filteredData);
-    }
-  }
-
-  if (!loading) {
-    if (filter) {
-      filteredData = filteredData.filter(item => item.state === filter);
-    }
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (

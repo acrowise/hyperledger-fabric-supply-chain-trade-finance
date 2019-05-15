@@ -125,7 +125,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         }}
                         timePrecision={undefined}
                         parseDate={str => new Date(str)}
-                        placeholder={'D/M/YYYY'}
+                        placeholder={'MM/DD/YYYY'}
                       />
                     </Label>
                     <Label className="col-6">
@@ -145,7 +145,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         }}
                         timePrecision={undefined}
                         parseDate={str => new Date(str)}
-                        placeholder={'D/M/YYYY'}
+                        placeholder={'MM/DD/YYYY'}
                       />
                     </Label>
                   </div>

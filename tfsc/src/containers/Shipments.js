@@ -14,6 +14,8 @@ import { filterData } from '../helper/utils';
 
 const Shipments = ({
   role,
+  filter,
+  search,
   content,
   setContent,
   dataForFilter,
@@ -75,22 +77,26 @@ const Shipments = ({
 
   useSocket('notification', onNotification);
 
-  let dataToDisplay = shipments.result;
-
   if (loading) {
     return <>Loading...</>;
   }
 
-  if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+  let filteredData = shipments.result;
 
-    if (dataForFilter.length === 0 && dataToDisplay.length > 0) {
-      setDataForFilter(dataToDisplay);
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
     }
 
-    if (filterOptions) {
-      dataToDisplay = filterData(filterOptions, dataToDisplay);
-    }
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return shipment ? (
@@ -104,7 +110,7 @@ const Shipments = ({
     <div>
       <Table
         fields={TABLE_MAP.SHIPMENTS}
-        data={dataToDisplay}
+        data={filteredData}
         onSelect={(item) => {
           setContent(item);
         }}

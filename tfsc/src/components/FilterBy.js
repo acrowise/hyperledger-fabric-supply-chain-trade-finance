@@ -103,7 +103,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                   }}
                   timePrecision={undefined}
                   parseDate={str => new Date(str)}
-                  placeholder={'M/D/YYYY'}
+                  placeholder={'MM/DD/YYYY'}
                 />
               </div>
               <div className="filter-range">
@@ -123,7 +123,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                   }}
                   timePrecision={undefined}
                   parseDate={str => new Date(str)}
-                  placeholder={'M/D/YYYY'}
+                  placeholder={'MM/DD/YYYY'}
                 />
               </div>
             </div>
