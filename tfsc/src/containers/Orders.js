@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
@@ -11,12 +11,19 @@ import { filterData } from '../helper/utils';
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
+import OrderPurchaseForm from './Forms/OrderPurchase';
+
 const Orders = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = useFetch('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
   const [, cancelOrder] = post('cancelOrder')();
+
+  const [dialog, setDialog] = useState({
+    state: null,
+    isOpen: false
+  });
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -62,6 +69,10 @@ const Orders = ({
     <>Loading...</>
   ) : (
     <div>
+      <OrderPurchaseForm
+        dialog={dialog}
+        setDialog={setDialog}
+      />
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
@@ -88,7 +99,16 @@ const Orders = ({
             )}
             {role === 'buyer' && item.state === 'New' ? (
               <div className="nowrap">
-                <Button style={{ marginRight: '5px' }} intent="primary">
+                <Button
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                  onClick={() => {
+                    setDialog({
+                      state: item,
+                      isOpen: true
+                    });
+                  }}
+                >
                   Edit
                 </Button>
                 <Button

@@ -42,8 +42,6 @@ const FilterBy = ({ type, data, setFilter }) => {
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState(false);
 
-  console.log('FilterBy', data);
-
   return (
     <div className="sidebar-panel">
       <div

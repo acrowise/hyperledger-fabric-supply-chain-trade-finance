@@ -19,7 +19,7 @@ const Table = ({
   <div className="table-wrap">
     <table className="table">
       <thead>
-        <tr>
+        <tr style={{ backgroundColor: '#F8F9FA' }}>
           {Object.keys(fields).map(i => (
             <th key={i.toString()}>{fields[i]}</th>
           ))}

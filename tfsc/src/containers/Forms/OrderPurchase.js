@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Label
@@ -13,25 +13,38 @@ import { INPUTS } from '../../constants';
 
 import { formReducer } from '../../reducers';
 
-const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
-  const initialState = {
-    productName: '',
-    quantity: 0,
-    price: 0,
-    destination: '',
-    dueDate: new Date(),
-    paymentDate: new Date(),
-    touched: {
-      productName: false,
-      destination: false,
-      price: false,
-      quantity: false
+const OrderForm = ({ dialog, setDialog }) => {
+  const orderState = dialog.state;
+
+  const isEdit = dialog.state;
+
+  const initialState = Object.assign(
+    {},
+    dialog.state || {
+      productName: '',
+      quantity: 0,
+      price: 0,
+      destination: ''
+    },
+    {
+      dueDate: orderState ? new Date(orderState.dueDate) : new Date(),
+      paymentDate: orderState ? new Date(orderState.paymentDate) : new Date(),
+      touched: {
+        productName: false,
+        destination: false,
+        price: false,
+        quantity: false
+      }
     }
-  };
+  );
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
-  const [newOrder, placeOrder, reset] = post('placeOrder')();
-  // const [needValidaton, setNeedValidation] = useState(false);
+
+  useEffect(() => {
+    dispatch({ type: 'reset', payload: initialState });
+  }, [dialog.state]);
+
+  const [newOrder, placeOrder, reset] = post(`${isEdit ? 'update' : 'place'}Order`)();
 
   const errors = {
     productName: formState.productName.length === 0,
@@ -43,7 +56,10 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   if (!newOrder.pending) {
     if (newOrder.complete) {
       setTimeout(() => {
-        setDialogOpenState(false);
+        setDialog({
+          isOpen: false,
+          state: null
+        });
         reset();
       }, 1500);
     }
@@ -64,17 +80,21 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
   };
 
   const handleOverlayClose = () => {
-    setDialogOpenState(false);
+    setDialog({ isOpen: false, state: null });
     dispatch({ type: 'reset', payload: initialState });
   };
 
   return (
-    <Overlay usePortal canOutsideClickClose isOpen={dialogIsOpen} onClose={handleOverlayClose}>
+    <Overlay usePortal canOutsideClickClose isOpen={dialog.isOpen} onClose={handleOverlayClose}>
       <Card className="modal" style={{ width: '720px' }}>
-        <ActionCompleted res={newOrder} action="New Purchase Order" result="Accepted" />
+        <ActionCompleted
+          res={newOrder}
+          action={`${isEdit ? 'Update' : 'New'} Purchase Order`}
+          result="Accepted"
+        />
         {!newOrder.pending && !newOrder.complete && !newOrder.data ? (
           <>
-            <div className="modal-header">New Purchase Order</div>
+            <div className="modal-header">{isEdit ? 'Update' : 'New'} Purchase Order</div>
             <div className="modal-body">
               <div className="row">
                 {INPUTS.NEW_PURCHASE_ORDER.map(({
@@ -153,6 +173,13 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
               </div>
             </div>
             <div className="modal-footer">
+              {isEdit ? (
+                <Button large intent="danger" className="btn-modal" onClick={handleOverlayClose}>
+                  Cancel
+                </Button>
+              ) : (
+                <></>
+              )}
               <Button
                 large
                 intent="primary"
@@ -161,7 +188,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   const hasErrors = Object.keys(errors).find(i => errors[i] === true);
                   if (!hasErrors) {
                     placeOrder({
-                      fcn: 'placeOrder',
+                      fcn: `${isEdit ? 'update' : 'place'}Order`,
                       args: [
                         '0',
                         formState.productName,
@@ -171,7 +198,8 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         formState.dueDate.getTime(),
                         formState.paymentDate.getTime(), // TODO: PaymentDate
                         'a' // TODO: buyer Id
-                      ]
+                      ],
+                      id: orderState.id
                     });
                     dispatch({ type: 'reset', payload: initialState });
                   } else {
@@ -182,7 +210,7 @@ const OrderForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   }
                 }}
               >
-                Submit
+                {isEdit ? 'Update' : 'Submit'}
               </Button>
             </div>
           </>

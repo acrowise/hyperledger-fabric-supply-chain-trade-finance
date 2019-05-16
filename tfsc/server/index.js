@@ -231,6 +231,29 @@ router.post('/placeOrder', (req, res) => {
   res.end('ok');
 });
 
+router.post('/updateOrder', (req, res) => {
+  console.log(req.body);
+  const orders = db.get('orders').value();
+  const order = orders.find(i => i.key.id === req.body.id);
+
+  order.value.productName = req.body.args[1];
+  order.value.quantity = req.body.args[2];
+  order.value.price = req.body.args[3];
+  order.value.destination = req.body.args[4];
+  order.value.dueDate = req.body.args[5];
+  order.value.paymentDate = req.body.args[6];
+  order.value.buyerId = req.body.args[7];
+  order.value.totalDue = req.body.args[2] * req.body.args[3];
+  order.value.lastUpdated = new Date().getTime();
+
+  order.type = 'updateOrder';
+
+  db.set('orders', orders).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify(order)));
+  res.end('ok');
+});
+
 router.post('/requestShipment', (req, res) => {
   const contracts = db.get('contracts').value();
   const contract = contracts.find(i => i.key.id === req.body.args[1]);

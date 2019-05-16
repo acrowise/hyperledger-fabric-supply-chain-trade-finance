@@ -21,16 +21,18 @@ import { AuthConsumer } from '../context/auth';
 import { notifications } from '../mocks';
 
 const NewPurchaseOrder = ({ role }) => {
-  const [dialogIsOpen, setDialogOpenState] = useState(false);
+  const [dialog, setDialog] = useState({
+    isOpen: false
+  });
 
   return role === 'buyer' ? (
     <>
-      <OrderPurchaseForm dialogIsOpen={dialogIsOpen} setDialogOpenState={setDialogOpenState} />
+      <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Button
         intent="primary"
         className="btn-new-order"
         onClick={() => {
-          setDialogOpenState(true);
+          setDialog({ isOpen: true });
         }}
       >
         New Purchase Order

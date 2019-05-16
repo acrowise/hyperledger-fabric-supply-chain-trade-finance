@@ -89,9 +89,14 @@ const ShipmentDetailPage = (props) => {
         }}
       >
         <Icons name="left-arrow" />
-        <p style={{
-          marginLeft: '10px', color: '#3FBEA5', fontWeight: 'bold', cursor: 'pointer'
-        }}>
+        <p
+          style={{
+            marginLeft: '10px',
+            color: '#3FBEA5',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+          }}
+        >
           Return to Shipments
         </p>
       </div>
@@ -102,7 +107,7 @@ const ShipmentDetailPage = (props) => {
           <div className="table-wrap" style={{ paddingBottom: '0px' }}>
             <table className="table shipment-info-table">
               <thead>
-                <tr>
+                <tr style={{ backgroundColor: '#F8F9FA' }}>
                   <th>Ship From</th>
                   <th>Ship To</th>
                   <th>Delivery Date</th>
@@ -121,6 +126,25 @@ const ShipmentDetailPage = (props) => {
               </tbody>
             </table>
             <div style={{ paddingTop: 15, paddingBottom: 18 }}>
+              {props.role === 'transporter' || props.role === 'supplier' ? (
+                <div style={{ fontSize: 16 }}>
+                  <p
+                    style={{
+                      paddingTop: 8,
+                      paddingBottom: 8,
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                      fontWeight: 'bold',
+                      backgroundColor: '#F8F9FA'
+                    }}
+                  >
+                    Description:
+                  </p>
+                  <p style={{ marginLeft: 10 }}>{shipment.description}</p>
+                </div>
+              ) : (
+                <></>
+              )}
               {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
                 <div>
                   <Button
@@ -132,7 +156,15 @@ const ShipmentDetailPage = (props) => {
                   >
                     Accept Delivery
                   </Button>
-                  {/* <Button>Cancel Delivery</Button> */}
+                  <Button
+                    style={{ paddingLeft: 30, paddingRight: 30, marginLeft: 15 }}
+                    intent="danger"
+                    onClick={() => {
+                      // setCsDialogOpenState(true);
+                    }}
+                  >
+                    Reject Delivery
+                  </Button>
                 </div>
               ) : (
                 <></>
@@ -184,9 +216,6 @@ const ShipmentDetailPage = (props) => {
                 <h4>Documents</h4>
               </div>
               <div className="sidebar-panel-body">
-                {/* {loading ? (
-                <div>Loading...</div>
-              ) : ( */}
                 {docs
                   && docs.map((doc, i) => (
                     <div
