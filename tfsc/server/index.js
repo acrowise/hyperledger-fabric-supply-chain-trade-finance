@@ -330,11 +330,17 @@ router.post('/confirmDelivery', (req, res) => {
 
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentDelivered' })));
 
-  const contract = db
-    .get('contracts')
-    .value()
-    .find(i => i.key.id === shipment.value.contractId);
+  const contracts = db.get('contracts').value();
+  const contract = contracts.find(i => i.key.id === shipment.value.contractId);
+
   registerInvoice(contract);
+
+  contract.value.state = 3;
+
+  db.set('contracts', contracts).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ contract, type: 'contractCompleted' })));
+
   clients.forEach(c => c.emit('notification', JSON.stringify({ data: contract, type: 'invoiceRegistered' })));
 
   res.end('ok');

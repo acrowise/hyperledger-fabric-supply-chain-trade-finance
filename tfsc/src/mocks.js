@@ -16,7 +16,8 @@ export const notifications = {
   documentUploaded: 'shipments',
   invoiceRegistered: 'invoices',
   reportGenerated: 'reports',
-  invoiceRemoved: 'invoices'
+  invoiceRemoved: 'invoices',
+  contractCompleted: 'contracts'
 };
 
 export const title = {
@@ -39,5 +40,6 @@ export const title = {
   cancelBid: 'Bid Cancelled',
   placeInvoice: 'Invoice Signed',
   reportGenerated: 'Report Created',
-  invoiceRemoved: 'Invoice Removed'
+  invoiceRemoved: 'Invoice Removed',
+  contractCompleted: 'Contract Completed'
 };

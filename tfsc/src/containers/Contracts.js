@@ -30,7 +30,7 @@ const Contracts = ({
       setData({ result: newState });
     }
 
-    if (notification.type === 'shipmentRequested') {
+    if (notification.type === 'shipmentRequested' || notification.type === 'contractCompleted') {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.contract.key.id);
       newState[itemToUpdateIndex] = notification.contract;
