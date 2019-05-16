@@ -420,6 +420,18 @@ router.post('/cancelOrder', async (req, res) => {
   res.end('ok');
 });
 
+router.post('/removeInvoice', async (req, res) => {
+  const invoices = db.get('invoices').value();
+  const invoice = invoices.find(i => i.key.id === req.body.args[0]);
+
+  invoice.value.state = 5;
+
+  db.set('invoices', invoices).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: invoice, type: 'invoiceRemoved' })));
+  res.end('ok');
+});
+
 router.post('/acceptOrder', async (req, res) => {
   const orders = db.get('orders').value();
   const order = orders.find(i => i.key.id === req.body.args[0]);
@@ -465,7 +477,7 @@ router.post('/placeInvoice', (req, res) => {
 
   db.set('invoices', invoices).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'placeInvoice' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: invoice, type: 'placeInvoice' })));
   res.end('ok');
 });
 
@@ -494,6 +506,30 @@ router.post('/placeBid', (req, res) => {
     .write();
 
   clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'placeBid' }))));
+  res.end('ok');
+});
+
+router.post('/cancelBid', (req, res) => {
+  const bids = db.get('bids').value();
+  const bid = bids.find(i => i.key.id === req.body.args[0]);
+
+  bid.value.state = 3;
+
+  db.set('bids', bids).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: bid, type: 'cancelBid' })));
+  res.end('ok');
+});
+
+router.post('/editBid', (req, res) => {
+  const bids = db.get('bids').value();
+  const bid = bids.find(i => i.key.id === req.body.id);
+
+  bid.value.rate = req.body.args[1];
+
+  db.set('bids', bids).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: bid, type: 'editBid' })));
   res.end('ok');
 });
 
@@ -538,7 +574,7 @@ router.post('/acceptInvoice', (req, res) => {
 
   invoice.value.state = 2;
   db.set('invoices', invoices).write();
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(invoice, { type: 'acceptInvoice' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: invoice, type: 'acceptInvoice' })));
   res.end('ok');
 });
 

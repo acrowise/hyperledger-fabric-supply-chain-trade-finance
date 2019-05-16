@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card, Spinner
@@ -8,17 +8,25 @@ import { post } from '../../helper/api';
 
 import { INPUTS } from '../../constants';
 
-const PlaceBidForm = ({
-  dialogIsOpen, setDialogOpenState, invoiceId, role, rate = 0
-}) => {
-  const defaultFormState = {
-    rate,
-    invoiceId,
-    role,
-    touched: { rate: false }
-  };
+const PlaceBidForm = ({ dialog, setDialog }) => {
+  const defaultFormState = Object.assign(
+    {},
+    {
+      rate: 0,
+      action: '',
+      role: '',
+      invoiceId: '',
+      touched: { rate: false }
+    },
+    dialog.state
+  );
+
   const [formState, setFormState] = useState(defaultFormState);
-  const [postRes, postAction] = post(`${dialogIsOpen.action}Bid`)();
+  const [postRes, postAction] = post(`${formState.action}Bid`)();
+
+  useEffect(() => {
+    setFormState(defaultFormState);
+  }, [dialog.state]);
 
   const errors = {
     rate: formState.rate <= 0
@@ -36,7 +44,7 @@ const PlaceBidForm = ({
   };
 
   return (
-    <Overlay usePortal isOpen={dialogIsOpen.isOpen}>
+    <Overlay usePortal isOpen={dialog.isOpen}>
       {postRes.pending ? <Spinner /> : <></>}
       <div
         style={{
@@ -77,12 +85,13 @@ const PlaceBidForm = ({
 
                   if (!hasErrors) {
                     postAction({
-                      fcn: `${dialogIsOpen.action}Bid`,
-                      args: ['0', formState.rate, role, invoiceId]
+                      fcn: `${dialog.state.action}Bid`,
+                      args: ['0', formState.rate, formState.role, formState.invoiceId],
+                      id: formState.id
                     }); // FIXME:  'f' === factor-id
-                    setDialogOpenState({
+                    setDialog({
                       isOpen: false,
-                      action: null
+                      state: null
                     });
                     setFormState(defaultFormState);
                   } else {
@@ -96,9 +105,9 @@ const PlaceBidForm = ({
                 large
                 intent="danger"
                 onClick={() => {
-                  setDialogOpenState({
+                  setDialog({
                     isOpen: false,
-                    action: null
+                    state: null
                   });
                   setFormState(defaultFormState);
                 }}

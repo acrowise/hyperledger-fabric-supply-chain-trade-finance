@@ -15,38 +15,32 @@ import Table from '../components/Table/Table';
 const Invoices = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState({
-    isOpen: false,
-    action: null
+  const [bidDialog, setBidDialog] = useState({
+    isOpen: false
   });
 
   const [data, loading, setData] = useFetch('listInvoices');
 
   // BUYER
-  const [acceptedInvoiceRes, acceptInvoice] = post('acceptInvoice')();
+  const [, acceptInvoice] = post('acceptInvoice')();
   // SUPPLIER
 
-  const [forSaleInvoiceRes, placeForTradeInvoice] = post('placeInvoice')();
-  const [removeInvoiceRes, removeInvoice] = post('removeInvoice')();
-  // const [acceptedBidRes, acceptBid] = post('acceptBid')();
-  // const [cancelBidRes, cancelBid] = post('cancelBid')();
-
-  // FACTOR
-  // const [editBidRes, editBid] = post('editBid')();
+  const [, placeForTradeInvoice] = post('placeInvoice')();
+  const [, removeInvoice] = post('removeInvoice')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'acceptInvoice' || notification.type === 'placeInvoice') {
+    if (
+      notification.type === 'acceptInvoice'
+      || notification.type === 'placeInvoice'
+      || notification.type === 'invoiceRemoved'
+    ) {
       const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
-      newState[itemToUpdateIndex].value.state = notification.value.state;
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex].value.state = notification.data.value.state;
       setData({ result: newState });
     }
-
-    // if (notification.type === 'placeInvoice') {
-    //   setData({ result: data.result.concat(notification) });
-    // }
   };
 
   useSocket('notification', onMessage);
@@ -72,133 +66,107 @@ const Invoices = ({
   return loading ? (
     <>Loading...</>
   ) : (
-    <Table
-      fields={TABLE_MAP.INVOICES}
-      data={filteredData}
-      actions={item => (
-        <div>
-          {role === 'buyer' && item.state === 'Issued' ? (
-            <div className="nowrap">
+    <>
+      <BidForm
+        dialog={bidDialog}
+        setDialog={setBidDialog}
+      />
+      <Table
+        fields={TABLE_MAP.INVOICES}
+        data={filteredData}
+        actions={item => (
+          <div>
+            {role === 'buyer' && item.state === 'Issued' ? (
+              <div className="nowrap">
+                <Button
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                  onClick={() => {
+                    acceptInvoice({
+                      fcn: 'acceptInvoice',
+                      args: [item.id, '0', '0', '0', '0', '0', '0']
+                    });
+                  }}
+                >
+                  Sign
+                </Button>
+                <Button intent="danger">Reject</Button>
+              </div>
+            ) : (
+              <></>
+            )}
+            {role === 'supplier' && item.state === 'Signed' ? (
+              <div>
+                <Button
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                  onClick={() => {
+                    placeForTradeInvoice({
+                      fcn: 'placeInvoice',
+                      args: [
+                        item.id,
+                        'a', // Buyer Id
+                        'b', // SupplierId
+                        '123.65', // Total Due,
+                        item.dueDate,
+                        '0',
+                        'b'
+                      ]
+                    });
+                  }}
+                >
+                  Place for Trade
+                </Button>
+              </div>
+            ) : (
+              <></>
+            )}
+            {role === 'supplier' && item.state === 'For Sale' ? (
               <Button
                 style={{ marginRight: '5px' }}
-                intent="primary"
+                intent="danger"
                 onClick={() => {
-                  acceptInvoice({
-                    fcn: 'acceptInvoice',
-                    args: [item.id, '0', '0', '0', '0', '0', '0']
-                  });
-                }}
-              >
-                Sign
-              </Button>
-              <Button intent="danger">Reject</Button>
-            </div>
-          ) : (
-            <></>
-          )}
-          {role === 'supplier' && item.state === 'Signed' ? (
-            <div>
-              <Button
-                style={{ marginRight: '5px' }}
-                intent="primary"
-                onClick={() => {
-                  placeForTradeInvoice({
-                    fcn: 'placeInvoice',
+                  removeInvoice({
+                    fcn: 'removeInvoice',
                     args: [
-                      item.id,
-                      'a', // Buyer Id
-                      'b', // SupplierId
-                      '123.65', // Total Due,
-                      item.dueDate,
+                      item.id, // InvoiceId
                       '0',
-                      'b'
+                      '0',
+                      '0',
+                      '0',
+                      '0',
+                      '0'
                     ]
                   });
                 }}
               >
-                Place for Trade
-              </Button>
-            </div>
-          ) : (
-            <></>
-          )}
-          {role === 'supplier' && item.state === 'For Sale' ? (
-            <Button
-              style={{ marginRight: '5px' }}
-              intent="danger"
-              onClick={() => {
-                removeInvoice({
-                  fcn: 'removeInvoice',
-                  args: [
-                    item.id, // InvoiceId
-                    '0',
-                    '0',
-                    '0',
-                    '0',
-                    '0',
-                    '0'
-                  ]
-                });
-              }}
-            >
-              Remove
-            </Button>
-          ) : (
-            <></>
-          )}
-          {(role === 'factor 1' || role === 'factor 2') && item.state === 'For Sale' ? (
-            <div>
-              <BidForm
-                dialogIsOpen={invoiceBidDialogIsOpen}
-                setDialogOpenState={setInvoiceBidDialogOpenState}
-                invoiceId={item.id}
-                role={role}
-                rate={item.rate}
-              />
-              <Button
-                style={{ marginRight: '5px' }}
-                intent="primary"
-                onClick={() => {
-                  setInvoiceBidDialogOpenState({
-                    isOpen: true,
-                    action: 'place'
-                  });
-                }}
-              >
-                Place Bid
-              </Button>
-              {/* <Button
-                intent="primary"
-                onClick={() => {
-                  setInvoiceBidDialogOpenState({
-                    isOpen: true,
-                    action: 'edit'
-                  });
-                }}
-              >
-                Edit Bid
-              </Button> */}
-            </div>
-          ) : (
-            <></>
-          )}
-          {/* {role === 'supplier' && item.state === 'For Sale' ? (
-            <div>
-              <Button
-                intent="danger"
-                onClick={() => {
-                  // TODO:
-                }}
-              >
                 Remove
               </Button>
-            </div>
-          ) : (
-            <></>
-          )} */}
-        </div>
-      )}
-    />
+            ) : (
+              <></>
+            )}
+            {(role === 'factor 1' || role === 'factor 2') && item.state === 'For Sale' ? (
+              <div>
+                <Button
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                  onClick={() => {
+                    setBidDialog({
+                      isOpen: true,
+                      state: { action: 'place', invoiceId: item.id, role }
+                    });
+                  }}
+                >
+                  Place Bid
+                </Button>
+              </div>
+            ) : (
+              <></>
+            )}
+          </div>
+        )}
+      />
+    </>
   );
 };
 

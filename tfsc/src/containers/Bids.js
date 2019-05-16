@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
@@ -11,11 +11,14 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
+import BidForm from './Forms/Bid';
+
 const Bids = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = useFetch('listBids');
   const [, acceptBid] = post('acceptBid')();
+  const [, cancelBid] = post('cancelBid')();
 
   const onMessage = (message) => {
     const notification = JSON.parse(message);
@@ -25,7 +28,11 @@ const Bids = ({
       setData(newState);
     }
 
-    if (notification.type === 'acceptBid' || notification.type === 'cancelBid') {
+    if (
+      notification.type === 'acceptBid'
+      || notification.type === 'cancelBid'
+      || notification.type === 'editBid'
+    ) {
       const newState = data.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex] = notification.data;
@@ -36,6 +43,11 @@ const Bids = ({
   useSocket('notification', onMessage);
 
   let filteredData = data.result;
+
+  const [dialog, setDialog] = useState({
+    isOpen: false,
+    state: null
+  });
 
   if (!loading && filteredData && filteredData.length > 0) {
     filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.BID[i.value.state] }));
@@ -57,6 +69,7 @@ const Bids = ({
     <>Loading...</>
   ) : (
     <div>
+      <BidForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={
           role === 'factor 1' || role === 'factor 2'
@@ -89,10 +102,35 @@ const Bids = ({
             )}
             {role === item.factor && item.state === 'Issued' ? (
               <div>
-                <Button onClick={() => {}} style={{ marginRight: '5px' }} intent="primary">
+                <Button
+                  onClick={() => {
+                    setDialog({
+                      isOpen: true,
+                      state: {
+                        id: item.id,
+                        rate: item.rate,
+                        action: 'edit'
+                      }
+                    });
+                  }}
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                >
                   Edit
                 </Button>
-                <Button intent="danger">Cancel</Button>
+                <Button
+                  intent="danger"
+                  onClick={() => {
+                    cancelBid({
+                      fcn: 'cancelBid',
+                      args: [item.id, '0', '0', '0'],
+                      id: item.id, // FIXME:
+                      user: role
+                    });
+                  }}
+                >
+                  Cancel
+                </Button>
               </div>
             ) : (
               <></>

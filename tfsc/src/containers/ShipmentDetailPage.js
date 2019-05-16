@@ -156,7 +156,7 @@ const ShipmentDetailPage = (props) => {
                   >
                     Accept Delivery
                   </Button>
-                  <Button
+                  {/* <Button
                     style={{ paddingLeft: 30, paddingRight: 30, marginLeft: 15 }}
                     intent="danger"
                     onClick={() => {
@@ -164,7 +164,7 @@ const ShipmentDetailPage = (props) => {
                     }}
                   >
                     Reject Delivery
-                  </Button>
+                  </Button> */}
                 </div>
               ) : (
                 <></>

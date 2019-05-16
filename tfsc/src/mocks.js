@@ -12,9 +12,11 @@ export const notifications = {
   acceptInvoice: 'invoices',
   placeBid: 'bids',
   acceptBid: 'bids',
+  editBid: 'bids',
   documentUploaded: 'shipments',
   invoiceRegistered: 'invoices',
-  reportGenerated: 'reports'
+  reportGenerated: 'reports',
+  invoiceRemoved: 'invoices'
 };
 
 export const title = {
@@ -31,9 +33,11 @@ export const title = {
   acceptInvoice: 'Invoice Accepted',
   placeBid: 'Bid Placed',
   acceptBid: 'Bid Accepted',
+  editBid: 'Bid Updated',
   documentUploaded: 'Document Uploaded',
   invoiceRegistered: 'Invoice Registered',
   cancelBid: 'Bid Cancelled',
   placeInvoice: 'Invoice Signed',
-  reportGenerated: 'Report Created'
+  reportGenerated: 'Report Created',
+  invoiceRemoved: 'Invoice Removed'
 };
