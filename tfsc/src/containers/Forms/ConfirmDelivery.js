@@ -14,6 +14,8 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
   const [deliveryRes, confirmDelivery] = post('confirmDelivery')();
   const [documentsRes, uploadDocs] = post('uploadDocuments')();
 
+  const [fileRequired, setFileRequired] = useState(false);
+
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -36,8 +38,10 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              Delivery Acceptance Form
-              <FileUploader withPreview files={files} setFiles={setFiles} />
+              <div style={{marginBottom: 5}}>
+                Delivery Acceptance Form
+              </div>
+              <FileUploader withPreview files={files} setFiles={setFiles} error={fileRequired} />
               <FormGroup label="Description">
                 <TextArea growVertically={true} large={true} />
               </FormGroup>
@@ -48,7 +52,10 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               large
               intent="none"
               className="btn-modal btn-default"
-              onClick={() => setDialogOpenState(false)}
+              onClick={() => {
+                setDialogOpenState(false);
+                setFileRequired(false);
+              }}
             >
               Cancel
             </Button>
@@ -57,19 +64,24 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
               className="btn-modal"
               intent="primary"
               onClick={() => {
-                confirmDelivery({ shipmentId: shipment.id });
+                if (files.length === 0) {
+                  setFileRequired(true);
+                } else {
+                  confirmDelivery({ shipmentId: shipment.id });
+                  setFileRequired(false);
 
-                setTimeout(() => {
-                  const form = new FormData();
-                  form.append('type', 'Delivery Acceptance Form');
-                  form.append('contractId', shipment.contractId);
-                  files.forEach((f) => {
-                    form.append('file', f);
-                  });
-                  uploadDocs(form);
-                  setFiles([]);
-                  setDialogOpenState(false);
-                }, 600);
+                  setTimeout(() => {
+                    const form = new FormData();
+                    form.append('type', 'Delivery Acceptance Form');
+                    form.append('contractId', shipment.contractId);
+                    files.forEach((f) => {
+                      form.append('file', f);
+                    });
+                    uploadDocs(form);
+                    setFiles([]);
+                    setDialogOpenState(false);
+                  }, 600);
+                }
               }}
             >
               Submit

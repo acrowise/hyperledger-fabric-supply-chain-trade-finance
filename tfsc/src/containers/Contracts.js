@@ -8,11 +8,15 @@ import { useFetch } from '../hooks';
 import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
-import Icon from '../components/Icon/Icon'
+import Icon from '../components/Icon/Icon';
+
+import { filterData } from '../helper/utils';
 
 import { TABLE_MAP, STATUSES } from '../constants';
 
-const Contracts = ({ role }) => {
+const Contracts = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [data, loading, setData] = useFetch('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
     state: false,
@@ -36,10 +40,22 @@ const Contracts = ({ role }) => {
 
   useSocket('notification', onMessage);
 
-  let dataToDisplay = data.result;
+  let filteredData = data.result;
 
-  if (dataToDisplay) {
-    dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.CONTRACT[i.value.state] }));
+
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
+    }
+
+    filteredData = filterData({
+      type: 'productName',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (
@@ -52,7 +68,7 @@ const Contracts = ({ role }) => {
       />
       <Table
         fields={TABLE_MAP.CONTRACTS}
-        data={dataToDisplay}
+        data={filteredData}
         actions={item => (role === 'supplier' && item.state === 'Signed' ? (
             <div>
               <Button

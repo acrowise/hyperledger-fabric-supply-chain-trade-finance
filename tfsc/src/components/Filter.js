@@ -2,19 +2,34 @@ import React, { useState } from 'react';
 import { RadioGroup, Radio, InputGroup } from '@blueprintjs/core';
 // import PropTypes from 'prop-types';
 
-const Filter = ({ children, statuses, actionComponent, filterBy }) => {
+import FilterBy from './FilterBy';
+
+const Filter = ({
+  children, statuses, actionComponent, filterBy
+}) => {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
+  const [filterOptions, setFilterOptions] = useState({});
 
-  const childrenWithProps = React.Children.map(children, child =>
-    React.cloneElement(child, {
-      content,
-      setContent,
-      filter,
-      search
-    })
-  );
+  const [dataForFilter, setDataForFilter] = useState([]);
+
+  const data = {};
+  if (dataForFilter) {
+    filterBy.forEach((field) => {
+      data[field] = dataForFilter.map(i => i[field]);
+    });
+  }
+
+  const childrenWithProps = React.Children.map(children, child => React.cloneElement(child, {
+    content,
+    setContent,
+    filter,
+    search,
+    dataForFilter,
+    setDataForFilter,
+    filterOptions
+  }));
 
   return content ? (
     childrenWithProps
@@ -52,11 +67,21 @@ const Filter = ({ children, statuses, actionComponent, filterBy }) => {
       <div className="dashboard-panel-body layout-container">
         <aside className="layout-aside">
           <h4>Filter by</h4>
-          {filterBy.map(f => (
-            <div key={f} className="filter-select-wrap">
-              <select readOnly value={f} className="filter-select">
-                <option select={f}>{f}</option>
-              </select>
+          {filterBy.map((f, i) => (
+            <div key={i} className="filter-select-wrap">
+              <FilterBy
+                type={f}
+                data={data[f]}
+                setFilter={(filterItem) => {
+                  const newState = Object.assign({}, filterOptions);
+                  if (typeof filterItem === 'object') {
+                    newState[f] = Object.assign({}, newState[f], filterItem);
+                  } else {
+                    newState[f] = filterItem;
+                  }
+                  setFilterOptions(newState);
+                }}
+              />
             </div>
           ))}
         </aside>

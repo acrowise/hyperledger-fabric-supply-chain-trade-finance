@@ -31,7 +31,9 @@ const img = {
   objectFit: 'cover'
 };
 
-function FileUploader({ files, setFiles, withPreview }) {
+function FileUploader({
+  files, setFiles, withPreview, error
+}) {
   // const [files, setFiles] = useState([]);
   useEffect(
     () => () => {
@@ -96,7 +98,7 @@ function FileUploader({ files, setFiles, withPreview }) {
           width: '210px',
           height: '100px',
           backgroundColor: '#F8F9FA',
-          border: '2px dashed #687585',
+          border: `2px dashed ${error && files.length === 0 ? '#db3737' : '#687585'}`,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center'
@@ -116,7 +118,7 @@ function FileUploader({ files, setFiles, withPreview }) {
           width: '240px',
           height: '60px',
           backgroundColor: '#F8F9FA',
-          border: '2px dashed #687585',
+          border: `2px dashed ${error && files.length === 0 ? '#db3737' : '#687585'}`,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center'

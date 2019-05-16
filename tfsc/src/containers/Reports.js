@@ -8,7 +8,11 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 import VerifyProof from './Forms/VerifyProof';
 
-const Reports = ({ role, filter, search }) => {
+import { filterData } from '../helper/utils';
+
+const Reports = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [data, loading, setData] = useFetch('listReports');
   const [selectedProof, setSelectedProof] = useState({});
@@ -32,16 +36,21 @@ const Reports = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
-  if (filteredData) {
-    filteredData = filteredData.filter(i => i.value.factor.toLowerCase() === role).map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
-  }
+  // FIXME:
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
 
-  console.log('reports', filteredData);
-
-  if (!loading) {
-    if (filter) {
-      filteredData = filteredData.filter(item => item.state === filter);
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
     }
+
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
   }
 
   return loading ? (

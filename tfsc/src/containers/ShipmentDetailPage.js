@@ -44,7 +44,7 @@ const ShipmentDetailPage = (props) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'proofGenerated') {
-      const newState = proofs.result.concat(notification.data); // FIXME
+      const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true })); // FIXME
       setData({ result: newState });
     }
 
@@ -57,7 +57,7 @@ const ShipmentDetailPage = (props) => {
 
     if (notification.type === 'documentUploaded') {
       if (notification.event.shipmentId === shipment.id) {
-        setDocs(docs.concat(notification.data));
+        setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
       }
     }
   };
@@ -89,7 +89,9 @@ const ShipmentDetailPage = (props) => {
         }}
       >
         <Icons name="left-arrow" />
-        <p style={{ marginLeft: '10px', color: '#3FBEA5', fontWeight: 'bold' }}>
+        <p style={{
+          marginLeft: '10px', color: '#3FBEA5', fontWeight: 'bold', cursor: 'pointer'
+        }}>
           Return to Shipments
         </p>
       </div>
@@ -193,12 +195,26 @@ const ShipmentDetailPage = (props) => {
                     >
                       <Icons name="proof-document" />
                       <a
-                        style={{ marginLeft: '10px', marginTop: '2px' }}
+                        style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
                         href={`/document?contractId=${doc.contractId}&name=${doc.name}`}
                         target="_blank"
                       >
                         {doc.type}
                       </a>
+                      {doc.new ? (
+                        <div
+                          style={{
+                            marginLeft: '3px',
+                            marginBottom: '7px',
+                            borderRadius: '100%',
+                            height: '8px',
+                            width: '8px',
+                            backgroundColor: '#69D7BC'
+                          }}
+                        />
+                      ) : (
+                        <></>
+                      )}
                     </div>
                   ))}
               </div>

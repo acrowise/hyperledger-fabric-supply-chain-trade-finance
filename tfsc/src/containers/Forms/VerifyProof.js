@@ -22,19 +22,19 @@ const ValidateProof = ({
   const [, validateProof] = post('validateProof')();
   const [, uploadDocs] = post('uploadDocuments')();
 
+  const [fileRequired, setFileRequired] = useState(false);
+
   if (!proof || !proof.contract) {
     return <></>;
   }
 
   const requestedFields = Object.keys(proof.fields).filter(i => proof.fields[i] === true);
   const requestedInputs = [];
-  const requestedDocs = [];
+  const requestedDocs = proof.documents;
 
   requestedFields.forEach((f) => {
     if (INPUTS.GENERATE_PROOF.find(i => i.field === f)) {
       requestedInputs.push(f);
-    } else {
-      requestedDocs.push(f);
     }
   });
 
@@ -87,34 +87,26 @@ const ValidateProof = ({
                   }
                   return <></>;
                 })}
-                {requestedDocs.map(d => (
-                  <div key={d} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
-                    <Icon name="proofDocument" />
-                    <div style={{ marginLeft: '10px', marginTop: '2px' }}>{d}</div>
+                {requestedDocs.map((d, i) => (
+                  <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                    <Icon name="proof-document" />
+                    <a
+                      style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
+                      href={`/document?contractId=${d.contractId}&name=${d.name}`}
+                      target="_blank"
+                    >
+                      {d.type}
+                    </a>
                   </div>
                 ))}
                 <br />
-                {proof.documents
-                  && proof.documents.map(i => (
-                    <div
-                      key={i}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginBottom: 15
-                      }}
-                    >
-                      <Icon name="proofDocument" />
-                      {i}
-                    </div>
-                  ))}
               </div>
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="Shipment number">
                   <InputGroup disabled value={cropId(proof.shipmentId)} />
                 </FormGroup>
                 <Label>Add report</Label>
-                <FileUploader files={files} setFiles={setFiles} />
+                <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
                 <Label>
                   Description
                   <TextArea
@@ -145,24 +137,29 @@ const ValidateProof = ({
                   intent="primary"
                   className="btn-modal"
                   onClick={() => {
-                    setDialogOpenState(false);
-                    validateProof({
-                      fcn: 'validateProof',
-                      contractId: proof.contract.key.id,
-                      shipmentId: proof.shipmentId,
-                      user: role,
-                      args: [proof.id]
-                    });
-
-                    setTimeout(() => {
-                      const form = new FormData();
-                      form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
-                      form.append('contractId', proof.contract.key.id);
-                      files.forEach((f) => {
-                        form.append('file', f);
+                    if (files.length === 0) {
+                      setFileRequired(true);
+                    } else {
+                      setDialogOpenState(false);
+                      setFileRequired(false);
+                      validateProof({
+                        fcn: 'validateProof',
+                        contractId: proof.contract.key.id,
+                        shipmentId: proof.shipmentId,
+                        user: role,
+                        args: [proof.id]
                       });
-                      uploadDocs(form);
-                    }, 600);
+
+                      setTimeout(() => {
+                        const form = new FormData();
+                        form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
+                        form.append('contractId', proof.contract.key.id);
+                        files.forEach((f) => {
+                          form.append('file', f);
+                        });
+                        uploadDocs(form);
+                      }, 600);
+                    }
                   }}
                 >
                   {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}

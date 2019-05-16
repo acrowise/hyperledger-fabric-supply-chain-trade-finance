@@ -15,6 +15,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
   const [files, setFiles] = useState([]);
   const [shipmentRes, confirmShipment, reset] = post('confirmShipment')();
   const [, uploadDocs] = post('uploadDocuments')();
+  const [fileRequired, setFileRequired] = useState(false);
 
   if (!shipmentRes.pending) {
     if (shipmentRes.complete) {
@@ -46,7 +47,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <ActionCompleted res={shipmentRes} action="Shipment Confirmed" result="Accepted" />
+          <ActionCompleted res={shipmentRes} action="Shipment" result="Comfirmed" />
           {!shipmentRes.pending && !shipmentRes.complete && !shipmentRes.data ? (
             <>
               <div className="modal-header">Confirm Shipment</div>
@@ -71,10 +72,10 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                       disabled
                     />
                   </Label>
-                  <Label className="col-6 margin-left-auto">
+                  <Label className="col-6 margin-right-auto">
                     Upload Bill of Lading
-                    <div style={{marginTop: 5}}>
-                      <FileUploader files={files} setFiles={setFiles} />
+                    <div style={{ marginTop: 5 }}>
+                      <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
                     </div>
                   </Label>
                 </div>
@@ -86,6 +87,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   className="btn-modal btn-default"
                   onClick={() => {
                     setDialogOpenState(false);
+                    setFileRequired(false);
                   }}
                 >
                   Cancel
@@ -95,19 +97,24 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   intent="primary"
                   className="btn-modal"
                   onClick={() => {
-                    confirmShipment({
-                      fcn: 'confirmShipment',
-                      args: [shipment.id]
-                    });
-                    setTimeout(() => {
-                      const form = new FormData();
-                      form.append('contractId', shipment.contractId);
-                      form.append('type', 'Bill of Lading');
-                      files.forEach((f) => {
-                        form.append('file', f);
+                    if (files.length === 0) {
+                      setFileRequired(true);
+                    } else {
+                      confirmShipment({
+                        fcn: 'confirmShipment',
+                        args: [shipment.id]
                       });
-                      uploadDocs(form);
-                    }, 600);
+                      setFileRequired(false);
+                      setTimeout(() => {
+                        const form = new FormData();
+                        form.append('contractId', shipment.contractId);
+                        form.append('type', 'Bill of Lading');
+                        files.forEach((f) => {
+                          form.append('file', f);
+                        });
+                        uploadDocs(form);
+                      }, 600);
+                    }
                   }}
                 >
                   Confirm

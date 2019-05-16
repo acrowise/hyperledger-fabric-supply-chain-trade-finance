@@ -9,8 +9,11 @@ import { post } from '../helper/api';
 
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
+import { filterData } from '../helper/utils';
 
-const Bids = ({ role, filter, search }) => {
+const Bids = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [data, loading, setData] = useFetch('listBids');
   const [, acceptBid] = post('acceptBid')();
 
@@ -34,20 +37,21 @@ const Bids = ({ role, filter, search }) => {
 
   let filteredData = data.result;
 
-  if (filteredData) {
+  if (!loading && filteredData && filteredData.length > 0) {
     filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.BID[i.value.state] }));
-  }
 
-  if (!loading) {
-    if (filter) {
-      filteredData = filteredData.filter(item => item.state === filter);
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
     }
-    if (search) {
-      filteredData = filteredData.filter(item => item.productName.toLowerCase().includes(search));
-    }
-  }
 
-  console.log(filteredData);
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
+  }
 
   return loading ? (
     <>Loading...</>

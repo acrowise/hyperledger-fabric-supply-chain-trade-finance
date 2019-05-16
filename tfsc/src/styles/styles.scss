@@ -393,6 +393,15 @@ $header-height: 65px;
   align-items: center;
 }
 
+.sidebar-panel-filter {
+  padding: 5px 20px;
+  background-color: $color-secondary;
+  // color: $color-txt-light;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .sidebar-panel-body {
   padding: 20px;
   background: white;
@@ -443,6 +452,7 @@ $header-height: 65px;
   border-radius: 1px;
   border: 1px solid $color-border;
   box-shadow: none;
+  font: $fw-normal $fs-normal $ff-primary!important;
 }
 
 .bp3-input:disabled {
@@ -466,4 +476,17 @@ $header-height: 65px;
   height: 56px!important;
   font: $fw-normal $fs-normal $ff-primary;
   resize: none;
+}
+
+.filter-range {
+  display: flex;
+  flex-direction: row;
+  margin: 5px
+}
+
+.filter-range-item {
+  align-self: flex-end;
+  margin-right: 2px;
+  margin-bottom: 6px;
+  width: 40px;
 }

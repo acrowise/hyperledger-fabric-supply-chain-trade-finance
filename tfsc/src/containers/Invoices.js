@@ -8,10 +8,13 @@ import BidForm from './Forms/Bid';
 
 import { post } from '../helper/api';
 import { STATUSES, TABLE_MAP } from '../constants';
+import { filterData } from '../helper/utils';
 
 import Table from '../components/Table/Table';
 
-const Invoices = ({ role, filter, search }) => {
+const Invoices = ({
+  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+}) => {
   const [invoiceBidDialogIsOpen, setInvoiceBidDialogOpenState] = useState({
     isOpen: false,
     action: null
@@ -48,24 +51,30 @@ const Invoices = ({ role, filter, search }) => {
 
   useSocket('notification', onMessage);
 
-  let dataToDisplay = [];
-  if (data.result) {
-    dataToDisplay = data.result;
-  }
+  let filteredData = data.result;
 
-  if (filter) {
-    dataToDisplay = dataToDisplay.filter(item => STATUSES.INVOICE[item.state] === filter);
-  }
+  if (!loading && filteredData && filteredData.length > 0) {
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
 
-  // FIXME:
-  dataToDisplay = dataToDisplay.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
+    if (dataForFilter.length === 0) {
+      setDataForFilter(filteredData);
+    }
+
+    filteredData = filterData({
+      type: 'id',
+      status: filter,
+      search,
+      filterOptions,
+      tableData: filteredData
+    });
+  }
 
   return loading ? (
     <>Loading...</>
   ) : (
     <Table
       fields={TABLE_MAP.INVOICES}
-      data={dataToDisplay}
+      data={filteredData}
       actions={item => (
         <div>
           {role === 'buyer' && item.state === 'Issued' ? (

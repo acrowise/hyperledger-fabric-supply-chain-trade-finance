@@ -20,6 +20,14 @@ const PORT = process.env.PORT || 3000;
 
 const path = require('path');
 
+const documents = [
+  'Bill of Lading',
+  'Delivery Acceptance Form',
+  'Packing List',
+  'USCTS Report',
+  'GGCB Report'
+];
+
 const capitalize = str => str[0].toUpperCase() + str.substring(1);
 
 db.defaults({
@@ -134,7 +142,7 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
     const event = {
       id: uuid(),
       date: new Date().getTime(),
-      action: `${req.body.type} uploaded`,
+      action: `${req.body.type} Uploaded`,
       user: req.body.user ? capitalize(req.body.user) : '',
       type: 'document',
       shipmentId: shipment.key.id
@@ -150,6 +158,20 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
 });
 
 router.post('/generateProof', (req, res) => {
+  const shipments = db.get('shipments').value();
+  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
+
+  const requestedDocuments = [];
+  documents.forEach((d) => {
+    if (req.body.data[d]) {
+      requestedDocuments.push(shipment.value.documents.find(i => i.type === d));
+    }
+  });
+
+  const contract = db
+    .get('contracts')
+    .value()
+    .find(i => i.key.id === req.body.contractId);
   const proof = {
     key: { id: uuid() },
     value: {
@@ -157,15 +179,12 @@ router.post('/generateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       agency: req.body.reviewer,
       fields: req.body.data,
-      contract: db
-        .get('contracts')
-        .value()
-        .find(i => i.key.id === req.body.contractId)
+      documents: requestedDocuments,
+      contract,
+      consigneeName: contract.value.consigneeName,
+      consignorName: contract.value.consignorName
     }
   };
-
-  const shipments = db.get('shipments').value();
-  const shipment = shipments.find(i => i.key.id === req.body.shipmentId);
 
   // const shipment = get('shipments', req.body.shipmentId);
 
@@ -319,6 +338,7 @@ router.post('/validateProof', (req, res) => {
   proof.value.state = 2;
   db.set('proofs', proofs).write();
 
+  const contract = get('contracts', req.body.contractId);
   const report = {
     key: { id: uuid() },
     value: {
@@ -326,8 +346,10 @@ router.post('/validateProof', (req, res) => {
       shipmentId: req.body.shipmentId,
       proofId: proof.key.id,
       description: req.body.description,
-      contract: get('contracts', req.body.contractId),
-      factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor'
+      contract,
+      factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor',
+      consigneeName: contract.value.consigneeName,
+      consignorName: contract.value.consignorName
     }
   };
   db.get('reports')
@@ -354,6 +376,18 @@ router.post('/validateProof', (req, res) => {
   res.end('ok');
 });
 
+router.post('/cancelOrder', async (req, res) => {
+  const orders = db.get('orders').value();
+  const order = orders.find(i => i.key.id === req.body.args[0]);
+
+  order.value.state = 2;
+
+  db.set('orders', orders).write();
+
+  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'cancelOrder' }))));
+  res.end('ok');
+});
+
 router.post('/acceptOrder', async (req, res) => {
   const orders = db.get('orders').value();
   const order = orders.find(i => i.key.id === req.body.args[0]);
@@ -368,8 +402,8 @@ router.post('/acceptOrder', async (req, res) => {
       id: order.key.id
     },
     value: {
-      consignorName: 'Buyer',
-      consigneeName: 'Supplier',
+      consignorName: 'Supplier',
+      consigneeName: 'Buyer',
       totalDue: order.value.price * order.value.quantity, // FIXME
       price: order.value.price,
       quantity: order.value.quantity,

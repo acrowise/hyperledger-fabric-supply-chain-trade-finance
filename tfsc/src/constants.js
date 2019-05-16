@@ -213,6 +213,7 @@ export const TABLE_MAP = {
   PROOFS: {
     id: 'Proof ID',
     shipmentId: 'Shipment ID',
+    consignorName: 'Consignor',
     // reportId: 'Report ID',
     state: 'Status'
   },
@@ -238,6 +239,7 @@ export const TABLE_MAP = {
   REPORTS: {
     id: 'Report ID',
     proofId: 'Proof ID',
+    consignorName: 'Consignor',
     shipmentId: 'Shipment ID',
     state: 'Status'
   },

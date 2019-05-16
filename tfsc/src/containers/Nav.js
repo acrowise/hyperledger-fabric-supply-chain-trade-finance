@@ -12,6 +12,7 @@ import Icon from '../components/Icon/Icon';
 const Nav = ({ role, logout }) => {
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showLogOut, setShowLogOut] = useState(false);
   const [hasNewNotifications, setNewNotification] = useState(0);
 
   useSocket('notification', (message) => {
@@ -75,13 +76,47 @@ const Nav = ({ role, logout }) => {
               }
             />
 
-            <Button
-              className="bp3-minimal"
-              icon={<Profile name={role} />}
-              style={{ textTransform: 'capitalize', marginLeft: 50 }}
-            >
-              {profileName}
-            </Button>
+            <Popover
+              // position="auto-end"
+              minimal
+              onClose={() => {
+                setShowLogOut(false);
+              }}
+              isOpen={showLogOut}
+              content={
+                <div
+                  style={{
+                    width: '124px',
+                    height: '40px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}
+                >
+                  <a
+                    style={{ color: '#1B263C' }}
+                    onClick={() => {
+                      setShowLogOut(false);
+                      logout();
+                    }}
+                  >
+                    Log out
+                  </a>
+                </div>
+              }
+              target={
+                <Button
+                  className="bp3-minimal"
+                  icon={<Profile name={role} />}
+                  style={{ textTransform: 'capitalize', marginLeft: 50 }}
+                  onClick={() => {
+                    setShowLogOut(true);
+                  }}
+                >
+                  {profileName}
+                </Button>
+              }
+            />
           </Navbar.Group>
         )}
       </div>
