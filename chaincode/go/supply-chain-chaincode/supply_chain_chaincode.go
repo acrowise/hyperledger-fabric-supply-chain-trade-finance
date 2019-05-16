@@ -633,6 +633,38 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//updating contract state
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{shipment.Value.ContractID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &contract, contractIndex) {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("contract with the key %s doesnt exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &contract, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	contract.Value.State = stateContractProcessed
+
+	if bytes, err := json.Marshal(contract); err == nil {
+		Logger.Debug("Contract: " + string(bytes))
+	}
+
+	//saving contract to ledger
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
@@ -710,6 +742,38 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, shipmentIndex, []string{}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//updating contract state
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{shipment.Value.ContractID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &contract, contractIndex) {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("contract with the key %s doesnt exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &contract, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	contract.Value.State = stateContractCompleted
+
+	if bytes, err := json.Marshal(contract); err == nil {
+		Logger.Debug("Contract: " + string(bytes))
+	}
+
+	//saving contract to ledger
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
