@@ -182,7 +182,9 @@ router.post('/generateProof', (req, res) => {
       documents: requestedDocuments,
       contract,
       consigneeName: contract.value.consigneeName,
-      consignorName: contract.value.consignorName
+      consignorName: contract.value.consignorName,
+      timestamp: new Date().getTime(),
+      lastUpdated: new Date().getTime()
     }
   };
 
@@ -216,7 +218,9 @@ router.post('/placeOrder', (req, res) => {
       dueDate: req.body.args[5],
       paymentDate: req.body.args[6],
       buyerId: req.body.args[7],
-      totalDue: req.body.args[2] * req.body.args[3]
+      totalDue: req.body.args[2] * req.body.args[3],
+      timestamp: new Date().getTime(),
+      lastUpdated: new Date().getTime()
     },
     type: 'place'
   };
@@ -241,6 +245,7 @@ router.post('/requestShipment', (req, res) => {
       transport: req.body.args[4],
       description: req.body.args[5],
       timestamp: new Date().getTime(),
+      lastUpdated: new Date().getTime(),
       dueDate: contract.value.dueDate,
       documents: [],
       events: [
@@ -278,7 +283,9 @@ const registerInvoice = (contract) => {
         dueDate: contract.value.dueDate,
         paymentDate: contract.value.paymentDate,
         owner: 'Supplier',
-        state: 2
+        state: 2,
+        timestamp: new Date().getTime(),
+        lastUpdated: new Date().getTime()
       }
     })
     .write();
@@ -349,7 +356,9 @@ router.post('/validateProof', (req, res) => {
       contract,
       factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor',
       consigneeName: contract.value.consigneeName,
-      consignorName: contract.value.consignorName
+      consignorName: contract.value.consignorName,
+      timestamp: new Date().getTime(),
+      lastUpdated: new Date().getTime()
     }
   };
   db.get('reports')
@@ -412,7 +421,8 @@ router.post('/acceptOrder', async (req, res) => {
       destination: order.value.destination,
       timestamp: new Date().getTime(),
       paymentDate: order.value.paymentDate,
-      productName: order.value.productName
+      productName: order.value.productName,
+      lastUpdated: new Date().getTime()
     }
   };
 
@@ -450,7 +460,9 @@ router.post('/placeBid', (req, res) => {
       paymentDate: invoice.value.paymentDate,
       debtor: invoice.value.debtor,
       beneficiary: invoice.value.beneficiary,
-      state: 1
+      state: 1,
+      timestamp: new Date().getTime(),
+      lastUpdated: new Date().getTime()
     }
   };
 

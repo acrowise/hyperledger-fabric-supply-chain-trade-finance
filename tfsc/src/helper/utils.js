@@ -3,7 +3,7 @@ export const cropId = id => id.slice(0, 7).toUpperCase();
 export const filterData = ({
   type, status, search, filterOptions, tableData
 }) => {
-  let data = tableData.concat([]);
+  let data = tableData.concat([]).sort((a, b) => b.timestamp - a.timestamp);
   if (status) {
     data = data.filter(item => item.state === status);
   }
