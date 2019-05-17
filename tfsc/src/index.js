@@ -12,7 +12,7 @@ console.log('process.env.PORT', process.env.PORT);
 const routing = (
   <Router>
     <AuthProvider>
-      <ClientSocket url={'http://0.0.0.0:3000'}>
+      <ClientSocket url={`${window.location.origin}`}>
         <Switch>
           <Route exact path="/" component={App} />
           <Route path="/dashboard" component={Dashboard} />
