@@ -13,6 +13,8 @@ import { TABLE_MAP, STATUSES } from '../constants';
 
 import OrderPurchaseForm from './Forms/OrderPurchase';
 
+import notifications from '../helper/notification';
+
 const Orders = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
@@ -25,27 +27,9 @@ const Orders = ({
     isOpen: false
   });
 
-  const onMessage = (message) => {
-    const notification = JSON.parse(message);
-
-    if (notification.type === 'place') {
-      const newState = { result: data.result.concat(notification) };
-      setData(newState);
-    }
-
-    if (
-      notification.type === 'acceptOrder'
-      || notification.type === 'cancelOrder'
-      || notification.type === 'updateOrder'
-    ) {
-      const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.key.id);
-      newState[itemToUpdateIndex] = notification;
-      setData({ result: newState });
-    }
-  };
-
-  useSocket('notification', onMessage);
+  useSocket('notification', (message) => {
+    setData(notifications(data.result.concat([]), message, 'orders'));
+  });
 
   let filteredData = data.result;
 
@@ -69,10 +53,7 @@ const Orders = ({
     <>Loading...</>
   ) : (
     <div>
-      <OrderPurchaseForm
-        dialog={dialog}
-        setDialog={setDialog}
-      />
+      <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}

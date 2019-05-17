@@ -151,7 +151,9 @@ router.post('/uploadDocuments', upload.array('file'), (req, res) => {
 
     db.set('shipments', shipments).write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, event, type: 'documentUploaded' })));
+    setTimeout(() => {
+      clients.forEach(c => c.emit('notification', JSON.stringify({ data: doc, event, type: 'documentUploaded' })));
+    }, 500);
   });
 
   res.end('ok');
@@ -221,13 +223,12 @@ router.post('/placeOrder', (req, res) => {
       totalDue: req.body.args[2] * req.body.args[3],
       timestamp: new Date().getTime(),
       lastUpdated: new Date().getTime()
-    },
-    type: 'place'
+    }
   };
   db.get('orders')
     .push(order)
     .write();
-  clients.forEach(c => c.emit('notification', JSON.stringify(order)));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'placeOrder' })));
   res.end('ok');
 });
 
@@ -246,11 +247,9 @@ router.post('/updateOrder', (req, res) => {
   order.value.totalDue = req.body.args[2] * req.body.args[3];
   order.value.lastUpdated = new Date().getTime();
 
-  order.type = 'updateOrder';
-
   db.set('orders', orders).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(order)));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'updateOrder' })));
   res.end('ok');
 });
 
@@ -289,7 +288,14 @@ router.post('/requestShipment', (req, res) => {
 
   db.set('contracts', contracts).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, contract, type: 'shipmentRequested' })));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: contract, type: 'contractUpdated' })));
+
+  setTimeout(() => {
+    clients.forEach(c => c.emit(
+      'notification',
+      JSON.stringify({ data: shipment, contract, type: 'shipmentRequested' })
+    ));
+  }, 500);
 
   res.end('ok');
 });
@@ -422,7 +428,7 @@ router.post('/cancelOrder', async (req, res) => {
 
   db.set('orders', orders).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'cancelOrder' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'cancelOrder' })));
   res.end('ok');
 });
 
@@ -446,7 +452,8 @@ router.post('/acceptOrder', async (req, res) => {
 
   db.set('orders', orders).write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(order, { type: 'acceptOrder' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'acceptOrder' })));
+
   const contract = {
     key: {
       id: order.key.id
@@ -471,7 +478,10 @@ router.post('/acceptOrder', async (req, res) => {
     .push(contract)
     .write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(contract, { type: 'contractCreated' }))));
+  setTimeout(() => {
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: contract, type: 'contractCreated' })));
+  }, 500);
+
   res.end('ok');
 });
 
@@ -511,7 +521,7 @@ router.post('/placeBid', (req, res) => {
     .push(bid)
     .write();
 
-  clients.forEach(c => c.emit('notification', JSON.stringify(Object.assign(bid, { type: 'placeBid' }))));
+  clients.forEach(c => c.emit('notification', JSON.stringify({ data: bid, type: 'placeBid' })));
   res.end('ok');
 });
 

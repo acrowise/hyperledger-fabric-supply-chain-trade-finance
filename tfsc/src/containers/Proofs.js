@@ -11,6 +11,8 @@ import { TABLE_MAP, STATUSES } from '../constants';
 
 import { filterData } from '../helper/utils';
 
+import notifications from '../helper/notification';
+
 const Proofs = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
@@ -18,23 +20,10 @@ const Proofs = ({
   const [data, loading, setData] = useFetch('listProofs');
 
   const [selectedProof, setSelectedProof] = useState({});
-  const onNotification = (message) => {
-    const notification = JSON.parse(message);
 
-    if (notification.type === 'proofGenerated') {
-      const newState = data.result.concat(notification.data);
-      setData({ result: newState });
-    }
-
-    if (notification.type === 'validateProof') {
-      const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
-      newState[itemToUpdateIndex] = notification.data;
-      setData({ result: newState });
-    }
-  };
-
-  useSocket('notification', onNotification);
+  useSocket('notification', (message) => {
+    setData(notifications(data.result, message, 'proofs'));
+  });
 
   let filteredData = data.result;
 

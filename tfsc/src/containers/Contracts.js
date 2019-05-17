@@ -11,6 +11,7 @@ import Table from '../components/Table/Table';
 import Icon from '../components/Icon/Icon';
 
 import { filterData } from '../helper/utils';
+import notifications from '../helper/notification';
 
 import { TABLE_MAP, STATUSES } from '../constants';
 
@@ -23,22 +24,9 @@ const Contracts = ({
     item: {}
   });
 
-  const onMessage = (message) => {
-    const notification = JSON.parse(message);
-    if (notification.type === 'contractCreated') {
-      const newState = data.result.concat(notification);
-      setData({ result: newState });
-    }
-
-    if (notification.type === 'shipmentRequested' || notification.type === 'contractCompleted') {
-      const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.contract.key.id);
-      newState[itemToUpdateIndex] = notification.contract;
-      setData({ result: newState });
-    }
-  };
-
-  useSocket('notification', onMessage);
+  useSocket('notification', (message) => {
+    setData(notifications(data.result, message, 'contracts'));
+  });
 
   let filteredData = data.result;
 

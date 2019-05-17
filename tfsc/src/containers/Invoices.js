@@ -9,6 +9,7 @@ import BidForm from './Forms/Bid';
 import { post } from '../helper/api';
 import { STATUSES, TABLE_MAP } from '../constants';
 import { filterData } from '../helper/utils';
+import notifications from '../helper/notification';
 
 import Table from '../components/Table/Table';
 
@@ -28,22 +29,9 @@ const Invoices = ({
   const [, placeForTradeInvoice] = post('placeInvoice')();
   const [, removeInvoice] = post('removeInvoice')();
 
-  const onMessage = (message) => {
-    const notification = JSON.parse(message);
-
-    if (
-      notification.type === 'acceptInvoice'
-      || notification.type === 'placeInvoice'
-      || notification.type === 'invoiceRemoved'
-    ) {
-      const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
-      newState[itemToUpdateIndex].value.state = notification.data.value.state;
-      setData({ result: newState });
-    }
-  };
-
-  useSocket('notification', onMessage);
+  useSocket('notification', (message) => {
+    setData(notifications(data.result, message, 'invoices'));
+  });
 
   let filteredData = data.result;
 
@@ -67,10 +55,7 @@ const Invoices = ({
     <>Loading...</>
   ) : (
     <>
-      <BidForm
-        dialog={bidDialog}
-        setDialog={setBidDialog}
-      />
+      <BidForm dialog={bidDialog} setDialog={setBidDialog} />
       <Table
         fields={TABLE_MAP.INVOICES}
         data={filteredData}

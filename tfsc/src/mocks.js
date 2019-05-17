@@ -1,5 +1,5 @@
 export const notifications = {
-  place: 'orders',
+  placeOrder: 'orders',
   acceptOrder: 'orders',
   cancelOrder: 'orders',
   updateOrder: 'orders',
@@ -8,11 +8,13 @@ export const notifications = {
   validateProof: 'proofs',
   proofGenerated: 'proofs',
   contractCreated: 'contracts',
+  contractUpdated: 'contracts',
   placeInvoice: 'invoices',
   acceptInvoice: 'invoices',
   placeBid: 'bids',
   acceptBid: 'bids',
   editBid: 'bids',
+  cabcelBid: 'bids',
   documentUploaded: 'shipments',
   invoiceRegistered: 'invoices',
   reportGenerated: 'reports',
@@ -21,7 +23,7 @@ export const notifications = {
 };
 
 export const title = {
-  place: 'Order Created',
+  placeOrder: 'Order Created',
   acceptOrder: 'Order Accepted',
   cancelOrder: 'Order Cancelled',
   updateOrder: 'Order Updated',
@@ -41,5 +43,6 @@ export const title = {
   placeInvoice: 'Invoice Signed',
   reportGenerated: 'Report Created',
   invoiceRemoved: 'Invoice Removed',
-  contractCompleted: 'Contract Completed'
+  contractCompleted: 'Contract Completed',
+  contractUpdated: 'Contract Updated'
 };

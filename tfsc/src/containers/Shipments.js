@@ -12,6 +12,8 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
+import notifications from '../helper/notification';
+
 const Shipments = ({
   role,
   filter,
@@ -26,14 +28,14 @@ const Shipments = ({
   const [shipment, showShipmentDetail] = useState(content);
   const [shipments, loading, setData] = useFetch('shipments');
 
+  useSocket('notification', (message) => {
+    setData(notifications(shipments.result, message, 'shipments'));
+  });
+
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'shipmentConfirmed' || notification.type === 'shipmentDelivered') {
-      const newState = shipments.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
-      newState[itemToUpdateIndex] = notification.data;
-      setData({ result: newState });
       if (
         shipment
         && shipment.state !== shipments.result.find(i => i.key.id === shipment.id).state
@@ -59,19 +61,6 @@ const Shipments = ({
           state: STATUSES.SHIPMENT[notification.shipment.value.state]
         })
       );
-    }
-
-    if (notification.type === 'shipmentRequested') {
-      const newState = shipments.result.concat(notification.data);
-      setData({ result: newState });
-    }
-
-    if (notification.type === 'documentUploaded') {
-      const newState = shipments.result.concat([]);
-      const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentId);
-      itemToUpdate.value.documents.push(notification.data);
-      itemToUpdate.value.events.push(notification.event);
-      setData({ result: newState });
     }
   };
 

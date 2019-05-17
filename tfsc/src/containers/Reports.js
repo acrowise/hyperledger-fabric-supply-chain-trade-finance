@@ -10,6 +10,8 @@ import VerifyProof from './Forms/VerifyProof';
 
 import { filterData } from '../helper/utils';
 
+import notifications from '../helper/notification';
+
 const Reports = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
@@ -17,22 +19,9 @@ const Reports = ({
   const [data, loading, setData] = useFetch('listReports');
   const [selectedProof, setSelectedProof] = useState({});
 
-  const onMessage = (message) => {
-    const notification = JSON.parse(message);
-
-    if (notification.type === 'reportGenerated') {
-      setData({ result: data.result.concat(notification.data) });
-    }
-
-    if (notification.type === 'reportValidated') {
-      const newState = data.result.concat([]);
-      const itemToUpdateIndex = newState.findIndex(i => i.orderId === notification.orderId);
-      newState[itemToUpdateIndex] = notification;
-      setData({ result: newState });
-    }
-  };
-
-  useSocket('notification', onMessage);
+  useSocket('notification', (message) => {
+    setData(notifications(data.result, message, 'reports'));
+  });
 
   let filteredData = data.result;
 

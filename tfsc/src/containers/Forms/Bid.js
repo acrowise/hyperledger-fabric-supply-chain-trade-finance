@@ -29,7 +29,7 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
   }, [dialog.state]);
 
   const errors = {
-    rate: formState.rate <= 0
+    rate: formState.rate <= 0 || formState.rate >= 100
   };
 
   const shouldShowError = (field) => {
