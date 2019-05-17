@@ -13,7 +13,7 @@ export const filterData = ({
 
   if (filterOptions) {
     Object.keys(filterOptions).forEach((opt) => {
-      if (opt === 'dueDate' || opt === 'paymentDate' || opt === 'totalDue') {
+      if (opt === 'dueDate' || opt === 'paymentDate' || opt === 'totalDue' || opt === 'rate') {
         if (filterOptions[opt].from) {
           data = data.filter(i => i[opt] >= filterOptions[opt].from);
         }
@@ -22,6 +22,13 @@ export const filterData = ({
         }
         return;
       }
+      if (opt === 'shipmentId') {
+        if (filterOptions[opt]) {
+          data = data.filter(i => i[opt].toLowerCase().includes(filterOptions[opt]));
+          return;
+        }
+      }
+
       if (filterOptions[opt]) {
         data = data.filter(i => i[opt] === filterOptions[opt]);
       }

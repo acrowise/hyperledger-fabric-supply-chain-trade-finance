@@ -11,7 +11,6 @@ const Filter = ({
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
   const [filterOptions, setFilterOptions] = useState({});
-
   const [dataForFilter, setDataForFilter] = useState([]);
 
   const data = {};

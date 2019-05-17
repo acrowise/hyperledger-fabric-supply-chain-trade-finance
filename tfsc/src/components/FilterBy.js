@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { Icon, InputGroup } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
 
+import { cropId } from '../helper/utils';
+
 import { TABLE_MAP } from '../constants';
 
 const TITLES = Object.assign(
@@ -24,7 +26,8 @@ const getFilterType = (type) => {
       'consigneeName',
       'debtor',
       'beneficiary',
-      'owner'
+      'owner',
+      'shipmentId'
     ],
     range: ['totalDue', 'rate']
   };
@@ -71,12 +74,12 @@ const FilterBy = ({ type, data, setFilter }) => {
               <div
                 onClick={() => {
                   setFilter(item);
-                  setSelected(item);
+                  setSelected(type === 'shipmentId' ? cropId(item) : item);
                 }}
                 key={i}
                 style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
               >
-                <p>{item}</p>
+                <p>{type === 'shipmentId' ? cropId(item) : item}</p>
               </div>
             ))
           ) : (
