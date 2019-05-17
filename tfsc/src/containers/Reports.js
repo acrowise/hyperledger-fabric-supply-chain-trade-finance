@@ -38,9 +38,11 @@ const Reports = ({
 
   // FIXME:
   if (!loading && filteredData && filteredData.length > 0) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
+    filteredData = filteredData
+      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }))
+      .filter(i => i.factor.toLowerCase() === role);
 
-    if (dataForFilter.length === 0) {
+    if (dataForFilter.length === 0 && filteredData.length !== 0) {
       setDataForFilter(filteredData);
     }
 
@@ -71,9 +73,8 @@ const Reports = ({
             <div>
               <Button
                 onClick={() => {
-                  return;
-                  setSelectedProof(item);
-                  setVpDialogOpenState(true);
+                  // setSelectedProof(item);
+                  // setVpDialogOpenState(true);
                 }}
                 style={{ marginRight: '5px' }}
                 intent="primary"

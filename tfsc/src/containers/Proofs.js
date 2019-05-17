@@ -39,9 +39,11 @@ const Proofs = ({
   let filteredData = data.result;
 
   if (!loading && filteredData && filteredData.length > 0) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }));
+    filteredData = filteredData
+      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }))
+      .filter(i => i.agency.id === role);
 
-    if (dataForFilter.length === 0) {
+    if (dataForFilter.length === 0 && filteredData.length !== 0) {
       setDataForFilter(filteredData);
     }
 

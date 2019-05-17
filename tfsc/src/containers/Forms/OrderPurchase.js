@@ -199,7 +199,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                         formState.paymentDate.getTime(), // TODO: PaymentDate
                         'a' // TODO: buyer Id
                       ],
-                      id: orderState.id
+                      id: formState.id
                     });
                     dispatch({ type: 'reset', payload: initialState });
                   } else {
