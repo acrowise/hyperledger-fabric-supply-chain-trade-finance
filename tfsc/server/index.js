@@ -50,25 +50,25 @@ const router = express.Router();
 
 const requestToRestApi = (req, res, next) => {
 
-  let method = req.originalUrl;
-  if (method === '/listOrders') {
-    console.log(`Matched!`);
-    let ch = 'common';
-    let cc = 'supply-chain-chaincode';
-    let url = `http://localhost:3000/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
-    const options = {
-      method: req.method,
-      uri: url,
-      json: true,
-    };
-    request(options)
-        .then( (response) => {
-          console.log(response);
-        })
-        .catch( (err) => {
-          console.log(`Error: ${err}`);
-        });
-  }
+  // let method = req.originalUrl;
+  // if (method === '/listOrders') {
+  //   console.log(`Matched!`);
+  //   let ch = 'common';
+  //   let cc = 'supply-chain-chaincode';
+  //   let url = `http://localhost:3000/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
+  //   const options = {
+  //     method: req.method,
+  //     uri: url,
+  //     json: true,
+  //   };
+  //   request(options)
+  //       .then( (response) => {
+  //         console.log(response);
+  //       })
+  //       .catch( (err) => {
+  //         console.log(`Error: ${err}`);
+  //       });
+  // }
   next();
 };
 
