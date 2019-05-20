@@ -205,6 +205,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	event := Event{}
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = order.Key.ID
+	event.Value.Other = order.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -310,6 +311,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	event := Event{}
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
+	event.Value.Other = orderToUpdate.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -406,6 +408,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	event := Event{}
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
+	event.Value.Other = orderToUpdate.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -562,6 +565,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	event := Event{}
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
+	event.Value.Other = orderToUpdate.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -670,6 +674,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
+	event.Value.Other = shipment.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -802,6 +807,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	event := Event{}
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
+	event.Value.Other = shipment.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -934,6 +940,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	event := Event{}
 	event.Value.EntityType = documentIndex
 	event.Value.EntityID = document.Key.ID
+	event.Value.Other = document.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -1086,6 +1093,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	event := Event{}
 	event.Value.EntityType = proofIndex
 	event.Value.EntityID = proof.Key.ID
+	event.Value.Other = proof.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -1161,6 +1169,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	event := Event{}
 	event.Value.EntityType = proofIndex
 	event.Value.EntityID = proof.Key.ID
+	event.Value.Other = proof.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -1237,6 +1246,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 	event := Event{}
 	event.Value.EntityType = agencyReportIndex
 	event.Value.EntityID = agencyReport.Key.ID
+	event.Value.Other = agencyReport.Value
 	err = event.emitState(stub)
 	if err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())

@@ -22,10 +22,11 @@ type EventKey struct {
 }
 
 type EventValue struct {
-	Timestamp  int64  `json:"timestamp"`
-	Creator    string `json:"creator"`
-	EntityType string `json:"entityType"`
-	EntityID   string `json:"entityID"`
+	Timestamp  int64       `json:"timestamp"`
+	Creator    string      `json:"creator"`
+	EntityType string      `json:"entityType"`
+	EntityID   string      `json:"entityID"`
+	Other      interface{} `json:"other"`
 }
 
 type Event struct {
