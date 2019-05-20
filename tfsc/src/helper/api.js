@@ -2,11 +2,11 @@ import { useAsyncEndpoint } from './hooks';
 
 const newApi = process.env.api;
 
+console.log('process.env.api', process.env.api);
+
 // eslint-disable-next-line import/prefer-default-export
 export const post = method => () => useAsyncEndpoint(data => ({
-  url: newApi
-    ? '/api/channels/common/chaincodes/supply-chain-chaincode'
-    : `/${method}`,
+  url: newApi ? '/api/channels/common/chaincodes/supply-chain-chaincode' : `/${method}`,
   method: 'POST',
   data
 }));

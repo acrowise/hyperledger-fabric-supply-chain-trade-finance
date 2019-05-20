@@ -23,6 +23,9 @@ const TimelineItem = ({
 const TimelineDetails = ({ event }) => <Table fields={TABLE_MAP.SHIPMENT_DETAIL} data={[event]} />;
 
 const Timeline = ({ shipment, events }) => {
+  if (!events || events.length === 0) {
+    return <></>;
+  }
   const [selectedId, setSelected] = useState(events[0].id);
 
   const isDelivered = events.find(i => i.action === 'Shipment Delivered');
@@ -33,7 +36,7 @@ const Timeline = ({ shipment, events }) => {
         <div className="timeline-start">
           <div className="timeline-start-text">{format(shipment.timestamp, 'DD MMM YYYY')}</div>
           <div className="timeline-item-bottom-text">
-            <div>{shipment.shipmentFrom}</div>
+            <div>{shipment.shipFrom}</div>
           </div>
         </div>
         <div style={isDelivered ? { backgroundColor: '#69D7BC' } : {}} className="timeline-finish">
@@ -41,7 +44,7 @@ const Timeline = ({ shipment, events }) => {
             {isDelivered ? format(isDelivered.date, 'DD MMM YYYY') : ''}
           </div>
           <div className="timeline-item-bottom-text">
-            <div>{shipment.shipmentTo}</div>
+            <div>{shipment.shipTo}</div>
           </div>
         </div>
 

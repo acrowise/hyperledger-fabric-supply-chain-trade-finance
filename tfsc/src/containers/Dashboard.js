@@ -86,7 +86,7 @@ const tabs = role => [
     actors: ['buyer', 'supplier', 'transporter'],
     panel: (
       <Filter
-        filterBy={['shipmentFrom', 'shipmentTo', 'transport']}
+        filterBy={['shipFrom', 'shipTo', 'transport']}
         statuses={['Requested', 'Confirmed', 'Delivered']}
       >
         <Shipments role={role} />

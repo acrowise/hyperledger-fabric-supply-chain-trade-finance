@@ -26,7 +26,7 @@ const Shipments = ({
 }) => {
   // const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
-  const [shipments, loading, setData] = useFetch('shipments');
+  const [shipments, loading, setData] = useFetch('listShipments');
 
   useSocket('notification', (message) => {
     setData(notifications(shipments.result, message, 'shipments'));
