@@ -84,26 +84,30 @@ const router = express.Router();
 
 const requestToRestApi = (req, res, next) => {
 
-  // let method = req.originalUrl;
-  // if (method === '/listOrders') {
-  //   console.log(`Matched!`);
-  //   let ch = 'common';
-  //   let cc = 'supply-chain-chaincode';
-  //   let url = `http://localhost:3000/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
-  //   const options = {
-  //     method: req.method,
-  //     uri: url,
-  //     json: true,
-  //   };
-  //   request(options)
-  //       .then( (response) => {
-  //         console.log(response);
-  //       })
-  //       .catch( (err) => {
-  //         console.log(`Error: ${err}`);
-  //       });
-  // }
-  next();
+    let method = req.originalUrl;
+    if (method === '/listOrders') {
+        console.log(`Matched!`);
+        let ch = 'common';
+        let cc = 'supply-chain-chaincode';
+        let url = `http://${req.host}:${PORT}/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
+        let myJSONObject = {};
+        const options = {
+            method: req.method,
+            url: url,
+            json: true,
+            body: myJSONObject
+        };
+        request(options,
+            (error, response, body) => {
+                if (error) {
+                    console.log(error);
+                    return;
+                }
+                console.log(JSON.stringify(options));
+            }
+        );
+    }
+    next();
 };
 
 router.all('*', requestToRestApi);
@@ -115,15 +119,6 @@ router.use((_, __, next) => {
     next();
   }, 650);
 });
-
-// router.use(
-//   '/api',
-//   proxy({
-//     target: `http://0.0.0.0:${API_PORT}`,
-//     changeOrigin: true,
-//     logLevel: 'debug'
-//   })
-// );
 
 router.use(bodyParser.json());
 
