@@ -2,10 +2,13 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+// const proxy = require('http-proxy-middleware');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 const mime = require('mime-types');
 const path = require('path');
+const WebSocket = require('ws');
+const axios = require('axios');
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -16,6 +19,37 @@ const db = low(adapter);
 const upload = multer();
 
 const PORT = process.env.PORT || 3000;
+
+const API_PORT = process.env.API_PORT || 3001;
+
+const ws = new WebSocket(`ws://localhost:${API_PORT}/api/notifications`);
+
+ws.on('open', () => {
+  ws.send(
+    JSON.stringify({
+      event: 'cc_event',
+      channel: 'common',
+      chaincode: 'supply-chain-chaincode'
+    })
+  );
+});
+
+ws.on('error', (e) => {
+  console.error(e);
+});
+
+ws.on('message', async (message) => {
+  const event = JSON.parse(message);
+  if (event && event.payload) {
+    const eventId = event.payload.EventName.split('.')[3];
+
+    const res = await axios.get(
+      `http://localhost:${API_PORT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
+    );
+
+    console.log(res.data);
+  }
+});
 
 const documents = [
   'Bill of Lading',
@@ -54,6 +88,15 @@ router.use((_, __, next) => {
   }, 650);
 });
 
+// router.use(
+//   '/api',
+//   proxy({
+//     target: `http://0.0.0.0:${API_PORT}`,
+//     changeOrigin: true,
+//     logLevel: 'debug'
+//   })
+// );
+
 router.use(bodyParser.json());
 
 router.get('/document', (req, res) => {
@@ -82,7 +125,7 @@ router.get('/listProofs', (req, res) => {
   });
 });
 
-router.get('/shipments', (_, res) => {
+router.get('/listShipments', (_, res) => {
   res.json({ result: db.get('shipments').value() });
 });
 
@@ -250,8 +293,8 @@ router.post('/requestShipment', (req, res) => {
     value: {
       state: 1,
       contractId: req.body.args[1],
-      shipmentFrom: req.body.args[2],
-      shipmentTo: req.body.args[3],
+      shipFrom: req.body.args[2],
+      shipTo: req.body.args[3],
       transport: req.body.args[4],
       description: req.body.args[5],
       timestamp: new Date().getTime(),
