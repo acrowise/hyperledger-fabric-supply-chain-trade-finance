@@ -45,6 +45,7 @@ type ContractKey struct {
 }
 
 type ContractValue struct {
+	ProductName   string  `json:"productName"`
 	ConsignorName string  `json:"consignorName"`
 	ConsigneeName string  `json:"consigneeName"`
 	TotalDue      float32 `json:"totalDue"`

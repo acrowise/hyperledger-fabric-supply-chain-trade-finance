@@ -48,6 +48,7 @@ type OrderValue struct {
 	ProductName string  `json:"productName"`
 	Quantity    int     `json:"quantity"`
 	Price       float32 `json:"price"`
+	Amount      float64 `json:"amount"`
 	Destination string  `json:"destination"`
 	DueDate     int64   `json:"dueDate"`
 	PaymentDate int64   `json:"paymentDate"`
@@ -117,6 +118,9 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 		return errors.New("paymentDate must be larger than zero")
 	}
 	entity.Value.PaymentDate = int64(paymentDate)
+
+	//setting amount
+	entity.Value.Amount = price * float64(quantity)
 
 	return nil
 }
