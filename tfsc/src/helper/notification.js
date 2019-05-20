@@ -5,8 +5,8 @@ const notifications = (state = [], message, tab) => {
 
   if (types[notification.type] === tab) {
     switch (notification.type) {
+      // case 'contractCreated':
       case 'placeOrder':
-      case 'contractCreated':
       case 'placeBid':
       case 'proofGenerated':
       case 'reportGenerated':
@@ -16,7 +16,7 @@ const notifications = (state = [], message, tab) => {
       case 'acceptOrder':
       case 'cancelOrder':
       case 'updateOrder':
-      case 'acceptBid':
+      // case 'acceptBid':
       case 'cancelBid':
       case 'editBid':
       case 'acceptInvoice':
@@ -43,10 +43,21 @@ const notifications = (state = [], message, tab) => {
       case 'documentUploaded': {
         const newState = state.concat([]);
         const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentId);
-        console.log('notification', notification);
-        console.log('itemToUpdate', itemToUpdate);
         itemToUpdate.value.documents.push(notification.data);
         itemToUpdate.value.events.push(notification.event);
+        return { result: newState };
+      }
+      case 'acceptBid': {
+        const newState = state.concat([]);
+        newState.forEach((i) => {
+          if (i.key.id !== notification.data.key.id) {
+            if (i.value.invoiceID === notification.data.value.invoiceID) {
+              i.value.state = 3;
+            }
+          } else {
+            i.value.state = notification.data.value.state;
+          }
+        });
         return { result: newState };
       }
       default:

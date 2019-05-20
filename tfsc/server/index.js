@@ -6,6 +6,7 @@ const multer = require('multer');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 const mime = require('mime-types');
+const path = require('path');
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -17,8 +18,6 @@ const upload = multer();
 
 const PORT = process.env.PORT || 3000;
 // const API_PORT = process.env.API_PORT || 4002;
-
-const path = require('path');
 
 const documents = [
   'Bill of Lading',
@@ -570,12 +569,13 @@ router.post('/acceptBid', (req, res) => {
       .get('bids')
       .value()
       .filter(i => i.value.invoiceID === bid.value.invoiceID && i.value.state === 1);
-    bidsToCancel.forEach((i) => {
-      i.value.state = 3;
-      setTimeout(() => {
-        clients.forEach(c => c.emit('notification', JSON.stringify({ data: i, type: 'cancelBid' })));
-      }, 450);
-    });
+
+    setTimeout(() => {
+      bidsToCancel.forEach((i) => {
+        i.value.state = 3;
+        // clients.forEach(c => c.emit('notification', JSON.stringify({ data: i, type: 'cancelBid' })));
+      });
+    }, 500);
   } catch (e) {}
 
   db.set('bids', bids).write();
@@ -594,7 +594,18 @@ router.post('/acceptInvoice', (req, res) => {
   res.end('ok');
 });
 
-app.use(express.static('./dist/client'));
+app.use(express.static(path.join(__dirname, '../dist/client')));
+
+const html = require('./html');
+
+const renderer = async (req, res) => {
+  const data = { role: process.env.ROLE };
+
+  return res.send(html(data));
+};
+
+router.use('*', renderer);
+
 app.use(router);
 
 const server = app.listen(PORT, () => {

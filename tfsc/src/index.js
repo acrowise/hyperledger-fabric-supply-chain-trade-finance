@@ -6,8 +6,9 @@ import App from './App';
 import Dashboard from './containers/Dashboard';
 import { AuthProvider } from './context/auth';
 
-console.log('process.env.ROLE', process.env.ROLE);
-console.log('process.env.PORT', process.env.PORT);
+import '../favicon.ico';
+
+console.log('window.__STATE__', window.__STATE__);
 
 const routing = (
   <Router>
