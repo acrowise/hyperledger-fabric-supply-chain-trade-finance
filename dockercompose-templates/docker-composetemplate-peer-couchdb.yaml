@@ -154,3 +154,6 @@ services:
     image: tsupply-app:latest
     environment:
       PORT: 3000
+    volumes:
+      - ../tfsc/server:/src/server
+      - ../tfsc/src:/src/src

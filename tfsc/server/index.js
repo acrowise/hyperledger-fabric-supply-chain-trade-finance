@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-// const proxy = require('http-proxy-middleware');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 const mime = require('mime-types');
@@ -17,7 +16,6 @@ const db = low(adapter);
 const upload = multer();
 
 const PORT = process.env.PORT || 3000;
-// const API_PORT = process.env.API_PORT || 4002;
 
 const documents = [
   'Bill of Lading',
@@ -55,15 +53,6 @@ router.use((_, __, next) => {
     next();
   }, 650);
 });
-
-// router.use(
-//   '/api',
-//   proxy({
-//     target: `http://0.0.0.0:${API_PORT}`,
-//     changeOrigin: true,
-//     logLevel: 'debug'
-//   })
-// );
 
 router.use(bodyParser.json());
 

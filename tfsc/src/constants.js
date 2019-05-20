@@ -249,3 +249,126 @@ export const TABLE_MAP = {
     user: 'User'
   }
 };
+
+export const METHODS_MAP = [
+    {
+        apiMethodName: 'placeOrder',
+        ccMethodName: 'placeOrder',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'editOrder',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'cancelOrder',
+        ccMethodName: 'cancelOrder',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'acceptOrder',
+        ccMethodName: 'acceptOrder',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'requestShipment',
+        ccMethodName: 'requestShipment',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'confirmShipment',
+        ccMethodName: 'confirmShipment',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'uploadDocuments',
+        ccMethodName: 'uploadDocument',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'generateProof',
+        ccMethodName: 'generateProof',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'validateProof',
+        ccMethodName: 'verifyProof',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'submitReport',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'acceptInvoice',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'rejectInvoice',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'listOrders',
+        ccMethodName: 'listOrders',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'listContracts',
+        ccMethodName: 'listContracts',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'listProofs',
+        ccMethodName: 'listProofs',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'listReports',
+        ccMethodName: 'listReports',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'shipments',
+        ccMethodName: 'listShipments',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: 'document',
+        ccMethodName: 'getDocument',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'getEventPayload',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+    {
+        apiMethodName: '',
+        ccMethodName: 'getByQuery',
+        chaincodeName: 'supply-chain-chaincode',
+        channel: 'common',
+    },
+];
