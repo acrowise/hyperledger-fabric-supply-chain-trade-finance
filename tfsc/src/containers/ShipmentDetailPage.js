@@ -30,8 +30,8 @@ const ShipmentDetailPage = (props) => {
   const shipment = {
     id: props.id,
     contractId: props.contractId,
-    shipmentFrom: props.shipmentFrom,
-    shipmentTo: props.shipmentTo,
+    shipFrom: props.shipFrom,
+    shipTo: props.shipTo,
     transport: props.transport,
     description: props.description,
     state: props.state,
@@ -117,8 +117,8 @@ const ShipmentDetailPage = (props) => {
               </thead>
               <tbody>
                 <tr>
-                  <td>{shipment.shipmentFrom}</td>
-                  <td>{shipment.shipmentTo}</td>
+                  <td>{shipment.shipFrom}</td>
+                  <td>{shipment.shipTo}</td>
                   <td>{format(shipment.dueDate, 'DD MMM YYYY')}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
@@ -206,7 +206,7 @@ const ShipmentDetailPage = (props) => {
             </Button>
           )}
 
-          {proofs.result && proofs.result.length > 0 && (
+          {proofs && proofs.result && proofs.result.length > 0 && (
             <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs.result} />}</div>
           )}
 

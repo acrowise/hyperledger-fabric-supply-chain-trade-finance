@@ -195,10 +195,11 @@ const OrderForm = ({ dialog, setDialog }) => {
                         formState.quantity,
                         formState.price,
                         formState.destination,
-                        formState.dueDate.getTime(),
-                        formState.paymentDate.getTime(), // TODO: PaymentDate
-                        'a' // TODO: buyer Id
+                        formState.dueDate.getTime().toString(),
+                        formState.paymentDate.getTime().toString(),
+                        'a' // FIXME: buyer Id
                       ],
+                      peers: 'a/peer0', // FIXME:
                       id: formState.id
                     });
                     dispatch({ type: 'reset', payload: initialState });

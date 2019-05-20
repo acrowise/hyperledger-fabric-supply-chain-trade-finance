@@ -25,9 +25,10 @@ export const actors = [
 
 export const STATUSES = {
   ORDER: {
-    0: 'New',
-    1: 'Accepted',
-    2: 'Cancelled'
+    0: 'Unknown',
+    1: 'New',
+    2: 'Accepted',
+    3: 'Cancelled'
   },
   CONTRACT: {
     0: 'Unknown',
@@ -102,13 +103,13 @@ export const INPUTS = {
       label: 'Ship From',
       placeholder: 'Ship From',
       type: 'text',
-      field: 'shipmentFrom'
+      field: 'shipFrom'
     },
     {
       label: 'Ship To',
       placeholder: 'Ship To',
       type: 'text',
-      field: 'shipmentTo'
+      field: 'shipTo'
     },
     {
       label: 'Transport',
@@ -180,8 +181,8 @@ export const TABLE_MAP = {
   SHIPMENTS: {
     id: 'Shipment Id',
     contractId: 'Contract ID',
-    shipmentFrom: 'From',
-    shipmentTo: 'To',
+    shipFrom: 'From',
+    shipTo: 'To',
     transport: 'Transport',
     state: 'Status'
   },

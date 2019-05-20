@@ -25,7 +25,9 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
     }
   };
 
-  shipment.documents.forEach(doc => (initialState[doc.type] = false));
+  if (shipment.documents) {
+    shipment.documents.forEach(doc => (initialState[doc.type] = false));
+  }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [, generateProof] = post('generateProof')();
@@ -67,18 +69,13 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
             }}
           >
             <div className="row">
-              <div className="col-8">
+              <div className="col-6">
                 <div className="row">
-                  {INPUTS.GENERATE_PROOF.concat(
-                    shipment.documents.map(doc => ({
-                      label: doc.type,
-                      field: doc.type
-                    }))
-                  ).map(({ label, field }) => (
+                  {INPUTS.GENERATE_PROOF.map(({ label, field }, i) => (
                     <Checkbox
                       key={label}
                       label={label}
-                      className="col-6"
+                      className={'col-6'}
                       value={formState[field]}
                       onChange={() => dispatch({
                         type: 'change',
@@ -90,6 +87,27 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                       }
                     />
                   ))}
+                </div>
+              </div>
+              <div className="col-6" style={{ flex: 1, padding: 0 }}>
+                <div>
+                  {shipment.documents
+                    && shipment.documents.map(doc => (
+                      <Checkbox
+                        key={doc.type}
+                        label={doc.type}
+                        className="col-4 margin-right-auto"
+                        value={formState[doc.field]}
+                        onChange={() => dispatch({
+                          type: 'change',
+                          payload: {
+                            field: doc.type,
+                            value: !formState[doc.type]
+                          }
+                        })
+                        }
+                      />
+                    ))}
                 </div>
               </div>
               <div className="col-4">

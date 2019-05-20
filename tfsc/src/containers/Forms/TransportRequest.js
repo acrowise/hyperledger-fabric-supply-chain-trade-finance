@@ -16,13 +16,13 @@ import { formReducer } from '../../reducers';
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 const initialState = {
-  shipmentFrom: '',
-  shipmentTo: '',
+  shipFrom: '',
+  shipTo: '',
   transport: '',
   description: '',
   touched: {
-    shipmentFrom: false,
-    shipmentTo: false,
+    shipFrom: false,
+    shipmTo: false,
     transport: false
   }
 };
@@ -35,8 +35,8 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [fileRequired, setFileRequired] = useState(false);
 
   const errors = {
-    shipmentFrom: formState.shipmentFrom.length === 0,
-    shipmentTo: formState.shipmentTo.length === 0,
+    shipFrom: formState.shipFrom.length === 0,
+    shipTo: formState.shipTo.length === 0,
     transport: formState.transport.length === 0,
     description: formState.description.length === 0
   };
@@ -168,8 +168,8 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         args: [
                           '0',
                           dialogIsOpen.item.id,
-                          formState.shipmentFrom,
-                          formState.shipmentTo,
+                          formState.shipFrom,
+                          formState.shipTo,
                           formState.transport,
                           formState.description
                         ]

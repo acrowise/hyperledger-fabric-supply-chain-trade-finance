@@ -10,7 +10,7 @@ export const useFetch = (method) => {
 
   function fetchUrl() {
     const url = newApi
-      ? `/api/channels/common/chaincodes/trade-finance-chaincode?fcn=${method}`
+      ? `/api/channels/common/chaincodes/supply-chain-chaincode?fcn=${method}`
       : `/${method}`;
     fetch(url).then((res) => {
       res.json().then((d) => {

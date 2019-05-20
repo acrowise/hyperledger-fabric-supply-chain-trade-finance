@@ -20,8 +20,8 @@ const getFilterType = (type) => {
     select: [
       'destination',
       'transport',
-      'shipmentFrom',
-      'shipmentTo',
+      'shipFrom',
+      'shipTo',
       'consignorName',
       'consigneeName',
       'debtor',

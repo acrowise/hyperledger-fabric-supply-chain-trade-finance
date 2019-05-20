@@ -29,8 +29,8 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
   const fields = {
     id: 'Shipment ID',
     contractId: 'Contract ID',
-    shipmentFrom: 'From',
-    shipmentTo: 'To',
+    shipFrom: 'From',
+    shipTo: 'To',
     transport: 'Transport'
   };
 
@@ -102,7 +102,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     } else {
                       confirmShipment({
                         fcn: 'confirmShipment',
-                        args: [shipment.id]
+                        args: [shipment.id, '0', '0', '0', '0', '0']
                       });
                       setFileRequired(false);
                       setTimeout(() => {
