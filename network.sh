@@ -364,6 +364,7 @@ function generatePeerArtifacts() {
           -e "s/PEER1_EVENT_PORT/$peer1_event_port/g" \
           -e "s/COUCHDB_PORT/$couchdb_port/g" \
           -e "s/IPFS_API/$ipfs_api/g" \
+          -e "s/ROLE_APP/$orgu/g" \
           ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
     else
       sed -e "s/PEER_EXTRA_HOSTS/$peer_extra_hosts/g" \

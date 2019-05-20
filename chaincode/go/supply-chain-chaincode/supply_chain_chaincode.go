@@ -503,6 +503,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//setting contract fields
+	contract.Value.ProductName = orderToUpdate.Value.ProductName
 	contract.Value.ConsignorName = creator
 	contract.Value.ConsigneeName = orderToUpdate.Value.BuyerID
 	contract.Value.TotalDue = orderToUpdate.Value.Price
@@ -687,7 +688,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 
 	//checking role
 	allowedUnits := map[string]bool{
-		Buyer: true,
+		TransportAgency: true,
 	}
 
 	orgUnit, err := GetCreatorOrganizationalUnit(stub)
@@ -1427,7 +1428,10 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 	Notifier(stub, NoticeRuningType)
 
 	allowedUnits := map[string]bool{
-		Auditor: true,
+		Auditor:         true,
+		Buyer:           true,
+		Supplier:        true,
+		TransportAgency: true,
 	}
 
 	orgUnit, err := GetCreatorOrganizationalUnit(stub)

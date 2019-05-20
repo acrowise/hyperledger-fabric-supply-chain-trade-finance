@@ -154,6 +154,8 @@ services:
     image: tsupply-app:latest
     environment:
       PORT: 3000
+      IPFS_PORT: IPFS_API
+      ROLE: ROLE_APP
     volumes:
       - ../tfsc/server:/src/server
       - ../tfsc/src:/src/src

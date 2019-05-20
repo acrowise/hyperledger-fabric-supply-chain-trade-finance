@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
+	"strconv"
 )
 
 const (
@@ -47,14 +48,15 @@ type ShipmentKey struct {
 }
 
 type ShipmentValue struct {
-	ContractID  string   `json:"contractID"`
-	ShipFrom    string   `json:"shipFrom"`
-	ShipTo      string   `json:"shipTo"`
-	Transport   string   `json:"transport"`
-	Description string   `json:"description"`
-	State       int      `json:"state"`
-	Documents   []string `json:"documents"`
-	Timestamp   int64    `json:"timestamp"`
+	ContractID   string   `json:"contractID"`
+	ShipFrom     string   `json:"shipFrom"`
+	ShipTo       string   `json:"shipTo"`
+	Transport    string   `json:"transport"`
+	Description  string   `json:"description"`
+	State        int      `json:"state"`
+	Documents    []string `json:"documents"`
+	Timestamp    int64    `json:"timestamp"`
+	DeliveryDate int64    `json:"deliveryDate"`
 }
 
 type Shipment struct {
@@ -67,8 +69,8 @@ func CreateShipment() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description
+//0		1			2			3		4			5			6
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description	DeliveryDate
 func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < shipmentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", shipmentBasicArgumentsNumber))
@@ -111,6 +113,17 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 	entity.Value.Transport = transport
+
+	//checking deliveryDate
+	deliveryDate, err := strconv.ParseInt(args[6], 10, 64)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to parse the deliveryDate: %s", err.Error()))
+	}
+
+	if deliveryDate < 0 {
+		return errors.New("deliveryDate must be larger than zero")
+	}
+	entity.Value.DeliveryDate = int64(deliveryDate)
 
 	return nil
 }
