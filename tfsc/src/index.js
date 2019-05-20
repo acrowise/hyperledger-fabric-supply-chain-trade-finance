@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from 'react-dom';
-import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
+import {
+  Route, BrowserRouter as Router, Switch, Redirect
+} from 'react-router-dom';
 import { ClientSocket } from 'use-socketio';
 import App from './App';
 import Dashboard from './containers/Dashboard';
@@ -15,8 +17,9 @@ const routing = (
     <AuthProvider>
       <ClientSocket url={`${window.location.origin}`}>
         <Switch>
-          <Route exact path="/" component={App} />
+          <Route exact path="/login" component={App} />
           <Route path="/dashboard" component={Dashboard} />
+          <Redirect from="/" to="login" />
         </Switch>
       </ClientSocket>
     </AuthProvider>
