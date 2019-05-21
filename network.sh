@@ -495,7 +495,7 @@ function installPackage() {
     org=$1
     pkg=$2
 
-    if [ ! -d "/opt/gopath/src/$pkg" ]; then
+    if [ ! -d "./chaincode/go/$pkg" ]; then
         f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
         info "installing package $pkg to peers of $org using $f"
         echo "Getting package $pkg for org $org"
