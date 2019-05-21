@@ -33,9 +33,8 @@ const db = low(adapter);
 
 const upload = multer();
 
-const PORT = services[process.env.ROLE].port; // process.env.PORT || 3000;
-
-const API_PORT = services[process.env.ROLE].api_port; // process.env.API_PORT || 3001;
+const PORT = process.env.PORT || services[process.env.ROLE].port;
+const API_PORT = process.env.API_PORT || services[process.env.ROLE].api_port;
 
 const clients = [];
 
