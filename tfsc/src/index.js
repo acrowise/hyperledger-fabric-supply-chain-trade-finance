@@ -6,6 +6,7 @@ import {
 import { ClientSocket } from 'use-socketio';
 import App from './App';
 import Dashboard from './containers/Dashboard';
+import Admin from './containers/Admin';
 import { AuthProvider } from './context/auth';
 
 import '../favicon.ico';
@@ -19,6 +20,7 @@ const routing = (
         <Switch>
           <Route exact path="/login" component={App} />
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/admin" component={Admin} />
           <Redirect from="/" to="login" />
         </Switch>
       </ClientSocket>

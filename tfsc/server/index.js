@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
-// const proxy = require('http-proxy-middleware');
+const proxy = require('http-proxy-middleware');
 const uuid = require('uuid/v4');
 const fs = require('fs');
 const mime = require('mime-types');
@@ -10,7 +10,20 @@ const path = require('path');
 const WebSocket = require('ws');
 const axios = require('axios');
 
-const request = require('request');
+const services = {
+  buyer: {
+    port: 30001,
+    api_port: 3001
+  },
+  supplier: {
+    port: 30002,
+    api_port: 3002
+  },
+  transporter: {
+    port: 30003,
+    api_port: 3003
+  }
+};
 
 const low = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
@@ -20,13 +33,19 @@ const db = low(adapter);
 
 const upload = multer();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || services[process.env.ROLE].port;
+const API_PORT = process.env.API_PORT || services[process.env.ROLE].api_port;
 
-const API_PORT = process.env.API_PORT || 3001;
+const clients = [];
 
 const ws = new WebSocket(`ws://localhost:${API_PORT}/api/notifications`);
 
-ws.on('open', () => {
+function heartbeat() {
+  setInterval(() => {
+    ws.send('ping');
+  }, 10000);
+}
+const subscribe = () => {
   ws.send(
     JSON.stringify({
       event: 'cc_event',
@@ -34,22 +53,39 @@ ws.on('open', () => {
       chaincode: 'supply-chain-chaincode'
     })
   );
+  heartbeat();
+};
+
+ws.on('open', () => {
+  subscribe();
 });
 
 ws.on('error', (e) => {
   console.error(e);
 });
 
+ws.on('close', () => {
+  console.info('ws closed');
+});
+
 ws.on('message', async (message) => {
+  console.info('ws message: ', message);
   const event = JSON.parse(message);
   if (event && event.payload) {
+    const eventName = event.payload.EventName.split('.')[2];
     const eventId = event.payload.EventName.split('.')[3];
 
     const res = await axios.get(
       `http://localhost:${API_PORT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
     );
 
-    console.log(res.data);
+    clients.forEach(c => c.emit(
+      'notification',
+      JSON.stringify({
+        data: { key: { id: res.data.result.value.entityID }, value: res.data.result.value.other },
+        type: eventName
+      })
+    ));
   }
 });
 
@@ -78,40 +114,30 @@ const get = (field, id) => db
   .value()
   .find(i => i.key.id === id);
 
-const clients = [];
 const app = express();
 const router = express.Router();
 
-const requestToRestApi = (req, res, next) => {
-
-    let method = req.originalUrl;
-    if (method === '/listOrders') {
-        console.log(`Matched!`);
-        let ch = 'common';
-        let cc = 'supply-chain-chaincode';
-        let url = `http://${req.hostname}:${PORT}/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
-        let myJSONObject = {};
-        const options = {
-            method: req.method,
-            url: url,
-            json: true,
-            body: myJSONObject
-        };
-        request(options,
-            (error, response, body) => {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
-
-                console.log(JSON.stringify(body));
-            }
-        );
+router.use(
+  '/api',
+  proxy({
+    target: `http://0.0.0.0:${API_PORT}`,
+    changeOrigin: true,
+    logLevel: 'debug',
+    onProxyReq: async (proxyReq, req, res) => {
+      console.info('proxyReq.path', proxyReq.path);
+    },
+    onProxyRes: async (proxyRes, req, res) => {
+      let body = Buffer.from('');
+      proxyRes.on('data', (data) => {
+        body = Buffer.concat([body, data]);
+      });
+      proxyRes.on('end', () => {
+        body = body.toString();
+        // console.info('res from fabric-rest-api-go', body);
+      });
     }
-    next();
-};
-
-router.all('*', requestToRestApi);
+  })
+);
 
 router.use(cors());
 
@@ -158,7 +184,7 @@ router.get('/listContracts', (_, res) => {
 });
 
 router.get('/listOrders', (req, res) => {
-    res.json({ result: db.get('orders').value() });
+  res.json({ result: db.get('orders').value() });
 });
 
 router.get('/listInvoices', (_, res) => {

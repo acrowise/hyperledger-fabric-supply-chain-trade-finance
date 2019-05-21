@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import fetch from 'isomorphic-fetch';
 
-const newApi = process.env.api;
+const mockApi = process.env.api;
 
 // eslint-disable-next-line import/prefer-default-export
 export const useFetch = (method) => {
@@ -9,9 +9,9 @@ export const useFetch = (method) => {
   const [loading, setLoading] = useState(true);
 
   function fetchUrl() {
-    const url = newApi
-      ? `/api/channels/common/chaincodes/supply-chain-chaincode?fcn=${method}`
-      : `/${method}`;
+    const url = mockApi
+      ? `/${method}`
+      : `/api/channels/common/chaincodes/supply-chain-chaincode?fcn=${method}`;
     fetch(url).then((res) => {
       res.json().then((d) => {
         setData(d);
