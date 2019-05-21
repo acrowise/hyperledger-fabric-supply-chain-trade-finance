@@ -89,7 +89,7 @@ const requestToRestApi = (req, res, next) => {
         console.log(`Matched!`);
         let ch = 'common';
         let cc = 'supply-chain-chaincode';
-        let url = `http://${req.host}:${PORT}/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
+        let url = `http://${req.hostname}:${PORT}/api/channels/${ch}/chaincodes/${cc}?fcn=${method}&args=`;
         let myJSONObject = {};
         const options = {
             method: req.method,
@@ -103,7 +103,8 @@ const requestToRestApi = (req, res, next) => {
                     console.log(error);
                     return;
                 }
-                console.log(JSON.stringify(options));
+
+                console.log(JSON.stringify(body));
             }
         );
     }

@@ -92,7 +92,7 @@ fi
 #Set default State Database
 LITERAL_COUCHDB="couchdb"
 LITERAL_LEVELDB="leveldb"
-STATE_DATABASE="${LITERAL_COUCHDB}"
+STATE_DATABASE="${LITERAL_LEVELDB}"
 
 DEFAULT_ORDERER_PORT=7050
 DEFAULT_WWW_PORT=3000
@@ -378,6 +378,8 @@ function generatePeerArtifacts() {
           -e "s/PEER0_EVENT_PORT/$peer0_event_port/g" \
           -e "s/PEER1_PORT/$peer1_port/g" \
           -e "s/PEER1_EVENT_PORT/$peer1_event_port/g" \
+          -e "s/IPFS_API/$ipfs_api/g" \
+          -e "s/ROLE_APP/$orgu/g" \
           ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
     fi
 
@@ -761,10 +763,10 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
-    installPackages ${org}
+#    installPackages ${org}
 
-    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
-    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
+#    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
+#    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
 
     installAll ${org} # install chaincode
 
