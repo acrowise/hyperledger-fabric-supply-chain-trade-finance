@@ -651,7 +651,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(fmt.Sprintf("contract with the key %s doesnt exist", compositeKey))
 	}
 
-	if err := LoadFrom(stub, &contract, ""); err != nil {
+	if err := LoadFrom(stub, &contract, contractIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
