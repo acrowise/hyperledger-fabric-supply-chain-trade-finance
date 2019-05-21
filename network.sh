@@ -763,10 +763,10 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
-#    installPackages ${org}
+    installPackages ${org}
 
-#    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
-#    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
+    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
+    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
 
     installAll ${org} # install chaincode
 
