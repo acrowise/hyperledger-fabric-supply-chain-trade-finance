@@ -2,14 +2,17 @@ const ipfsClient = require('ipfs-http-client');
 
 const ipfs = ipfsClient({
   host: 'localhost',
-  port: '3000',
-  'api-path': '/api/channels/common/chaincodes/supply-chain-chaincode',
+  port: '8001',
+  // 'api-path': '/api/channels/common/chaincodes/supply-chain-chaincode',
   protocol: 'http'
 });
 
 const documentTypes = {
   '.pdf': 'pdf',
-  'image/png': 'png'
+  'image/png': 'png',
+  'image/gif': 'gif',
+  'image/jpeg': 'jpeg',
+  'image/jpg': 'jpg'
 };
 
 const upload = (file) => {
