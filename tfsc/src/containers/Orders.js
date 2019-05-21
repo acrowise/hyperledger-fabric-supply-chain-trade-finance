@@ -65,7 +65,8 @@ const Orders = ({
                   onClick={() => {
                     acceptOrder({
                       fcn: 'acceptOrder',
-                      args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
+                      peers: ['b/peer0']
                     });
                   }}
                   style={{ marginRight: '5px' }}

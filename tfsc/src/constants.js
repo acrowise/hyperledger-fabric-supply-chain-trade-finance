@@ -18,9 +18,9 @@ export const actors = [
     role: 'USCTS',
     description: 'US Commercial Trade Service (USCTS)'
   },
-  // { role: 'Admin', description: 'system administrator' },
   { role: 'Factor 1', description: 'a bank to acquire a debt of buyer' },
-  { role: 'Factor 2', description: 'a bank to acquire a debt of buyer' }
+  { role: 'Factor 2', description: 'a bank to acquire a debt of buyer' },
+  { role: 'admin', description: 'system administrator' }
 ];
 
 export const STATUSES = {

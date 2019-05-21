@@ -86,7 +86,7 @@ const App = () => (
           </div>
         </>
     ) : (
-        <Redirect to="/dashboard" />
+        <Redirect to={actor && actor.role === 'admin' ? '/admin' : '/dashboard'} />
     ))
     }
   </AuthConsumer>
