@@ -16,7 +16,7 @@ import OrderPurchaseForm from './Forms/OrderPurchase';
 import notifications from '../helper/notification';
 
 const Orders = ({
-  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+  actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = useFetch('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
@@ -59,14 +59,14 @@ const Orders = ({
         data={filteredData}
         actions={item => (
           <>
-            {role === 'supplier' && item.state === 'New' ? (
+            {actor.role === 'supplier' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   onClick={() => {
                     acceptOrder({
                       fcn: 'acceptOrder',
                       args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
-                      peers: ['b/peer0']
+                      peers: [`${actor.id}/peer0`]
                     });
                   }}
                   style={{ marginRight: '5px' }}
@@ -79,7 +79,7 @@ const Orders = ({
             ) : (
               <></>
             )}
-            {role === 'buyer' && item.state === 'New' ? (
+            {actor.role === 'buyer' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   style={{ marginRight: '5px' }}
@@ -98,7 +98,8 @@ const Orders = ({
                   onClick={() => {
                     cancelOrder({
                       fcn: 'cancelOrder',
-                      args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
+                      peers: [`${actor.id}/peer0`]
                     });
                   }}
                 >

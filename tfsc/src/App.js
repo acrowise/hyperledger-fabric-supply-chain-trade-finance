@@ -15,7 +15,9 @@ import '@blueprintjs/icons/lib/css/blueprint-icons.css';
 import '@blueprintjs/datetime/lib/css/blueprint-datetime.css';
 import './styles/styles.scss';
 
-const actor = actors.find(({ role }) => role.toLowerCase() === window.__STATE__.role);
+const state = window.__STATE__; // eslint-disable-line no-underscore-dangle
+const actor = actors.find(({ role }) => role.toLowerCase() === state.role);
+
 const App = () => (
   <AuthConsumer>
     {({ isAuth, login }) => (!isAuth ? (
@@ -58,7 +60,7 @@ const App = () => (
                         className="role-item"
                         title={description}
                         onClick={() => {
-                          login(role.toLowerCase());
+                          login(state);
                         }}
                       >
                         <span className="role-item-icon">
@@ -76,7 +78,7 @@ const App = () => (
                   intent="primary"
                   className="btn-modal"
                   onClick={() => {
-                    login(actor.role.toLowerCase());
+                    login(state);
                   }}
                 >
                   Log in

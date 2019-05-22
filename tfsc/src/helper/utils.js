@@ -1,5 +1,7 @@
 export const cropId = id => (id ? id.slice(0, 7).toUpperCase() : '');
 
+const range = ['dueDate', 'paymentDate', 'totalDue', 'rate', 'amount'];
+
 export const filterData = ({
   type, status, search, filterOptions, tableData
 }) => {
@@ -13,7 +15,7 @@ export const filterData = ({
 
   if (filterOptions) {
     Object.keys(filterOptions).forEach((opt) => {
-      if (opt === 'dueDate' || opt === 'paymentDate' || opt === 'totalDue' || opt === 'rate') {
+      if (range.includes(opt)) {
         if (filterOptions[opt].from) {
           data = data.filter(i => i[opt] >= filterOptions[opt].from);
         }

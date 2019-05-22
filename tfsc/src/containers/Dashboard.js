@@ -20,12 +20,12 @@ import OrderPurchaseForm from './Forms/OrderPurchase';
 import { AuthConsumer } from '../context/auth';
 import { notifications } from '../mocks';
 
-const NewPurchaseOrder = ({ role }) => {
+const NewPurchaseOrder = ({ actor }) => {
   const [dialog, setDialog] = useState({
     isOpen: false
   });
 
-  return role === 'buyer' ? (
+  return actor.role === 'buyer' ? (
     <>
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Button
@@ -43,7 +43,7 @@ const NewPurchaseOrder = ({ role }) => {
   );
 };
 
-const tabs = role => [
+const tabs = actor => [
   {
     name: 'Orders',
     actors: ['buyer', 'supplier'],
@@ -51,9 +51,9 @@ const tabs = role => [
       <Filter
         filterBy={['totalDue', 'destination', 'dueDate', 'paymentDate']}
         statuses={['New', 'Accepted', 'Cancelled']}
-        actionComponent={<NewPurchaseOrder role={role} />}
+        actionComponent={<NewPurchaseOrder actor={actor} />}
       >
-        <Orders role={role} />
+        <Orders actor={actor} />
       </Filter>
     )
   },
@@ -65,7 +65,7 @@ const tabs = role => [
         filterBy={['consignorName', 'consigneeName', 'totalDue', 'dueDate', 'paymentDate']}
         statuses={['Signed', 'Processed', 'Completed']}
       >
-        <Contracts role={role} />
+        <Contracts role={actor.role} />
       </Filter>
     )
   },
@@ -77,7 +77,7 @@ const tabs = role => [
         filterBy={['debtor', 'beneficiary', 'paymentDate', 'owner']}
         statuses={['Issued', 'Signed', 'For Sale', 'Sold', 'Removed']}
       >
-        <Invoices role={role} />
+        <Invoices role={actor.role} />
       </Filter>
     )
   },
@@ -89,7 +89,7 @@ const tabs = role => [
         filterBy={['shipFrom', 'shipTo', 'transport']}
         statuses={['Requested', 'Confirmed', 'Delivered']}
       >
-        <Shipments role={role} />
+        <Shipments role={actor.role} />
       </Filter>
     )
   },
@@ -98,7 +98,7 @@ const tabs = role => [
     actors: ['ggcb', 'uscts'],
     panel: (
       <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Generated', 'Validated']}>
-        <Proofs role={role} />
+        <Proofs role={actor.role} />
       </Filter>
     )
   },
@@ -107,7 +107,7 @@ const tabs = role => [
     actors: ['ggcb', 'uscts'],
     panel: (
       <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Accepted', 'Declined']}>
-        <Reports role={role} />
+        <Reports role={actor.role} />
       </Filter>
     )
   },
@@ -119,7 +119,7 @@ const tabs = role => [
         filterBy={['debtor', 'beneficiary', 'rate', 'paymentDate']}
         statuses={['Issued', 'Accepted', 'Cancelled', 'Removed']}
       >
-        <Bids role={role} />
+        <Bids role={actor.role} />
       </Filter>
     )
   }
@@ -151,20 +151,20 @@ const Panel = ({ panel }) => (
   </div>
 );
 
-const Dashboard = ({ role }) => {
-  const [test, setTest] = useState('');
+const Dashboard = ({ actor }) => {
+  const [tabNotifications, setNotifications] = useState('');
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
-    setTest(notification.type);
+    setNotifications(notification.type);
   });
 
-  const userTabs = tabs(role)
-    .filter(i => i.actors.includes(role))
+  const userTabs = tabs(actor)
+    .filter(i => i.actors.includes(actor.role))
     .map(({ name, panel }) => (
       <Tab
         id={name}
         key={name}
-        title={Title({ title: name, notification: test })}
+        title={Title({ title: name, notification: tabNotifications })}
         panel={Panel({ panel })}
       />
     ));
@@ -182,7 +182,7 @@ const Dashboard = ({ role }) => {
         selectedTabId={activeTab}
         onChange={(id) => {
           changeTab(id);
-          setTest(false);
+          setNotifications(false);
         }}
       >
         {userTabs}
@@ -202,10 +202,10 @@ Dashboard.propTypes = {
 function Wrapper(props) {
   return (
     <AuthConsumer>
-      {({ isAuth, logout, role }) => (isAuth ? (
+      {({ isAuth, logout, actor }) => (isAuth ? (
           <>
-            <Nav role={role} logout={logout} {...props} />
-            <Dashboard isAuth={isAuth} role={role} {...props} />
+            <Nav role={actor.role} logout={logout} {...props} />
+            <Dashboard isAuth={isAuth} actor={actor} {...props} />
           </>
       ) : (
           <Redirect to="/" />

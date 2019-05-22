@@ -6,19 +6,19 @@ const AuthConsumer = AuthContext.Consumer;
 const AuthProvider = (props) => {
   const [state, setState] = useState({
     isAuth: false,
-    role: null
+    actor: null
   });
 
-  const login = (role) => {
-    setState({ isAuth: true, role });
+  const login = (actor) => {
+    setState({ isAuth: true, actor });
   };
 
-  const logout = () => setState({ isAuth: false, role: null });
+  const logout = () => setState({ isAuth: false, actor: null });
 
   return (
     <AuthContext.Provider
       value={{
-        role: state.role,
+        actor: state.actor,
         isAuth: state.isAuth,
         login,
         logout

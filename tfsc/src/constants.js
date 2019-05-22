@@ -205,7 +205,7 @@ export const TABLE_MAP = {
     productName: 'Product',
     quantity: 'Quantity',
     price: 'Price, $',
-    totalDue: 'Amount, $',
+    amount: 'Amount, $',
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',

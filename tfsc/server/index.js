@@ -10,15 +10,45 @@ const clients = [];
 const services = {
   buyer: {
     port: 30001,
-    api_port: 3001
+    api_port: 3001,
+    ipfs_port: 7001,
+    id: 'a'
   },
   supplier: {
     port: 30002,
-    api_port: 3002
+    api_port: 3002,
+    ipfs_port: 8001,
+    id: 'b'
   },
   transporter: {
     port: 30003,
-    api_port: 3003
+    api_port: 3008,
+    ipfs_port: 14001,
+    id: 'h'
+  },
+  ggcb: {
+    port: 30004,
+    api_port: 3004,
+    ipfs_port: 10001,
+    id: 'd'
+  },
+  uscts: {
+    port: 30005,
+    api_port: 3005,
+    ipfs_port: 11001,
+    id: 'e'
+  },
+  'factor 1': {
+    port: 30006,
+    api_port: 3006,
+    ipfs_port: 12001,
+    id: 'f'
+  },
+  'factor 2': {
+    port: 30007,
+    api_port: 3007,
+    ipfs_port: 13001,
+    id: 'g'
   }
 };
 
@@ -107,7 +137,7 @@ app.use(express.static(path.join(__dirname, '../dist/client')));
 const html = require('./html');
 
 const renderer = async (req, res) => {
-  const data = { role: process.env.ROLE };
+  const data = Object.assign(services[process.env.ROLE], { role: process.env.ROLE });
 
   return res.send(html(data));
 };

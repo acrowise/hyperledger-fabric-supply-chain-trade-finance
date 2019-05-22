@@ -11,8 +11,6 @@ import { AuthProvider } from './context/auth';
 
 import '../favicon.ico';
 
-console.log('window.__STATE__', window.__STATE__);
-
 const routing = (
   <Router>
     <AuthProvider>
