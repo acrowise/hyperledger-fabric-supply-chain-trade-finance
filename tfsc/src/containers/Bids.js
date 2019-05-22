@@ -3,9 +3,8 @@ import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
-import { useFetch } from '../hooks';
 
-import { post } from '../helper/api';
+import { post, get } from '../helper/api';
 
 import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
@@ -18,7 +17,7 @@ import notifications from '../helper/notification';
 const Bids = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [data, loading, setData] = useFetch('listBids');
+  const [data, loading, setData] = get('listBids');
   const [, acceptBid] = post('acceptBid')();
   const [, cancelBid] = post('cancelBid')();
 

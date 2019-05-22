@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
-import { useFetch } from '../hooks';
 
-import { post } from '../helper/api';
+import { post, get } from '../helper/api';
 
 import { filterData } from '../helper/utils';
 
@@ -19,7 +18,7 @@ import notifications from '../helper/notification';
 const Orders = ({
   actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [data, loading, setData] = useFetch('listOrders');
+  const [data, loading, setData] = get('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
   const [, cancelOrder] = post('cancelOrder')();
 

@@ -3,10 +3,9 @@ import PropTypes from 'prop-types';
 import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch } from '../hooks';
 import BidForm from './Forms/Bid';
 
-import { post } from '../helper/api';
+import { post, get } from '../helper/api';
 import { STATUSES, TABLE_MAP } from '../constants';
 import { filterData } from '../helper/utils';
 import notifications from '../helper/notification';
@@ -21,7 +20,7 @@ const Invoices = ({
     isOpen: false
   });
 
-  const [data, loading, setData] = useFetch('listInvoices');
+  const [data, loading, setData] = get('listInvoices');
 
   // BUYER
   const [, acceptInvoice] = post('acceptInvoice')();

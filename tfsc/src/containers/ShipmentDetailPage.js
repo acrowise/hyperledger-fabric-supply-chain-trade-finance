@@ -3,7 +3,7 @@ import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { format } from 'date-fns';
 
-import { useFetch } from '../hooks';
+import { get } from '../helper/api';
 
 import { cropId } from '../helper/utils';
 
@@ -20,8 +20,7 @@ import Icons from '../components/Icon/Icon';
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
-  // const [data, loading] = useFetch('documents');
-  const [proofs, loadingProofs, setData] = useFetch(`listProofs?id=${shipment.id}`);
+  const [proofs, loadingProofs, setData] = get(`listProofs?id=${shipment.id}`);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 // import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch } from '../hooks';
+import { get } from '../helper/api';
 
 import ShipmentDetailPage from './ShipmentDetailPage';
 
@@ -28,7 +28,7 @@ const Shipments = ({
 }) => {
   // const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
-  const [shipments, loading, setData] = useFetch('listShipments');
+  const [shipments, loading, setData] = get('listShipments');
 
   useSocket('notification', (message) => {
     setData(notifications(shipments.result, message, 'shipments'));
