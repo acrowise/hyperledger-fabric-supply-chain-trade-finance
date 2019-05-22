@@ -121,14 +121,14 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, index s
 			if err = stub.PutPrivateData(collectionName, compositeKey, value); err != nil {
 				return err
 			}
-			if len(participiants) != 0 {
+			if len(participiants) != 1 && participiants[0] == "" {
 				// set new endorsement policy. Start
 				ep, err := statebased.NewStateEP(nil)
 				if err != nil {
 					return err
 				}
 
-				err = ep.AddOrgs(endorserRoleType, participiants...)
+				err = ep.AddOrgs(endorserRoleType, participiants[1:]...)
 				if err != nil {
 					return err
 				}
@@ -150,14 +150,14 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, index s
 		if err = stub.PutState(compositeKey, value); err != nil {
 			return err
 		}
-		if len(participiants) != 0 {
+		if len(participiants) != 1 && participiants[0] == "" {
 			// set new endorsement policy. Start
 			ep, err := statebased.NewStateEP(nil)
 			if err != nil {
 				return err
 			}
 
-			err = ep.AddOrgs(endorserRoleType, participiants...)
+			err = ep.AddOrgs(endorserRoleType, participiants[1:]...)
 			if err != nil {
 				return err
 			}
