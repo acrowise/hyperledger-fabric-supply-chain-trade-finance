@@ -32,16 +32,23 @@ type LedgerData interface {
 	ToLedgerValue() ([]byte, error)
 }
 
-func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string) bool {
+func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, index string) bool {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return false
 	}
+	collections, err := GetCollectionName(stub, index, []string{""})
+	if err != nil {
+		return false
+	}
 
-	if collection != "" {
-		Logger.Debug("GetPrivateData")
-		if data, err := stub.GetPrivateData(collection, compositeKey); err != nil || data == nil {
-			return false
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
+			var data []byte
+			Logger.Debug(fmt.Sprintf("GetPrivateData. collectionName: %s", collectionName))
+			if data, err = stub.GetPrivateData(collectionName, compositeKey); err != nil || data == nil {
+				return false
+			}
 		}
 	} else {
 		Logger.Debug("GetState")
@@ -53,16 +60,29 @@ func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, collection stri
 	return true
 }
 
-func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, collection string) error {
+func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, index string) error {
 	var bytes []byte
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
 	}
 
-	if collection != "" {
-		Logger.Debug("GetPrivateData")
-		bytes, err = stub.GetPrivateData(collection, compositeKey)
+	collections, err := GetCollectionName(stub, index, []string{""})
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return errors.New(message)
+	}
+
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
+			Logger.Debug(fmt.Sprintf("GetPrivateData. collectionName: %s", collectionName))
+			if bytes, err = stub.GetPrivateData(collectionName, compositeKey); err != nil {
+				return err
+			}
+			if bytes != nil {
+				break
+			}
+		}
 	} else {
 		Logger.Debug("GetState")
 		bytes, err = stub.GetState(compositeKey)
@@ -75,7 +95,7 @@ func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, collection stri
 	return data.FillFromLedgerValue(bytes)
 }
 
-func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collection string, endorsers []string, endorserRoleType statebased.RoleType) error {
+func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, index string, participiants []string, endorserRoleType statebased.RoleType) error {
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return err
@@ -86,48 +106,55 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, collect
 		return err
 	}
 
-	if collection != "" {
-		Logger.Debug("PutPrivateData")
+	collections, err := GetCollectionName(stub, index, participiants)
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return errors.New(message)
+	}
 
-		if err = stub.PutPrivateData(collection, compositeKey, value); err != nil {
-			return err
-		}
-		if len(endorsers) != 0 {
-			// set new endorsement policy. Start
-			ep, err := statebased.NewStateEP(nil)
-			if err != nil {
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
+			Logger.Debug(fmt.Sprintf("PutPrivateData. collectionName: %s", collectionName))
+			if err = stub.PutPrivateData(collectionName, compositeKey, value); err != nil {
 				return err
 			}
+			if len(participiants) != 1 && participiants[0] == "" {
+				// set new endorsement policy. Start
+				ep, err := statebased.NewStateEP(nil)
+				if err != nil {
+					return err
+				}
 
-			err = ep.AddOrgs(endorserRoleType, endorsers...)
-			if err != nil {
-				return err
-			}
-			// set the endorsement policy
-			epBytes, err := ep.Policy()
-			if err != nil {
-				return err
-			}
+				err = ep.AddOrgs(endorserRoleType, participiants[1:]...)
+				if err != nil {
+					return err
+				}
+				// set the endorsement policy
+				epBytes, err := ep.Policy()
+				if err != nil {
+					return err
+				}
 
-			err = stub.SetPrivateDataValidationParameter(collection, compositeKey, epBytes)
-			if err != nil {
-				return err
+				err = stub.SetPrivateDataValidationParameter(collectionName, compositeKey, epBytes)
+				if err != nil {
+					return err
+				}
+				//set new endorsement policy. End
 			}
-			//set new endorsement policy. End
 		}
 	} else {
 		Logger.Debug("PutState")
 		if err = stub.PutState(compositeKey, value); err != nil {
 			return err
 		}
-		if len(endorsers) != 0 {
+		if len(participiants) != 1 && participiants[0] == "" {
 			// set new endorsement policy. Start
 			ep, err := statebased.NewStateEP(nil)
 			if err != nil {
 				return err
 			}
 
-			err = ep.AddOrgs(endorserRoleType, endorsers...)
+			err = ep.AddOrgs(endorserRoleType, participiants[1:]...)
 			if err != nil {
 				return err
 			}
@@ -157,15 +184,23 @@ func EmptyFilter(data LedgerData) bool {
 }
 
 func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
-	createEntry FactoryMethod, filterEntry FilterFunction, collections []string) ([]byte, error) {
+	createEntry FactoryMethod, filterEntry FilterFunction) ([]byte, error) {
 
 	ledgerDataLogger.Info(fmt.Sprintf("Query(%s) is running", index))
 	ledgerDataLogger.Debug("Query " + index)
 
+	collections, err := GetCollectionName(stub, index, []string{""})
+	if err != nil {
+		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
+		return nil, errors.New(message)
+	}
+
 	entries := []LedgerData{}
 	if len(collections) != 0 && collections[0] != "" {
-		for _, collection := range collections {
-			it, err := stub.GetPrivateDataByPartialCompositeKey(collection, index, partialKey)
+		for _, collectionName := range collections {
+			Logger.Debug(fmt.Sprintf("GetPrivateDataByPartialCompositeKey. collectionName: %s", collectionName))
+
+			it, err := stub.GetPrivateDataByPartialCompositeKey(collectionName, index, partialKey)
 			if err != nil {
 				message := fmt.Sprintf("unable to get state by partial composite key %s: %s", index, err.Error())
 				ledgerDataLogger.Error(message)
@@ -183,6 +218,10 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 			it.Close()
 		}
 	} else {
+
+		fmt.Println("partialKey!")
+		fmt.Println(partialKey)
+
 		it, err := stub.GetStateByPartialCompositeKey(index, partialKey)
 		if err != nil {
 			message := fmt.Sprintf("unable to get state by partial composite key %s: %s", index, err.Error())
@@ -191,11 +230,17 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 		}
 		defer it.Close()
 
+		fmt.Println("it!")
+		fmt.Println(it)
+
 		entries, err = queryImpl(it, createEntry, stub, filterEntry)
 		if err != nil {
 			ledgerDataLogger.Error(err.Error())
 			return nil, err
 		}
+
+		fmt.Println("Debug!")
+		fmt.Println(entries)
 	}
 
 	result, err := json.Marshal(entries)
@@ -342,4 +387,52 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 	default:
 		Logger.Debug("Unknown typeNotice: %d", typeNotice)
 	}
+}
+
+func GetCollectionName(stub shim.ChaincodeStubInterface, index string, participiants []string) ([]string, error) {
+	var collectionName []string
+
+	if len(participiants) == 1 && participiants[0] == "" {
+		creator, err := GetMSPID(stub)
+		if err != nil {
+			message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+			Logger.Error(message)
+			return collectionName, errors.New(message)
+		}
+		participiants = []string{creator}
+	}
+
+	config := Config{}
+	var bytes []byte
+	compositeKey, err := config.ToCompositeKey(stub)
+	if err != nil {
+		return collectionName, err
+	}
+
+	bytes, err = stub.GetState(compositeKey)
+	if err != nil {
+		return collectionName, err
+	}
+
+	if err = config.FillFromLedgerValue(bytes); err != nil {
+		return collectionName, err
+	}
+
+	collections := config.Value.Collections
+
+	for _, col := range collections {
+		count := 0
+		for _, participiant := range participiants {
+			if strings.Contains(col.Name, index) && strings.Contains(col.Policy, participiant) {
+				count++
+			}
+		}
+		if len(participiants) == count {
+			collectionName = append(collectionName, col.Name)
+		}
+	}
+
+	Logger.Debug(fmt.Sprintf("Got collection name: %s", collectionName))
+
+	return collectionName, nil
 }
