@@ -83,7 +83,6 @@ module.exports = (router, clients) => {
   });
 
   router.get('/listOrders', (req, res) => {
-    console.log('here');
     res.json({ result: db.get('orders').value() });
   });
 

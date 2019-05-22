@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 // import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch } from '../hooks';
+import { get } from '../helper/api';
 
 import ShipmentDetailPage from './ShipmentDetailPage';
 
@@ -13,6 +13,8 @@ import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
 import notifications from '../helper/notification';
+
+import Loading from '../components/Loading';
 
 const Shipments = ({
   role,
@@ -26,7 +28,7 @@ const Shipments = ({
 }) => {
   // const [selectedShipment, setSelectedShipment] = useState({});
   const [shipment, showShipmentDetail] = useState(content);
-  const [shipments, loading, setData] = useFetch('listShipments');
+  const [shipments, loading, setData] = get('listShipments');
 
   useSocket('notification', (message) => {
     setData(notifications(shipments.result, message, 'shipments'));
@@ -67,7 +69,7 @@ const Shipments = ({
   useSocket('notification', onNotification);
 
   if (loading) {
-    return <>Loading...</>;
+    return <Loading />;
   }
 
   let filteredData = shipments.result;
@@ -92,7 +94,7 @@ const Shipments = ({
     <ShipmentDetailPage
       showShipmentDetail={showShipmentDetail}
       setContent={setContent}
-      {...shipment}
+      shipment={shipment}
       role={role}
     />
   ) : (

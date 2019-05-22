@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
-import { useFetch } from '../hooks';
 
-import { post } from '../helper/api';
+import { post, get } from '../helper/api';
 
 import { filterData } from '../helper/utils';
 
@@ -12,13 +11,14 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
 import OrderPurchaseForm from './Forms/OrderPurchase';
+import Loading from '../components/Loading';
 
 import notifications from '../helper/notification';
 
 const Orders = ({
-  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+  actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [data, loading, setData] = useFetch('listOrders');
+  const [data, loading, setData] = get('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
   const [, cancelOrder] = post('cancelOrder')();
 
@@ -50,7 +50,7 @@ const Orders = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
@@ -59,14 +59,14 @@ const Orders = ({
         data={filteredData}
         actions={item => (
           <>
-            {role === 'supplier' && item.state === 'New' ? (
+            {actor.role === 'supplier' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   onClick={() => {
                     acceptOrder({
                       fcn: 'acceptOrder',
                       args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
-                      peers: ['b/peer0']
+                      peers: [`${actor.id}/peer0`]
                     });
                   }}
                   style={{ marginRight: '5px' }}
@@ -79,7 +79,7 @@ const Orders = ({
             ) : (
               <></>
             )}
-            {role === 'buyer' && item.state === 'New' ? (
+            {actor.role === 'buyer' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   style={{ marginRight: '5px' }}
@@ -98,7 +98,8 @@ const Orders = ({
                   onClick={() => {
                     cancelOrder({
                       fcn: 'cancelOrder',
-                      args: [item.id, '0', '0', '0', '0', '0', '0', '0']
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
+                      peers: [`${actor.id}/peer0`]
                     });
                   }}
                 >

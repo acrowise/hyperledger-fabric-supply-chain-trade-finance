@@ -1,14 +1,13 @@
 const ipfsClient = require('ipfs-http-client');
 
+const IPFS_PORT = window.__STATE__ ? window.__STATE__.ipfs_port : '7001'; // eslint-disable-line no-underscore-dangle
+
 const ipfs = ipfsClient({
   host: 'localhost',
-  port: '8001',
-  // 'api-path': '/api/channels/common/chaincodes/supply-chain-chaincode',
-  protocol: 'http'
+  port: IPFS_PORT
 });
 
 const documentTypes = {
-  '.pdf': 'pdf',
   'image/png': 'png',
   'image/gif': 'gif',
   'image/jpeg': 'jpeg',

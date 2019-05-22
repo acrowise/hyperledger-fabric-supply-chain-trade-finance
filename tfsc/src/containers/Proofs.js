@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
-import { useFetch } from '../hooks';
+import { get } from '../helper/api';
 
 import VerifyProof from './Forms/VerifyProof';
 import Table from '../components/Table/Table';
@@ -12,12 +12,13 @@ import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
 import notifications from '../helper/notification';
+import Loading from '../components/Loading';
 
 const Proofs = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
-  const [data, loading, setData] = useFetch('listProofs');
+  const [data, loading, setData] = get('listProofs');
 
   const [selectedProof, setSelectedProof] = useState({});
 
@@ -46,7 +47,7 @@ const Proofs = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <VerifyProof

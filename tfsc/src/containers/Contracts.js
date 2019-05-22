@@ -3,12 +3,13 @@ import PropTypes from 'prop-types';
 import { useSocket } from 'use-socketio';
 import { Button } from '@blueprintjs/core';
 
-import { useFetch } from '../hooks';
+import { get } from '../helper/api';
 
 import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
 import Icon from '../components/Icon/Icon';
+import Loading from '../components/Loading';
 
 import { filterData } from '../helper/utils';
 import notifications from '../helper/notification';
@@ -18,7 +19,7 @@ import { TABLE_MAP, STATUSES } from '../constants';
 const Contracts = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [data, loading, setData] = useFetch('listContracts');
+  const [data, loading, setData] = get('listContracts');
   const [tsrDialogIsOpen, setTsrDialogOpenState] = useState({
     state: false,
     item: {}
@@ -47,7 +48,7 @@ const Contracts = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <TransportRequestForm
