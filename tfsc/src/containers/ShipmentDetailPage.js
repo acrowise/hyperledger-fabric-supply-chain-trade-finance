@@ -17,34 +17,24 @@ import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
 import Icons from '../components/Icon/Icon';
 
-const ShipmentDetailPage = (props) => {
+const ShipmentDetailPage = ({
+  role, shipment, showShipmentDetail, setContent
+}) => {
   // const [data, loading] = useFetch('documents');
-  const [proofs, loadingProofs, setData] = useFetch(`listProofs?id=${props.id}`);
+  const [proofs, loadingProofs, setData] = useFetch(`listProofs?id=${shipment.id}`);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
 
-  const [docs, setDocs] = useState(props.documents);
-
-  const shipment = {
-    id: props.id,
-    contractId: props.contractId,
-    shipFrom: props.shipFrom,
-    shipTo: props.shipTo,
-    transport: props.transport,
-    description: props.description,
-    state: props.state,
-    documents: docs,
-    timestamp: props.timestamp,
-    dueDate: props.dueDate
-  };
+  const [docs, setDocs] = useState(shipment.documents);
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
     if (notification.type === 'proofGenerated') {
-      const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true })); // FIXME
+      // FIXME
+      const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
       setData({ result: newState });
     }
 
@@ -84,8 +74,8 @@ const ShipmentDetailPage = (props) => {
       <div
         style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}
         onClick={() => {
-          props.showShipmentDetail(null);
-          props.setContent(false);
+          showShipmentDetail(null);
+          setContent(false);
         }}
       >
         <Icons name="left-arrow" />
@@ -126,7 +116,7 @@ const ShipmentDetailPage = (props) => {
               </tbody>
             </table>
             <div style={{ paddingTop: 15, paddingBottom: 18 }}>
-              {props.role === 'transporter' || props.role === 'supplier' ? (
+              {role === 'transporter' || role === 'supplier' ? (
                 <div style={{ fontSize: 16 }}>
                   <p
                     style={{
@@ -145,7 +135,7 @@ const ShipmentDetailPage = (props) => {
               ) : (
                 <></>
               )}
-              {props.role === 'buyer' && shipment.state !== 'Delivered' ? (
+              {role === 'buyer' && shipment.state !== 'Delivered' ? (
                 <div>
                   <Button
                     style={{ paddingLeft: 30, paddingRight: 30 }}
@@ -169,7 +159,7 @@ const ShipmentDetailPage = (props) => {
               ) : (
                 <></>
               )}
-              {props.role === 'transporter' && shipment.state === 'Requested' ? (
+              {role === 'transporter' && shipment.state === 'Requested' ? (
                 <div>
                   <Button
                     style={{ paddingLeft: 30, paddingRight: 30 }}
@@ -187,12 +177,12 @@ const ShipmentDetailPage = (props) => {
             </div>
           </div>
 
-          <Timeline shipment={shipment} events={props.events} />
-          <CollapsiblePanel history={props.events ? props.events.concat([]) : []} />
+          <Timeline shipment={shipment} events={shipment.events} />
+          <CollapsiblePanel history={shipment.events ? shipment.events.concat([]) : []} />
         </div>
 
         <div className="layout-aside">
-          {shipment.state === 'Confirmed' && props.role === 'supplier' && (
+          {shipment.state === 'Confirmed' && role === 'supplier' && (
             <Button
               onClick={(e) => {
                 setGpDialogOpenState(true);

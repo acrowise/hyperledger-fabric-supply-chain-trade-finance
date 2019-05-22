@@ -12,6 +12,8 @@ import { filterData } from '../helper/utils';
 
 import notifications from '../helper/notification';
 
+import Loading from '../components/Loading';
+
 const Reports = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
@@ -45,7 +47,7 @@ const Reports = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <VerifyProof

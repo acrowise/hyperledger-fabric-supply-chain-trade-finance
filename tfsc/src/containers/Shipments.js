@@ -14,6 +14,8 @@ import { filterData } from '../helper/utils';
 
 import notifications from '../helper/notification';
 
+import Loading from '../components/Loading';
+
 const Shipments = ({
   role,
   filter,
@@ -67,7 +69,7 @@ const Shipments = ({
   useSocket('notification', onNotification);
 
   if (loading) {
-    return <>Loading...</>;
+    return <Loading />;
   }
 
   let filteredData = shipments.result;
@@ -92,7 +94,7 @@ const Shipments = ({
     <ShipmentDetailPage
       showShipmentDetail={showShipmentDetail}
       setContent={setContent}
-      {...shipment}
+      shipment={shipment}
       role={role}
     />
   ) : (

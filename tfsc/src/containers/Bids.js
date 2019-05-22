@@ -12,7 +12,7 @@ import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
 import BidForm from './Forms/Bid';
-
+import Loading from '../components/Loading';
 import notifications from '../helper/notification';
 
 const Bids = ({
@@ -50,7 +50,7 @@ const Bids = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <BidForm dialog={dialog} setDialog={setDialog} />

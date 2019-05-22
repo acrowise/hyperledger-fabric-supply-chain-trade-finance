@@ -9,6 +9,7 @@ import TransportRequestForm from './Forms/TransportRequest';
 import Table from '../components/Table/Table';
 
 import Icon from '../components/Icon/Icon';
+import Loading from '../components/Loading';
 
 import { filterData } from '../helper/utils';
 import notifications from '../helper/notification';
@@ -47,7 +48,7 @@ const Contracts = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <TransportRequestForm

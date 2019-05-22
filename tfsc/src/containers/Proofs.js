@@ -12,6 +12,7 @@ import { TABLE_MAP, STATUSES } from '../constants';
 import { filterData } from '../helper/utils';
 
 import notifications from '../helper/notification';
+import Loading from '../components/Loading';
 
 const Proofs = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
@@ -46,7 +47,7 @@ const Proofs = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <VerifyProof

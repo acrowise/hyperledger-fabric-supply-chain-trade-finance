@@ -143,7 +143,7 @@ const renderer = async (req, res) => {
 };
 
 if (process.env.FAKE_API) {
-  const registerFakeRoutes = require('./fake-routes');
+  const registerFakeRoutes = require('./fake-routes'); // eslint-disable-line global-require
   registerFakeRoutes(router, clients);
 }
 

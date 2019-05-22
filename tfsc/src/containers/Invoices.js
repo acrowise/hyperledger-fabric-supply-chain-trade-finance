@@ -12,6 +12,7 @@ import { filterData } from '../helper/utils';
 import notifications from '../helper/notification';
 
 import Table from '../components/Table/Table';
+import Loading from '../components/Loading';
 
 const Invoices = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
@@ -52,7 +53,7 @@ const Invoices = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <>
       <BidForm dialog={bidDialog} setDialog={setBidDialog} />

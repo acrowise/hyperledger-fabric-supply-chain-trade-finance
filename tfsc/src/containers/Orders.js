@@ -12,6 +12,7 @@ import Table from '../components/Table/Table';
 import { TABLE_MAP, STATUSES } from '../constants';
 
 import OrderPurchaseForm from './Forms/OrderPurchase';
+import Loading from '../components/Loading';
 
 import notifications from '../helper/notification';
 
@@ -50,7 +51,7 @@ const Orders = ({
   }
 
   return loading ? (
-    <>Loading...</>
+    <Loading />
   ) : (
     <div>
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
