@@ -218,10 +218,6 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 			it.Close()
 		}
 	} else {
-
-		fmt.Println("partialKey!")
-		fmt.Println(partialKey)
-
 		it, err := stub.GetStateByPartialCompositeKey(index, partialKey)
 		if err != nil {
 			message := fmt.Sprintf("unable to get state by partial composite key %s: %s", index, err.Error())
@@ -230,17 +226,12 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 		}
 		defer it.Close()
 
-		fmt.Println("it!")
-		fmt.Println(it)
-
 		entries, err = queryImpl(it, createEntry, stub, filterEntry)
 		if err != nil {
 			ledgerDataLogger.Error(err.Error())
 			return nil, err
 		}
 
-		fmt.Println("Debug!")
-		fmt.Println(entries)
 	}
 
 	result, err := json.Marshal(entries)
