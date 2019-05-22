@@ -495,7 +495,7 @@ function installPackage() {
     org=$1
     pkg=$2
 
-    if [ ! -d "/opt/gopath/src/$pkg" ]; then
+    if [ ! -d "./chaincode/go/$pkg" ]; then
         f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-${org}.yaml"
         info "installing package $pkg to peers of $org using $f"
         echo "Getting package $pkg for org $org"
@@ -763,10 +763,10 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
-    installPackages ${org}
-
-    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
-    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
+#    installPackages ${org}
+#
+#    makeVendor ${org} ${CHAINCODE_SUPPLY_CHAIN_NAME}
+#    makeVendor ${org} ${CHAINCODE_TRADE_FINANCE_NAME}
 
     installAll ${org} # install chaincode
 

@@ -195,7 +195,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &order, orderIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &order, orderIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -301,7 +301,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -398,7 +398,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -522,7 +522,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -555,7 +555,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Debug("Order: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -632,7 +632,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipment, shipmentIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipment, shipmentIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -664,7 +664,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -747,7 +747,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, shipmentIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, shipmentIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -779,7 +779,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -889,7 +889,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		Logger.Debug("Document: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -909,7 +909,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, shipmentIndex, []string{}, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, shipmentIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -927,7 +927,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		if err := UpdateOrInsertIn(stub, &entityType, agencyReportIndex, []string{}, ""); err != nil {
+		if err := UpdateOrInsertIn(stub, &entityType, agencyReportIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
@@ -1083,7 +1083,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Value.DataForVerification.Epoch = epoch
 
 	// updating state in ledger
-	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1159,7 +1159,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	proof.Value.State = stateProofValidated
 
 	// updating state in ledger
-	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1236,7 +1236,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &agencyReport, agencyReportIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &agencyReport, agencyReportIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1365,7 +1365,7 @@ func (cc *SupplyChainChaincode) listOrders(stub shim.ChaincodeStubInterface, arg
 	// (optional) filter entries by status
 	Notifier(stub, NoticeRuningType)
 	orders := []Order{}
-	ordersBytes, err := Query(stub, orderIndex, []string{}, CreateOrder, EmptyFilter)
+	ordersBytes, err := Query(stub, orderIndex, []string{""}, CreateOrder, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1411,7 +1411,7 @@ func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, 
 	}
 
 	contracts := []Contract{}
-	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter)
+	contractsBytes, err := Query(stub, contractIndex, []string{""}, CreateContract, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1459,7 +1459,7 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 	}
 
 	proofs := []Proof{}
-	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, EmptyFilter)
+	proofsBytes, err := Query(stub, proofIndex, []string{""}, CreateProof, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1485,7 +1485,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	agencyReports := []AgencyReport{}
-	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter)
+	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{""}, CreateAgencyReport, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1509,7 +1509,7 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 	Notifier(stub, NoticeRuningType)
 
 	shipments := []Shipment{}
-	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter)
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{""}, CreateShipment, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1682,7 +1682,7 @@ func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string)
 	}
 
 	documents := []Document{}
-	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByDocumentHash)
+	documentsBytes, err := Query(stub, documentIndex, []string{""}, CreateDocument, filterByDocumentHash)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1740,7 +1740,7 @@ func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
 	}
 	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
 
-	if err := UpdateOrInsertIn(stub, event, eventIndex, []string{}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, event, eventIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message)
