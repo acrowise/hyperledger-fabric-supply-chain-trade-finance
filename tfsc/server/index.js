@@ -22,7 +22,7 @@ const services = {
   },
   transporter: {
     port: 30003,
-    api_port: 3008,
+    api_port: 3003,
     ipfs_port: 14001,
     id: 'h'
   },
@@ -93,17 +93,27 @@ ws.on('message', async (message) => {
     const eventName = event.payload.EventName.split('.')[2];
     const eventId = event.payload.EventName.split('.')[3];
 
-    const res = await axios.get(
-      `http://localhost:${API_PORT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
-    );
+    console.info('eventName:', eventName);
+    console.info('eventId:', eventId);
 
-    clients.forEach(c => c.emit(
-      'notification',
-      JSON.stringify({
-        data: { key: { id: res.data.result.value.entityID }, value: res.data.result.value.other },
-        type: eventName
-      })
-    ));
+    try {
+      const res = await axios.get(
+        `http://localhost:${API_PORT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
+      );
+
+      clients.forEach(c => c.emit(
+        'notification',
+        JSON.stringify({
+          data: {
+            key: { id: res.data.result.value.entityID },
+            value: res.data.result.value.other
+          },
+          type: eventName
+        })
+      ));
+    } catch (e) {
+      console.error(e);
+    }
   }
 });
 
