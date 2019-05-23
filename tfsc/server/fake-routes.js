@@ -348,7 +348,7 @@ module.exports = (router, clients) => {
 
     db.set('shipments', shipments).write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentConfirmed' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'confirmShipment' })));
     res.end('ok');
   });
 

@@ -24,7 +24,7 @@ const notifications = (state = [], message, tab) => {
       case 'acceptInvoice':
       case 'invoiceRemoved':
       case 'validateProof':
-      case 'shipmentConfirmed':
+      case 'confirmShipment':
       case 'shipmentDelivered':
       case 'contractUpdated': {
         const newState = state.concat([]);

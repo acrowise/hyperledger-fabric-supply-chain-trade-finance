@@ -4,7 +4,7 @@ export const notifications = {
   cancelOrder: 'orders',
   editOrder: 'orders',
   requestShipment: 'shipments',
-  shipmentConfirmed: 'shipments',
+  confirmShipment: 'shipments',
   validateProof: 'proofs',
   proofGenerated: 'proofs',
   contractCreated: 'contracts',
@@ -18,7 +18,7 @@ export const notifications = {
   documentUploaded: 'shipments',
   invoiceRegistered: 'invoices',
   reportGenerated: 'reports',
-  invoiceRemoved: 'invoices',
+  removeInvoice: 'invoices',
   contractCompleted: 'contracts'
 };
 
@@ -28,7 +28,7 @@ export const title = {
   cancelOrder: 'Order Cancelled',
   editOrder: 'Order Updated',
   requestShipment: 'Shipment Requested',
-  shipmentConfirmed: 'Shipment Confirmed',
+  confirmShipment: 'Shipment Confirmed',
   shipmentDelivered: 'Shipment Delivered',
   validateProof: 'Proof Validated',
   proofGenerated: 'Proof Generated',
@@ -42,7 +42,7 @@ export const title = {
   cancelBid: 'Bid Cancelled',
   placeInvoice: 'Invoice Signed',
   reportGenerated: 'Report Created',
-  invoiceRemoved: 'Invoice Removed',
+  removeInvoice: 'Invoice Removed',
   contractCompleted: 'Contract Completed',
   contractUpdated: 'Contract Updated'
 };
