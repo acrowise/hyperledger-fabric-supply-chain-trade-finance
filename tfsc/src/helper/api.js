@@ -10,4 +10,4 @@ export const post = method => () => usePost(data => ({
   data
 }));
 
-export const get = method => useGet(mockApi ? `/${method}` : '/api/channels/common/chaincodes/supply-chain-chaincode');
+export const get = method => useGet(mockApi ? `/${method}` : `/api/channels/common/chaincodes/supply-chain-chaincode?fcn=${method}`);
