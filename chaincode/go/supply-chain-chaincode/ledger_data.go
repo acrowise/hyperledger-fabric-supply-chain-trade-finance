@@ -37,20 +37,17 @@ func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, index string) b
 	if err != nil {
 		return false
 	}
-	collection, err := GetCollectionName(stub, index, []string{""})
+	collections, err := GetCollectionName(stub, index, []string{""})
 	if err != nil {
 		return false
 	}
 
-	if len(collection) != 1 {
-		for _, collectionName := range collection[1:] {
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
 			var data []byte
 			Logger.Debug(fmt.Sprintf("GetPrivateData. collectionName: %s", collectionName))
-			if data, err = stub.GetPrivateData(collectionName, compositeKey); err != nil {
+			if data, err = stub.GetPrivateData(collectionName, compositeKey); err != nil || data == nil {
 				return false
-			}
-			if data != nil {
-				return true
 			}
 		}
 	} else {
@@ -70,14 +67,14 @@ func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, index string) e
 		return err
 	}
 
-	collection, err := GetCollectionName(stub, index, []string{""})
+	collections, err := GetCollectionName(stub, index, []string{""})
 	if err != nil {
 		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return errors.New(message)
 	}
 
-	if len(collection) != 1 && collection[0] == "" {
-		for _, collectionName := range collection[1:] {
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
 			Logger.Debug(fmt.Sprintf("GetPrivateData. collectionName: %s", collectionName))
 			if bytes, err = stub.GetPrivateData(collectionName, compositeKey); err != nil {
 				return err
@@ -109,14 +106,14 @@ func UpdateOrInsertIn(stub shim.ChaincodeStubInterface, data LedgerData, index s
 		return err
 	}
 
-	collection, err := GetCollectionName(stub, index, participiants)
+	collections, err := GetCollectionName(stub, index, participiants)
 	if err != nil {
 		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return errors.New(message)
 	}
 
-	if len(collection) != 1 && collection[0] == "" {
-		for _, collectionName := range collection[1:] {
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
 			Logger.Debug(fmt.Sprintf("PutPrivateData. collectionName: %s", collectionName))
 			if err = stub.PutPrivateData(collectionName, compositeKey, value); err != nil {
 				return err
@@ -192,15 +189,15 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 	ledgerDataLogger.Info(fmt.Sprintf("Query(%s) is running", index))
 	ledgerDataLogger.Debug("Query " + index)
 
-	collection, err := GetCollectionName(stub, index, []string{""})
+	collections, err := GetCollectionName(stub, index, []string{""})
 	if err != nil {
 		message := fmt.Sprintf("cannot get collection name from config: %s", err.Error())
 		return nil, errors.New(message)
 	}
 
 	entries := []LedgerData{}
-	if len(collection) != 1 && collection[0] == "" {
-		for _, collectionName := range collection[1:] {
+	if len(collections) != 0 && collections[0] != "" {
+		for _, collectionName := range collections {
 			Logger.Debug(fmt.Sprintf("GetPrivateDataByPartialCompositeKey. collectionName: %s", collectionName))
 
 			it, err := stub.GetPrivateDataByPartialCompositeKey(collectionName, index, partialKey)
@@ -218,7 +215,7 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 
 			entries = append(entries, iteratorEntries...)
 
-			defer it.Close()
+			it.Close()
 		}
 	} else {
 		it, err := stub.GetStateByPartialCompositeKey(index, partialKey)
@@ -234,6 +231,7 @@ func Query(stub shim.ChaincodeStubInterface, index string, partialKey []string,
 			ledgerDataLogger.Error(err.Error())
 			return nil, err
 		}
+
 	}
 
 	result, err := json.Marshal(entries)
@@ -383,7 +381,7 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 }
 
 func GetCollectionName(stub shim.ChaincodeStubInterface, index string, participiants []string) ([]string, error) {
-	collectionName := []string{""}
+	var collectionName []string
 
 	if len(participiants) == 1 && participiants[0] == "" {
 		creator, err := GetMSPID(stub)
@@ -402,7 +400,6 @@ func GetCollectionName(stub shim.ChaincodeStubInterface, index string, participi
 		return collectionName, err
 	}
 
-	Logger.Debug("GetState")
 	bytes, err = stub.GetState(compositeKey)
 	if err != nil {
 		return collectionName, err

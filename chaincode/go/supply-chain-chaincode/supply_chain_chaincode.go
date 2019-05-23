@@ -1365,7 +1365,7 @@ func (cc *SupplyChainChaincode) listOrders(stub shim.ChaincodeStubInterface, arg
 	// (optional) filter entries by status
 	Notifier(stub, NoticeRuningType)
 	orders := []Order{}
-	ordersBytes, err := Query(stub, orderIndex, []string{""}, CreateOrder, EmptyFilter)
+	ordersBytes, err := Query(stub, orderIndex, []string{}, CreateOrder, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1411,7 +1411,7 @@ func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, 
 	}
 
 	contracts := []Contract{}
-	contractsBytes, err := Query(stub, contractIndex, []string{""}, CreateContract, EmptyFilter)
+	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1459,7 +1459,7 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 	}
 
 	proofs := []Proof{}
-	proofsBytes, err := Query(stub, proofIndex, []string{""}, CreateProof, EmptyFilter)
+	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1485,7 +1485,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	agencyReports := []AgencyReport{}
-	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{""}, CreateAgencyReport, EmptyFilter)
+	agencyReportsBytes, err := Query(stub, agencyReportIndex, []string{}, CreateAgencyReport, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1509,7 +1509,7 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 	Notifier(stub, NoticeRuningType)
 
 	shipments := []Shipment{}
-	shipmentsBytes, err := Query(stub, shipmentIndex, []string{""}, CreateShipment, EmptyFilter)
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
@@ -1682,7 +1682,7 @@ func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string)
 	}
 
 	documents := []Document{}
-	documentsBytes, err := Query(stub, documentIndex, []string{""}, CreateDocument, filterByDocumentHash)
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByDocumentHash)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
