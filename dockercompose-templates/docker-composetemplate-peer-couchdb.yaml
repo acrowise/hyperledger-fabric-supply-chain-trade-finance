@@ -123,7 +123,7 @@ services:
     volumes:
       - ../artifacts/nginx-ORG.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - api.ORG.DOMAIN
+      - tsupply-app.ORG.DOMAIN
 
   couchdb.ORG.DOMAIN:
     container_name: couchdb.ORG.DOMAIN
@@ -154,9 +154,11 @@ services:
     image: tsupply-app:latest
     environment:
       PORT: WWW_PORT
-      API_PORT: WWW_PORT
+      API_PORT: REST_API_PORT
       IPFS_PORT: IPFS_API
       ROLE: ROLE_APP
     volumes:
       - ../tfsc/server:/src/server
       - ../tfsc/src:/src/src
+    depends_on:
+      - api.ORG.DOMAIN
