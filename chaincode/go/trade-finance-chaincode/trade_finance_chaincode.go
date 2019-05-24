@@ -212,7 +212,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		message := fmt.Sprintf("this organizational unit is not allowed to place an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -319,7 +319,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		message := fmt.Sprintf("this organizational unit is not allowed to remove an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -414,7 +414,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	Logger.Debug("OrganizationalUnit: " + orgUnit)
 
 	if !allowedUnits[orgUnit] {
-		message := fmt.Sprintf("this organizational unit is not allowed to register an invoice")
+		message := fmt.Sprintf("this organizational unit is not allowed to accept an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
 	}

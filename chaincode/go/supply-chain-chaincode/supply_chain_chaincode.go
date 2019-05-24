@@ -476,7 +476,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 
 	//additional checking
 	if orderToUpdate.Value.State != stateOrderNew {
-		message := fmt.Sprintf("unable cancel order with current state")
+		message := fmt.Sprintf("unable accept order with current state")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
