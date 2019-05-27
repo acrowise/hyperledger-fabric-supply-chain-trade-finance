@@ -32,11 +32,11 @@ Network consortium consists of:
 - Peer organization org1 `a` 
 - Peer organization org2 `b` 
 - Peer organization org3 `c`
-- Peer organization org3 `d`
-- Peer organization org3 `e`
-- Peer organization org3 `f`
-- Peer organization org3 `g`
-- Peer organization org3 `h`
+- Peer organization org4 `d`
+- Peer organization org5 `e`
+- Peer organization org6 `f`
+- Peer organization org7 `g`
+- Peer organization org8 `h`
 
 They transact with each other on the following channel:
 - `common` involving all members and with chaincode `reference` deployed

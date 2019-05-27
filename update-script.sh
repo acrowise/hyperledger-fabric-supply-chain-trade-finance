@@ -11,10 +11,11 @@ artifactsTemplatesFolder="artifact-templates"
 : ${ORG1:="a"}
 : ${ORG2:="b"}
 : ${ORG3:="c"}
-: ${ORG1:="d"}
-: ${ORG2:="e"}
-: ${ORG3:="f"}
-: ${ORG3:="g"}
+: ${ORG4:="d"}
+: ${ORG5:="e"}
+: ${ORG6:="f"}
+: ${ORG7:="g"}
+: ${ORG8:="h"}
 CHAINCODE_COMMON_NAME=reference
 CHAINCODE_BILATERAL_NAME=relationship
 CHAINCODE_COMMON_INIT='{"Args":["init","a","100","b","100"]}'
@@ -82,7 +83,7 @@ function upgradeChaincode() {
 
 echo "=== Upgrading all chaincodes with $chaincode_version"
 
-for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
+for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
 do
     for chaincode_name in ${CHAINCODE_COMMON_NAME} #${CHAINCODE_BILATERAL_NAME}
     do

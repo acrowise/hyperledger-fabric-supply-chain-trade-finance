@@ -793,7 +793,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   done
 
 elif [ "${MODE}" == "down" ]; then
-  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3}
+  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
   do
     dockerComposeDown ${org}
   done
