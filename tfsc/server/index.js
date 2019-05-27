@@ -26,6 +26,12 @@ const services = {
     ipfs_port: 14001,
     id: 'h'
   },
+  transport_agency: {
+    port: 30008,
+    api_port: 3008,
+    ipfs_port: 14001,
+    id: 'h'
+  },
   ggcb: {
     port: 30004,
     api_port: 3004,
@@ -37,6 +43,18 @@ const services = {
     api_port: 3005,
     ipfs_port: 11001,
     id: 'e'
+  },
+  factor: {
+    port: 30006,
+    api_port: 3006,
+    ipfs_port: 12001,
+    id: 'f'
+  },
+  auditor: {
+    port: 30004,
+    api_port: 3004,
+    ipfs_port: 10001,
+    id: 'd'
   },
   'factor 1': {
     port: 30006,
@@ -52,11 +70,17 @@ const services = {
   }
 };
 
+console.log('API_ENDPOINT', process.env.API_ENDPOINT);
+
+const { API_ENDPOINT } = process.env;
+
 const PORT = process.env.PORT || services[process.env.ROLE].port;
 
 const API_PORT = process.env.API_PORT || services[process.env.ROLE].api_port;
 
-const ws = new WebSocket(`ws://localhost:${API_PORT}/api/notifications`);
+const ws = new WebSocket(
+  `ws://${API_ENDPOINT}/api/notifications`
+);
 
 function heartbeat() {
   setInterval(() => {
@@ -98,7 +122,7 @@ ws.on('message', async (message) => {
 
     try {
       const res = await axios.get(
-        `http://localhost:${API_PORT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
+        `http://${API_ENDPOINT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getEventPayload&args=${eventId}`
       );
 
       clients.forEach(c => c.emit(
@@ -123,7 +147,7 @@ const router = express.Router();
 router.use(
   '/api',
   proxy({
-    target: `http://0.0.0.0:${API_PORT}`,
+    target: `http://${API_ENDPOINT}`,
     changeOrigin: true,
     logLevel: 'debug',
     onProxyReq: async (proxyReq, req, res) => {

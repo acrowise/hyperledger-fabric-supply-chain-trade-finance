@@ -420,7 +420,7 @@ module.exports = (router, clients) => {
 
     db.set('invoices', invoices).write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: invoice, type: 'invoiceRemoved' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: invoice, type: 'removeInvoice' })));
     res.end('ok');
   });
 

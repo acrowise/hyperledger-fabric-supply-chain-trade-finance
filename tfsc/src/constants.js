@@ -20,7 +20,10 @@ export const actors = [
   },
   { role: 'Factor 1', description: 'a bank to acquire a debt of buyer' },
   { role: 'Factor 2', description: 'a bank to acquire a debt of buyer' },
-  { role: 'admin', description: 'system administrator' }
+  { role: 'admin', description: 'system administrator' },
+  { role: 'transport_agency', description: 'delete_me' },
+  { role: 'factor', description: 'delete_me' },
+  { role: 'auditor', description: 'delete_me' }
 ];
 
 export const STATUSES = {
