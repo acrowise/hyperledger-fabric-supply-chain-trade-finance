@@ -959,6 +959,24 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
 		}
+	case TypeContract:
+		entityType := Contract{}
+		entityType.Key.ID = document.Value.EntityID
+		if !ExistsIn(stub, &entityType, contractIndex) {
+			compositeKey, _ := entityType.ToCompositeKey(stub)
+			return shim.Error(fmt.Sprintf("contract with the key %s doesn't exist", compositeKey))
+		}
+		if err := LoadFrom(stub, &entityType, contractIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
+		if err := UpdateOrInsertIn(stub, &entityType, contractIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
 	default:
 		break
 	}
@@ -979,15 +997,9 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	return shim.Success(nil)
 }
 
-//0		1			2
-//ID	SnapShot	State
+//0		1				2
+//ID	ArrayAttributes	State
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: auditor name/id/etc, contract id, fields included in proof (true/false for each of the contract's fields)
-	// check role == Supplier
-	// check proof existence (to avoid multiple generations)
-	// check contract existence
-	// generate proof
-	// save proof to Buyer-Supplier collection
 
 	Notifier(stub, NoticeRuningType)
 

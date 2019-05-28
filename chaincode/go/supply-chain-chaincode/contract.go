@@ -45,16 +45,17 @@ type ContractKey struct {
 }
 
 type ContractValue struct {
-	ProductName   string  `json:"productName"`
-	ConsignorName string  `json:"consignorName"`
-	ConsigneeName string  `json:"consigneeName"`
-	TotalDue      float32 `json:"totalDue"`
-	Quantity      int     `json:"quantity"`
-	Destination   string  `json:"destination"`
-	DueDate       int64   `json:"dueDate"`
-	PaymentDate   int64   `json:"paymentDate"`
-	State         int     `json:"state"`
-	Timestamp     int64   `json:"timestamp"`
+	ProductName   string   `json:"productName"`
+	ConsignorName string   `json:"consignorName"`
+	ConsigneeName string   `json:"consigneeName"`
+	TotalDue      float32  `json:"totalDue"`
+	Quantity      int      `json:"quantity"`
+	Destination   string   `json:"destination"`
+	DueDate       int64    `json:"dueDate"`
+	PaymentDate   int64    `json:"paymentDate"`
+	Documents     []string `json:"documents"`
+	State         int      `json:"state"`
+	Timestamp     int64    `json:"timestamp"`
 }
 
 type Contract struct {

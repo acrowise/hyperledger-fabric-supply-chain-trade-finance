@@ -403,6 +403,8 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	//checking role
 	allowedUnits := map[string]bool{
 		Buyer: true,
+		//TODO: remove TA access for this method after implementing confirmDelivery method
+		TransportAgency: true,
 	}
 
 	orgUnit, err := GetCreatorOrganizationalUnit(stub)

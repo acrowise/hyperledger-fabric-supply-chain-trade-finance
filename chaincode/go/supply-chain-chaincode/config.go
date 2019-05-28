@@ -26,6 +26,7 @@ const (
 // Type entity with documents
 const (
 	TypeUnknown = iota
+	TypeContract
 	TypeShipment
 	TypeAgencyReport
 )

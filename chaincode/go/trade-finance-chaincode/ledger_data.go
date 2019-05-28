@@ -33,6 +33,8 @@ type LedgerData interface {
 }
 
 func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, index string) bool {
+
+	existResult := false
 	compositeKey, err := data.ToCompositeKey(stub)
 	if err != nil {
 		return false
@@ -46,18 +48,25 @@ func ExistsIn(stub shim.ChaincodeStubInterface, data LedgerData, index string) b
 		for _, collectionName := range collections {
 			var data []byte
 			Logger.Debug(fmt.Sprintf("GetPrivateData. collectionName: %s", collectionName))
-			if data, err = stub.GetPrivateData(collectionName, compositeKey); err != nil || data == nil {
-				return false
+			if data, err = stub.GetPrivateData(collectionName, compositeKey); err != nil {
+				return existResult
+			}
+			if data != nil {
+				existResult = true
 			}
 		}
 	} else {
 		Logger.Debug("GetState")
-		if data, err := stub.GetState(compositeKey); err != nil || data == nil {
-			return false
+		var data []byte
+		if data, err = stub.GetState(compositeKey); err != nil {
+			return existResult
+		}
+		if data != nil {
+			existResult = true
 		}
 	}
 
-	return true
+	return existResult
 }
 
 func LoadFrom(stub shim.ChaincodeStubInterface, data LedgerData, index string) error {
@@ -413,9 +422,11 @@ func GetCollectionName(stub shim.ChaincodeStubInterface, index string, participi
 
 	for _, col := range collections {
 		count := 0
-		for _, participiant := range participiants {
-			if strings.Contains(col.Name, index) && strings.Contains(col.Policy, participiant) {
-				count++
+		if strings.Contains(col.Name, index) {
+			for _, participiant := range participiants {
+				if strings.Contains(col.Policy, participiant) {
+					count++
+				}
 			}
 		}
 		if len(participiants) == count {
