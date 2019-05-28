@@ -87,6 +87,7 @@ function heartbeat() {
     ws.send('ping');
   }, 10000);
 }
+
 const subscribe = () => {
   ws.send(
     JSON.stringify({

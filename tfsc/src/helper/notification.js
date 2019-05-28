@@ -23,7 +23,7 @@ const notifications = (state = [], message, tab) => {
       case 'editBid':
       case 'acceptInvoice':
       case 'invoiceRemoved':
-      case 'validateProof':
+      case 'verifyProof':
       case 'confirmShipment':
       case 'shipmentDelivered':
       case 'contractUpdated': {

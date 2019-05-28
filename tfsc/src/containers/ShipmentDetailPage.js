@@ -20,7 +20,7 @@ import Icons from '../components/Icon/Icon';
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
-  const [proofs, loadingProofs, setData] = get(`listProofs?id=${shipment.id}`);
+  const [proofs, loadingProofs, setData] = get('listProofs'); // ?id=${shipment.id} FIXME:
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
@@ -37,7 +37,7 @@ const ShipmentDetailPage = ({
       setData({ result: newState });
     }
 
-    if (notification.type === 'validateProof') {
+    if (notification.type === 'verifyProof') {
       const newState = proofs.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex].value = notification.data.value;
@@ -115,7 +115,7 @@ const ShipmentDetailPage = ({
               </tbody>
             </table>
             <div style={{ paddingTop: 15, paddingBottom: 18 }}>
-              {role === 'transporter' || role === 'supplier' ? (
+              {role === 'transporter' || role === 'supplier' || role === 'transport_agency' ? (
                 <div style={{ fontSize: 16 }}>
                   <p
                     style={{
@@ -158,7 +158,8 @@ const ShipmentDetailPage = ({
               ) : (
                 <></>
               )}
-              {role === 'transporter' && shipment.state === 'Requested' ? (
+              {role === 'transporter'
+              || (role === 'transport_agency' && shipment.state === 'Requested') ? (
                 <div>
                   <Button
                     style={{ paddingLeft: 30, paddingRight: 30 }}
@@ -170,9 +171,9 @@ const ShipmentDetailPage = ({
                     Confirm Shipment
                   </Button>
                 </div>
-              ) : (
+                ) : (
                 <></>
-              )}
+                )}
             </div>
           </div>
 
@@ -214,7 +215,7 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/document?contractId=${doc.contractId}&name=${doc.name}`}
+                        href={`/getDocument?contractId=${doc.contractId}&name=${doc.name}`}
                         target="_blank"
                       >
                         {doc.type}

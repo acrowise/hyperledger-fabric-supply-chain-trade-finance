@@ -19,8 +19,8 @@ const ValidateProof = ({
   dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
   const [files, setFiles] = useState([]);
-  const [, validateProof] = post('validateProof')();
-  const [, uploadDocs] = post('uploadDocuments')();
+  const [, verifyProof] = post('verifyProof')();
+  const [, uploadDocs] = post('uploadDocument')();
 
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -92,7 +92,7 @@ const ValidateProof = ({
                     <Icon name="proof-document" />
                     <a
                       style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                      href={`/document?contractId=${d.contractId}&name=${d.name}`}
+                      href={`/getDocument?contractId=${d.contractId}&name=${d.name}`}
                       target="_blank"
                     >
                       {d.type}
@@ -142,8 +142,8 @@ const ValidateProof = ({
                     } else {
                       setDialogOpenState(false);
                       setFileRequired(false);
-                      validateProof({
-                        fcn: 'validateProof',
+                      verifyProof({
+                        fcn: 'verifyProof',
                         contractId: proof.contract.key.id,
                         shipmentId: proof.shipmentId,
                         user: role,

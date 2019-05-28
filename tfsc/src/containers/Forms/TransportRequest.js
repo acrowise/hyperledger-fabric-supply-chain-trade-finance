@@ -30,8 +30,10 @@ const initialState = {
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [files, setFiles] = useState([]);
+  const [hashes, setHashes] = useState([]);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
-  const [, uploadDocs] = post('uploadDocuments')();
+  const [, uploadDocs] = post('uploadDocument')();
+  const [, uploadDocument] = post('uploadDocument')();
   const [fileRequired, setFileRequired] = useState(false);
 
   const errors = {
@@ -130,7 +132,13 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                     <Label>
                       Packing List
                       <div style={{ marginTop: 5 }}>
-                        <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
+                        <FileUploader
+                          files={files}
+                          setFiles={setFiles}
+                          hashes={hashes}
+                          setHashes={setHashes}
+                          error={fileRequired}
+                        />
                       </div>
                     </Label>
                   </div>
@@ -159,7 +167,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   className="btn-modal"
                   onClick={() => {
                     const hasErrors = Object.keys(errors).find(i => errors[i] === true);
-                    if (files.length === 0) {
+                    if (files.length === 0 || hashes.length === 0) {
                       setFileRequired(true);
                     }
                     if (!hasErrors && files.length !== 0) {
@@ -171,17 +179,30 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                           formState.shipFrom,
                           formState.shipTo,
                           formState.transport,
-                          formState.description
+                          formState.description,
+                          dialogIsOpen.item.dueDate.toString() // Delivery Date
                         ]
                       });
                       setTimeout(() => {
-                        const form = new FormData();
-                        form.append('contractId', dialogIsOpen.item.id);
-                        form.append('type', 'Packing List');
-                        files.forEach((f) => {
-                          form.append('file', f);
-                        });
-                        uploadDocs(form);
+                        // const form = new FormData();
+                        // form.append('contractId', dialogIsOpen.item.id);
+                        // form.append('type', 'Packing List');
+                        // files.forEach((f) => {
+                        //   form.append('file', f);
+                        // });
+                        // uploadDocs(form);
+
+                        // uploadDocument({
+                        //   fcn: 'uploadDocument',
+                        //   args: [
+                        //     '0',
+                        //     '1',
+                        //     dialogIsOpen.item.id,
+                        //     hashes[0].hash,
+                        //     'doc description',
+                        //     '1'
+                        //   ]
+                        // });
                       }, 600);
 
                       setFiles([]);

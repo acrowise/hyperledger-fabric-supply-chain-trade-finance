@@ -71,7 +71,7 @@ const tabs = actor => [
   },
   {
     name: 'Invoices',
-    actors: ['buyer', 'supplier', 'factor 1', 'factor 2'],
+    actors: ['buyer', 'supplier', 'factor 1', 'factor 2', 'factor'],
     panel: (
       <Filter
         filterBy={['debtor', 'beneficiary', 'paymentDate', 'owner']}
@@ -83,7 +83,7 @@ const tabs = actor => [
   },
   {
     name: 'Shipments',
-    actors: ['buyer', 'supplier', 'transporter'],
+    actors: ['buyer', 'supplier', 'transporter', 'transport_agency'],
     panel: (
       <Filter
         filterBy={['shipFrom', 'shipTo', 'transport']}
@@ -95,7 +95,7 @@ const tabs = actor => [
   },
   {
     name: 'Proofs',
-    actors: ['ggcb', 'uscts'],
+    actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
       <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Generated', 'Validated']}>
         <Proofs role={actor.role} />
@@ -104,7 +104,7 @@ const tabs = actor => [
   },
   {
     name: 'Reports',
-    actors: ['ggcb', 'uscts'],
+    actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
       <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Accepted', 'Declined']}>
         <Reports role={actor.role} />
@@ -113,7 +113,7 @@ const tabs = actor => [
   },
   {
     name: 'Bids',
-    actors: ['factor 1', 'factor 2', 'supplier'],
+    actors: ['factor 1', 'factor 2', 'supplier', 'factor'],
     panel: (
       <Filter
         filterBy={['debtor', 'beneficiary', 'rate', 'paymentDate']}

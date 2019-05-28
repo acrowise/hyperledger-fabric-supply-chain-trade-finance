@@ -7,7 +7,6 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/idemix"
 	"github.com/satori/go.uuid"
-	"strconv"
 )
 
 const (
@@ -16,7 +15,7 @@ const (
 
 const (
 	proofKeyFieldsNumber      = 1
-	proofBasicArgumentsNumber = 2
+	proofBasicArgumentsNumber = 3
 )
 
 //proof state constants (from 0 to 2)
@@ -46,6 +45,7 @@ type ProofValue struct {
 	SnapShot            *idemix.Signature        `json:"snapShot"`
 	DataForVerification ProofDataForVerification `json:"dataForVerification"`
 	State               int                      `json:"state"`
+	Owner               string                   `json:"owner"`
 	Timestamp           int64                    `json:"timestamp"`
 }
 
@@ -76,21 +76,18 @@ func CreateProof() LedgerData {
 
 //argument order
 //0		1			2
-//ID	SnapShot	State
+//ID	SnapShot	Owner
 func (entity *Proof) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < proofBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", proofBasicArgumentsNumber))
 	}
 
-	//checking state
-	state, err := strconv.Atoi(args[2])
-	if err != nil {
-		return errors.New(fmt.Sprintf("proof state is invalid: %s (must be int)", args[8]))
+	//checking owner
+	owner := args[2]
+	if owner == "" {
+		return errors.New(fmt.Sprintf("proof Owner is invalid: %s (must be string)", args[2]))
 	}
-	if !Contains(proofStateLegal, state) {
-		return errors.New(fmt.Sprintf("proof state is invalid: %d (must be from 0 to %d)", state, len(proofStateLegal)))
-	}
-	entity.Value.State = state
+	entity.Value.Owner = owner
 
 	return nil
 }
