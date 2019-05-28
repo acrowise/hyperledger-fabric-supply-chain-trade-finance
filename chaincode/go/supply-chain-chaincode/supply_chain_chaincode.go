@@ -953,7 +953,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 }
 
 //0		1			2
-//ID	SnapShot	State
+//ID	SnapShot	Owner
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: auditor name/id/etc, contract id, fields included in proof (true/false for each of the contract's fields)
 	// check role == Supplier
