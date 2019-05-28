@@ -1110,6 +1110,11 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	//allowedUnits := map[string]bool{
+	//	Auditor: true,
+	//}
+
 	// checking proof exist
 	proof := Proof{}
 	if err := proof.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
@@ -1131,6 +1136,42 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	//if !allowedUnits[orgUnit] {
+	//	message := fmt.Sprintf("this organizational unit is not allowed to verify proof")
+	//	Logger.Error(message)
+	//	return shim.Error(message)
+	//}
+	//
+	////checking role
+	//if orgUnit != "auditor" {
+	//	message := fmt.Sprintf("You're not owner of this proof")
+	//	Logger.Error(message)
+	//	return shim.Error(message)
+	//}
+
+	//checking owner
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if proof.Value.Owner != creator {
+		message := fmt.Sprintf("You're not owner of this proof")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if proof.Value.State != stateProofGenerated {
 		message := fmt.Sprintf("invalid state of proof")
 		Logger.Error(message)
@@ -1142,7 +1183,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i]))
 		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i])
 	}
-	err := proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
+	err = proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
 		proof.Value.DataForVerification.Ipk,
 		proof.Value.DataForVerification.Msg,
 		attributeValuesBytes,
