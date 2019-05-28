@@ -50,6 +50,7 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 
 	//checking entityType
 	allowedEntityTypes := map[int]bool{
+		TypeContract:     true,
 		TypeAgencyReport: true,
 		TypeShipment:     true,
 	}
