@@ -49,6 +49,7 @@ type ShipmentKey struct {
 
 type ShipmentValue struct {
 	ContractID   string   `json:"contractID"`
+	Consignor    string   `json:"consignor"`
 	ShipFrom     string   `json:"shipFrom"`
 	ShipTo       string   `json:"shipTo"`
 	Transport    string   `json:"transport"`

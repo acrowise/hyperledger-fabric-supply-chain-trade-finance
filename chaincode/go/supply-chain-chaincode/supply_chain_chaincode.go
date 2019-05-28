@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
+	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	"github.com/hyperledger/fabric/idemix"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
@@ -622,23 +623,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(fmt.Sprintf("shipment with the key %s already exist", compositeKey))
 	}
 
-	//setting automatic values
-	shipment.Value.State = stateShipmentRequested
-	shipment.Value.Description = args[5]
-	shipment.Value.Timestamp = time.Now().UTC().Unix()
-
-	//updating state in ledger
-	if bytes, err := json.Marshal(shipment); err == nil {
-		Logger.Debug("Shipment: " + string(bytes))
-	}
-
-	if err := UpdateOrInsertIn(stub, &shipment, shipmentIndex, []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	//updating contract state
+	// getting contract for checking permissions
 	contract := Contract{}
 	if err := contract.FillFromCompositeKeyParts([]string{shipment.Value.ContractID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
@@ -657,6 +642,37 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if contract.Value.ConsignorName != creator {
+		message := fmt.Sprintf("each supplier can request shipment only for their contract")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting automatic values
+	shipment.Value.State = stateShipmentRequested
+	shipment.Value.Description = args[5]
+	shipment.Value.Consignor = contract.Value.ConsignorName
+	shipment.Value.Timestamp = time.Now().UTC().Unix()
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipment); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipment, shipmentIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//updating contract state
 	contract.Value.State = stateContractProcessed
 
 	if bytes, err := json.Marshal(contract); err == nil {
@@ -710,9 +726,13 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(message)
 	}
 
+	shipmentID := args[0]
+
+	Logger.Debug(fmt.Sprintf("ShipmentID: %s", shipmentID))
+
 	//checking shipment exist
 	shipment := Shipment{}
-	if err := shipment.FillFromCompositeKeyParts(args[:shipmentKeyFieldsNumber]); err != nil {
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
@@ -755,7 +775,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 
 	//updating contract state
 	contract := Contract{}
-	if err := contract.FillFromCompositeKeyParts([]string{shipment.Value.ContractID}); err != nil {
+	if err := contract.FillFromCompositeKeyParts([]string{shipmentToUpdate.Value.ContractID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -779,12 +799,19 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//saving contract to ledger
-	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{creator, shipmentToUpdate.Value.Consignor}, statebased.RoleTypePeer); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
-
+	//TODO: move create invocie to confirmDelivery
 	//invoking another chaincode for accepting invoice
 	fcnName := "acceptInvoice"
 	chaincodeName := "trade-finance-chaincode"
