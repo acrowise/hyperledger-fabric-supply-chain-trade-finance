@@ -12,7 +12,7 @@ import { post } from '../../helper/api';
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
   const [deliveryRes, confirmDelivery] = post('confirmDelivery')();
-  const [documentsRes, uploadDocs] = post('uploadDocuments')();
+  const [documentsRes, uploadDocs] = post('uploadDocument')();
 
   const [fileRequired, setFileRequired] = useState(false);
 

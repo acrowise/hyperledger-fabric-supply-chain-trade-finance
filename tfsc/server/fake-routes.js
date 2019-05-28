@@ -48,7 +48,7 @@ module.exports = (router, clients) => {
     }, 650);
   });
 
-  router.get('/document', (req, res) => {
+  router.get('/getDocument', (req, res) => {
     if (req.query && req.query.contractId && req.query.name) {
       res.set({ 'Content-type': mime.contentType(req.query.name) });
       res.sendFile(path.resolve(`./.docs/${req.query.contractId}/${req.query.name}`));
@@ -98,7 +98,7 @@ module.exports = (router, clients) => {
     res.json({ result: db.get('reports').value() });
   });
 
-  router.post('/uploadDocuments', upload.array('file'), (req, res) => {
+  router.post('/uploadDocument', upload.array('file'), (req, res) => {
     const { files } = req;
 
     files.forEach((f) => {
@@ -352,7 +352,7 @@ module.exports = (router, clients) => {
     res.end('ok');
   });
 
-  router.post('/validateProof', (req, res) => {
+  router.post('/verifyProof', (req, res) => {
     const proofs = db.get('proofs').value();
 
     const proof = proofs.find(i => i.key.id === req.body.args[0]); // get('proofs', req.body.args[0]);
@@ -395,7 +395,7 @@ module.exports = (router, clients) => {
     db.set('shipments', shipments).write();
     // }
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'validateProof' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'verifyProof' })));
 
     res.end('ok');
   });
