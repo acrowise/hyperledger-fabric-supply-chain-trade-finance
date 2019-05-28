@@ -423,7 +423,8 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 
 	//checking invoice exist
 	invoice := Invoice{}
-	if err := invoice.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
+	invoiceID := args[0]
+	if err := invoice.FillFromCompositeKeyParts([]string{invoiceID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}

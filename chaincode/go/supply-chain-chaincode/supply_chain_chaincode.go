@@ -816,7 +816,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	fcnName := "acceptInvoice"
 	chaincodeName := "trade-finance-chaincode"
 	channelName := "common"
-	invoiceID := shipment.Value.ContractID
+	invoiceID := shipmentToUpdate.Value.ContractID
 
 	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte("0"), []byte("0"), []byte("0"), []byte("0"), []byte("0"), []byte("0")}
 
