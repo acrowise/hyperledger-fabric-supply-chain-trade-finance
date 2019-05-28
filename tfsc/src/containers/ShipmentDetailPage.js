@@ -20,7 +20,7 @@ import Icons from '../components/Icon/Icon';
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
-  const [proofs, loadingProofs, setData] = get(`listProofs?id=${shipment.id}`);
+  const [proofs, loadingProofs, setData] = get('listProofs'); // ?id=${shipment.id} FIXME:
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
