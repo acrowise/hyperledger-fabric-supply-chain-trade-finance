@@ -102,6 +102,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.listContracts(stub, args)
 	} else if function == "listProofs" {
 		return cc.listProofs(stub, args)
+	} else if function == "listProofsByOwner" {
+		return cc.listProofsByOwner(stub, args)
 	} else if function == "listReports" {
 		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
@@ -119,7 +121,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
-		"acceptInvoice, rejectInvoice, " +
+		"acceptInvoice, rejectInvoice, listProofsByOwner, " +
 		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument, getByQuery}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	Logger.Debug(message)
@@ -1138,6 +1140,11 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	//allowedUnits := map[string]bool{
+	//	Auditor: true,
+	//}
+
 	// checking proof exist
 	proof := Proof{}
 	if err := proof.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
@@ -1159,6 +1166,42 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	//if !allowedUnits[orgUnit] {
+	//	message := fmt.Sprintf("this organizational unit is not allowed to verify proof")
+	//	Logger.Error(message)
+	//	return shim.Error(message)
+	//}
+	//
+	////checking role
+	//if orgUnit != "auditor" {
+	//	message := fmt.Sprintf("You're not owner of this proof")
+	//	Logger.Error(message)
+	//	return shim.Error(message)
+	//}
+
+	//checking owner
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("Creator: " + creator)
+
+	if proof.Value.Owner != creator {
+		message := fmt.Sprintf("You're not owner of this proof")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if proof.Value.State != stateProofGenerated {
 		message := fmt.Sprintf("invalid state of proof")
 		Logger.Error(message)
@@ -1170,7 +1213,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i]))
 		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i])
 	}
-	err := proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
+	err = proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
 		proof.Value.DataForVerification.Ipk,
 		proof.Value.DataForVerification.Msg,
 		attributeValuesBytes,
@@ -1423,6 +1466,63 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 
 	proofs := []Proof{}
 	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(proofsBytes, &proofs); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(proofs)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
+//0
+//Owner
+func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	// check role == Auditor
+	// list all proofs for Auditor's name
+	Notifier(stub, NoticeRuningType)
+
+	owner := args[0]
+	filterByOwner := func(data LedgerData) bool {
+		entity, ok := data.(*Proof)
+		if ok && entity.Value.Owner == owner {
+			return true
+		}
+
+		return false
+	}
+
+	//checking role
+	//allowedUnits := map[string]bool{
+	//	Auditor:         true,
+	//}
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	//if !allowedUnits[orgUnit] {
+	//	message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+	//	Logger.Error(message)
+	//	return shim.Error(message)
+	//}
+
+	proofs := []Proof{}
+	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, filterByOwner)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
