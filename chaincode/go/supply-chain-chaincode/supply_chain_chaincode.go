@@ -79,6 +79,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.requestShipment(stub, args)
 	} else if function == "confirmShipment" {
 		return cc.confirmShipment(stub, args)
+	} else if function == "confirmDelivery" {
+		return cc.confirmDelivery(stub, args)
 	} else if function == "uploadDocument" {
 		return cc.uploadDocument(stub, args)
 	} else if function == "generateProof" {
@@ -136,23 +138,12 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to place an order")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+
 	//filling from arguments
 	order := Order{}
 	if err := order.FillFromArguments(stub, args); err != nil {
@@ -207,8 +198,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = order.Key.ID
 	event.Value.Other = order.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -224,19 +214,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to edit an order")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -313,8 +291,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
 	event.Value.Other = orderToUpdate.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -330,19 +307,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to cancel an order")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -410,8 +375,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
 	event.Value.Other = orderToUpdate.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -435,19 +399,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Supplier: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to cancel an order")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -567,8 +519,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	event.Value.EntityType = orderIndex
 	event.Value.EntityID = orderToUpdate.Key.ID
 	event.Value.Other = orderToUpdate.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -584,19 +535,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Supplier: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to request a shipment")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -691,8 +630,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
 	event.Value.Other = shipment.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -708,19 +646,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		TransportAgency: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{TransportAgency}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -773,7 +699,60 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	//updating contract state
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = shipmentIndex
+	event.Value.EntityID = shipment.Key.ID
+	event.Value.Other = shipment.Value
+	if err := event.emitState(stub); err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
+//0		1	2	3	4	5
+//ID	0	0	0	0	0
+func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	shipmentID := args[0]
+
+	Logger.Debug(fmt.Sprintf("ShipmentID: %s", shipmentID))
+
+	//checking shipment exist
+	shipment := Shipment{}
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &shipment, shipmentIndex) {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	shipmentToUpdate := Shipment{}
+	shipmentToUpdate.Key = shipment.Key
+	if err := LoadFrom(stub, &shipmentToUpdate, shipmentIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	// getting contract for checking permissions
 	contract := Contract{}
 	if err := contract.FillFromCompositeKeyParts([]string{shipmentToUpdate.Value.ContractID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
@@ -786,19 +765,12 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(fmt.Sprintf("contract with the key %s doesnt exist", compositeKey))
 	}
 
-	if err := LoadFrom(stub, &contract, ""); err != nil {
+	if err := LoadFrom(stub, &contract, contractIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	contract.Value.State = stateContractCompleted
-
-	if bytes, err := json.Marshal(contract); err == nil {
-		Logger.Debug("Contract: " + string(bytes))
-	}
-
-	//saving contract to ledger
 	creator, err := GetMSPID(stub)
 	if err != nil {
 		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
@@ -806,13 +778,47 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(message)
 	}
 
+	if contract.Value.ConsigneeName != creator {
+		message := fmt.Sprintf("each buyer can confirm delivery only for their contract")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//additional checking
+	if shipmentToUpdate.Value.State != stateShipmentConfirmed {
+		message := fmt.Sprintf("unable confirm delivery with current state of shipment")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	shipmentToUpdate.Value.State = stateShipmentDelivered
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
+		Logger.Debug("Shipment: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &shipmentToUpdate, shipmentIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//updating contract state
+	contract.Value.State = stateContractCompleted
+
+	if bytes, err := json.Marshal(contract); err == nil {
+		Logger.Debug("Contract: " + string(bytes))
+	}
+
+	//saving contract to ledger
 	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{creator, shipmentToUpdate.Value.Consignor}, statebased.RoleTypePeer); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
-	//TODO: move create invocie to confirmDelivery
-	//invoking another chaincode for accepting invoice
+
 	fcnName := "acceptInvoice"
 	chaincodeName := "trade-finance-chaincode"
 	channelName := "common"
@@ -835,8 +841,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	event.Value.EntityType = shipmentIndex
 	event.Value.EntityID = shipment.Key.ID
 	event.Value.Other = shipment.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -850,21 +855,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Supplier: true,
-		Buyer:    true,
-		Auditor:  true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Supplier, Buyer, Auditor}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to upload a document")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -986,8 +977,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	event.Value.EntityType = documentIndex
 	event.Value.EntityID = document.Key.ID
 	event.Value.Other = document.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1133,8 +1123,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	event.Value.EntityType = proofIndex
 	event.Value.EntityID = proof.Key.ID
 	event.Value.Other = proof.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1209,8 +1198,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	event.Value.EntityType = proofIndex
 	event.Value.EntityID = proof.Key.ID
 	event.Value.Other = proof.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1226,19 +1214,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Auditor: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Auditor}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to submit a report")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1286,8 +1262,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 	event.Value.EntityType = agencyReportIndex
 	event.Value.EntityID = agencyReport.Key.ID
 	event.Value.Other = agencyReport.Value
-	err = event.emitState(stub)
-	if err != nil {
+	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1312,19 +1287,7 @@ func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, 
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to accept an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1362,19 +1325,7 @@ func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, 
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to reject an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1430,20 +1381,7 @@ func (cc *SupplyChainChaincode) listContracts(stub shim.ChaincodeStubInterface, 
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	allowedUnits := map[string]bool{
-		Buyer:    true,
-		Supplier: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	if err, result := checkAccessForUnit([][]string{Buyer, Supplier}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1476,22 +1414,8 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 	//checking role
 	Notifier(stub, NoticeRuningType)
 
-	allowedUnits := map[string]bool{
-		Auditor:         true,
-		Buyer:           true,
-		Supplier:        true,
-		TransportAgency: true,
-	}
-
-	orgUnit, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + orgUnit)
-
-	if !allowedUnits[orgUnit] {
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Auditor, Buyer, Supplier, TransportAgency}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1805,6 +1729,29 @@ func decode(pemEncodedPub string) *ecdsa.PublicKey {
 	publicKey := genericPublicKey.(*ecdsa.PublicKey)
 
 	return publicKey
+}
+
+func checkAccessForUnit(allowedUnits [][]string, stub shim.ChaincodeStubInterface) (error, bool) {
+
+	orgUnit, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), false
+	}
+	Logger.Debug("OrganizationalUnit: " + orgUnit)
+
+	result := false
+
+	for _, value := range allowedUnits {
+		for _, role := range value {
+			if role == orgUnit {
+				result = true
+			}
+		}
+	}
+
+	return nil, result
 }
 
 func main() {

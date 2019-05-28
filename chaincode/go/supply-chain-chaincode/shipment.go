@@ -23,7 +23,6 @@ const (
 	stateShipmentUnknown = iota
 	stateShipmentRequested
 	stateShipmentConfirmed
-	stateShipmentApproved
 	stateShipmentDelivered
 )
 
@@ -31,7 +30,6 @@ var shipmentStateLegal = map[int][]int{
 	stateShipmentUnknown:   {},
 	stateShipmentRequested: {},
 	stateShipmentConfirmed: {},
-	stateShipmentApproved:  {},
 	stateShipmentDelivered: {},
 }
 
@@ -39,7 +37,6 @@ var shipmentStateMachine = map[int][]int{
 	stateShipmentUnknown:   {stateShipmentUnknown},
 	stateShipmentRequested: {stateShipmentRequested},
 	stateShipmentConfirmed: {stateShipmentConfirmed},
-	stateShipmentApproved:  {stateShipmentApproved},
 	stateShipmentDelivered: {stateShipmentDelivered},
 }
 
