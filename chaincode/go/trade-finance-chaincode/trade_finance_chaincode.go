@@ -140,7 +140,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &invoice, "") {
+	if ExistsIn(stub, &invoice, invoiceIndex) {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s already exists", compositeKey))
 	}
@@ -163,7 +163,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 		Logger.Debug("Invoice: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -225,13 +225,13 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice, "") {
+	if !ExistsIn(stub, &invoice, invoiceIndex) {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
 
 	//loading current state from ledger
-	if err := LoadFrom(stub, &invoice, ""); err != nil {
+	if err := LoadFrom(stub, &invoice, invoiceIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -271,7 +271,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -332,13 +332,13 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice, "") {
+	if !ExistsIn(stub, &invoice, invoiceIndex) {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
 
 	//loading current state from ledger
-	if err := LoadFrom(stub, &invoice, ""); err != nil {
+	if err := LoadFrom(stub, &invoice, invoiceIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -367,7 +367,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -429,13 +429,13 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice, "") {
+	if !ExistsIn(stub, &invoice, invoiceIndex) {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
 
 	//loading current state from ledger
-	if err := LoadFrom(stub, &invoice, ""); err != nil {
+	if err := LoadFrom(stub, &invoice, invoiceIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -470,7 +470,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -530,13 +530,13 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &invoice, "") {
+	if !ExistsIn(stub, &invoice, invoiceIndex) {
 		compositeKey, _ := invoice.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("invoice with the key %s doesn't exist", compositeKey))
 	}
 
 	//loading current state from ledger
-	if err := LoadFrom(stub, &invoice, ""); err != nil {
+	if err := LoadFrom(stub, &invoice, invoiceIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -571,7 +571,7 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//updating state in ledger
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -642,7 +642,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &bid, "") {
+	if ExistsIn(stub, &bid, bidIndex) {
 		compositeKey, _ := bid.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("bid with the key %s already exist", compositeKey))
 	}
@@ -665,7 +665,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bid, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bid, bidIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -730,7 +730,7 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &bid, "") {
+	if !ExistsIn(stub, &bid, bidIndex) {
 		compositeKey, _ := bid.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
 	}
@@ -738,7 +738,7 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 	//loading current state from ledger
 	bidToUpdate := Bid{}
 	bidToUpdate.Key = bid.Key
-	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+	if err := LoadFrom(stub, &bidToUpdate, bidIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -768,7 +768,7 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, bidIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -825,7 +825,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &bid, "") {
+	if !ExistsIn(stub, &bid, bidIndex) {
 		compositeKey, _ := bid.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
 	}
@@ -833,7 +833,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	//loading current state from ledger
 	bidToUpdate := Bid{}
 	bidToUpdate.Key = bid.Key
-	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+	if err := LoadFrom(stub, &bidToUpdate, bidIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -854,7 +854,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, bidIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -916,7 +916,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
-	if !ExistsIn(stub, &bid, "") {
+	if !ExistsIn(stub, &bid, bidIndex) {
 		compositeKey, _ := bid.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("bid with the key %s doesn't exist", compositeKey))
 	}
@@ -924,7 +924,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	//loading current state from ledger
 	bidToUpdate := Bid{}
 	bidToUpdate.Key = bid.Key
-	if err := LoadFrom(stub, &bidToUpdate, ""); err != nil {
+	if err := LoadFrom(stub, &bidToUpdate, bidIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -948,7 +948,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if err := LoadFrom(stub, &invoice, ""); err != nil {
+	if err := LoadFrom(stub, &invoice, invoiceIndex); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -962,7 +962,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Invoice: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &invoice, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &invoice, invoiceIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -973,7 +973,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		Logger.Debug("Bid: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &bidToUpdate, "", []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &bidToUpdate, bidIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
