@@ -55,10 +55,11 @@ type InvoiceValue struct {
 	Debtor      string  `json:"debtor"`
 	Beneficiary string  `json:"beneficiary"`
 	TotalDue    float32 `json:"totalDue"`
-	DueDate     int64   `json:"dueDate"`
+	PaymentDate int64   `json:"paymentDate"`
 	State       int     `json:"state"`
 	Owner       string  `json:"owner"`
 	Timestamp   int64   `json:"timestamp"`
+	UpdatedDate int64   `json:"updatedDate"`
 }
 
 type Invoice struct {
@@ -117,7 +118,7 @@ func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args 
 	if dueDate < 0 {
 		return errors.New("dueDate must be larger than zero")
 	}
-	entity.Value.DueDate = int64(dueDate)
+	entity.Value.PaymentDate = int64(dueDate)
 
 	return nil
 }

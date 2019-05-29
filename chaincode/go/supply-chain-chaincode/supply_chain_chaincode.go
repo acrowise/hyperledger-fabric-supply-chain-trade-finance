@@ -491,9 +491,9 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	invoiceDebtor := contract.Value.ConsigneeName
 	invoiceBeneficiary := contract.Value.ConsignorName
 	invoiceTotalDue := fmt.Sprintf("%f", contract.Value.TotalDue)
-	invoiceDueDate := fmt.Sprintf("%d", contract.Value.DueDate)
+	invoicePaymentDate := fmt.Sprintf("%d", contract.Value.PaymentDate)
 
-	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoiceDueDate), []byte("0")}
+	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoicePaymentDate), []byte("0")}
 
 	for _, oneArg := range args {
 		argsByte = append(argsByte, []byte(oneArg))
