@@ -223,7 +223,7 @@ export const TABLE_MAP = {
     beneficiary: 'Beneficiary',
     // factorID: 'Factor',
     rate: 'Rate, %',
-    totalDue: 'Amount, $',
+    amount: 'Amount, $',
     paymentDate: 'Payment Date',
     state: 'Status'
   },
@@ -232,7 +232,7 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     totalDue: 'Amount, $',
-    dueDate: 'Payment Date',
+    paymentDate: 'Payment Date',
     owner: 'Owner',
     state: 'Status'
   },

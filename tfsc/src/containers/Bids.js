@@ -83,7 +83,8 @@ const Bids = ({
             ) : (
               <></>
             )}
-            {role === item.factor && item.state === 'Issued' ? (
+
+            {role === item.factor && item.state === 'Issued' ? ( // FIX FACTOR add map ?
               <div>
                 <Button
                   onClick={() => {
