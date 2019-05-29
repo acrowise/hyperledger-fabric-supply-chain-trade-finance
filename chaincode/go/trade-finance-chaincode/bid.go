@@ -48,16 +48,35 @@ type BidKey struct {
 }
 
 type BidValue struct {
-	Rate      float32 `json:"rate"`
-	FactorID  string  `json:"factorID"`
-	InvoiceID string  `json:"invoiceID"`
-	State     int     `json:"state"`
-	Timestamp int64   `json:"timestamp"`
+	Rate        float32 `json:"rate"`
+	FactorID    string  `json:"factorID"`
+	InvoiceID   string  `json:"invoiceID"`
+	State       int     `json:"state"`
+	Timestamp   int64   `json:"timestamp"`
+	UpdatedDate int64   `json:"updatedDate"`
+}
+
+type BidValueAdditional struct {
+	Rate        float32 `json:"rate"`
+	FactorID    string  `json:"factorID"`
+	InvoiceID   string  `json:"invoiceID"`
+	State       int     `json:"state"`
+	Timestamp   int64   `json:"timestamp"`
+	Amount      float32 `json:"amount"`
+	Debtor      string  `json:"debtor"`
+	Beneficiary string  `json:"beneficiary"`
+	PaymentDate int64   `json:"paymentDate"`
+	UpdatedDate int64   `json:"updatedDate"`
 }
 
 type Bid struct {
 	Key   BidKey   `json:"key"`
 	Value BidValue `json:"value"`
+}
+
+type BidAdditional struct {
+	Key   BidKey             `json:"key"`
+	Value BidValueAdditional `json:"value"`
 }
 
 func CreateBid() LedgerData {

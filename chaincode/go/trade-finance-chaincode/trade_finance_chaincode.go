@@ -145,6 +145,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	invoice.Value.Owner = creator
 	invoice.Value.State = stateInvoiceIssued
 	invoice.Value.Timestamp = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = invoice.Value.Timestamp
 
 	//updating state un ledger
 	if bytes, err := json.Marshal(invoice); err == nil {
@@ -239,6 +240,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 
 	//setting automatic values
 	invoice.Value.State = stateInvoiceForSale
+	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -321,6 +323,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 
 	//setting automatic values
 	invoice.Value.State = stateInvoiceRemoved
+	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -411,6 +414,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 
 	//setting automatic values
 	invoice.Value.State = stateInvoiceSigned
+	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -499,6 +503,7 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 
 	//setting automatic values
 	invoice.Value.State = stateInvoiceRejected
+	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -580,6 +585,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	bid.Value.FactorID = creator
 	bid.Value.State = stateBidIssued
 	bid.Value.Timestamp = time.Now().UTC().Unix()
+	bid.Value.UpdatedDate = bid.Value.Timestamp
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(bid); err == nil {
@@ -670,6 +676,7 @@ func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args 
 	//setting new values
 	bidToUpdate.Value.Rate = bid.Value.Rate
 	bidToUpdate.Value.InvoiceID = bid.Value.InvoiceID
+	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(bidToUpdate); err == nil {
@@ -743,6 +750,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 
 	//setting new values
 	bidToUpdate.Value.State = stateBidCanceled
+	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(bidToUpdate); err == nil {
@@ -821,6 +829,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 
 	//setting new values
 	bidToUpdate.Value.State = stateBidAccepted
+	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//changing invoice state
 	invoice := Invoice{}
@@ -839,6 +848,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	invoice.Value.State = stateInvoiceSold
 	invoice.Value.Owner = bidToUpdate.Value.FactorID
 	invoice.Value.Beneficiary = bidToUpdate.Value.FactorID
+	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -894,7 +904,12 @@ func (cc *TradeFinanceChaincode) listBids(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
-	resultBytes, err := json.Marshal(bids)
+	resultBytes, err := joinByBidsAndInvoices(stub, bids)
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	Logger.Debug("Result: " + string(resultBytes))
 
@@ -942,7 +957,12 @@ func (cc *TradeFinanceChaincode) listBidsForInvoice(stub shim.ChaincodeStubInter
 		return shim.Error(message)
 	}
 
-	resultBytes, err := json.Marshal(bids)
+	resultBytes, err := joinByBidsAndInvoices(stub, bids)
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	Logger.Debug("Result: " + string(resultBytes))
 
@@ -974,6 +994,53 @@ func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, 
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(resultBytes)
+}
+
+func joinByBidsAndInvoices(stub shim.ChaincodeStubInterface, bids []Bid) ([]byte, error) {
+	invoices := []Invoice{}
+	invoicesBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(invoicesBytes, &invoices); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	invoiceMap := make(map[InvoiceKey]InvoiceValue)
+	for _, invoice := range invoices {
+		invoiceMap[invoice.Key] = invoice.Value
+	}
+
+	result := []BidAdditional{}
+	for _, bid := range bids {
+		entry := BidAdditional{
+			Key: bid.Key,
+			Value: BidValueAdditional{
+				Rate:        bid.Value.Rate,
+				FactorID:    bid.Value.FactorID,
+				InvoiceID:   bid.Value.InvoiceID,
+				State:       bid.Value.State,
+				Timestamp:   bid.Value.Timestamp,
+				UpdatedDate: bid.Value.UpdatedDate,
+			},
+		}
+
+		if invoiceValue, ok := invoiceMap[InvoiceKey{ID: entry.Value.InvoiceID}]; ok {
+			entry.Value.Amount = invoiceValue.TotalDue
+			entry.Value.Debtor = invoiceValue.Debtor
+			entry.Value.Beneficiary = invoiceValue.Beneficiary
+			entry.Value.PaymentDate = invoiceValue.PaymentDate
+		}
+
+		result = append(result, entry)
+	}
+
+	resultBytes, err := json.Marshal(result)
+	return resultBytes, nil
 }
 
 func (cc *TradeFinanceChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {

@@ -39,6 +39,7 @@ const (
 	DocTypeXLS
 	DocTypePDF
 	DocTypeCSV
+	DocTypeGIF
 )
 
 // Numerical constants

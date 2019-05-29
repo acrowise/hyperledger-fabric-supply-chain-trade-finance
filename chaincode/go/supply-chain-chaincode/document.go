@@ -70,6 +70,7 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		DocTypeXLS: true,
 		DocTypePDF: true,
 		DocTypeCSV: true,
+		DocTypeGIF: true,
 	}
 	documentType, err := strconv.Atoi(args[5])
 	if err != nil {
