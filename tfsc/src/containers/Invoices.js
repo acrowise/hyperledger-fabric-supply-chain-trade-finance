@@ -61,7 +61,7 @@ const Invoices = ({
         data={filteredData}
         actions={item => (
           <div>
-            {role === 'buyer' && item.state === 'Issued' ? (
+            {/* {role === 'buyer' && item.state === 'Issued' ? (
               <div className="nowrap">
                 <Button
                   style={{ marginRight: '5px' }}
@@ -79,7 +79,7 @@ const Invoices = ({
               </div>
             ) : (
               <></>
-            )}
+            )} */}
             {role === 'supplier' && item.state === 'Signed' ? (
               <div>
                 <Button
@@ -92,8 +92,8 @@ const Invoices = ({
                         item.id,
                         'a', // Buyer Id
                         'b', // SupplierId
-                        '123.65', // Total Due,
-                        item.dueDate,
+                        item.totalDue.toString(), // Total Due,
+                        item.dueDate.toString(),
                         '0',
                         'b'
                       ]

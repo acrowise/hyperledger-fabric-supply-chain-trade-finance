@@ -37,7 +37,7 @@ const Shipments = ({
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'confirmShipment' || notification.type === 'shipmentDelivered') {
+    if (notification.type === 'confirmShipment' || notification.type === 'confirmDelivery') {
       if (
         shipment
         && shipment.state !== shipments.result.find(i => i.key.id === shipment.id).state

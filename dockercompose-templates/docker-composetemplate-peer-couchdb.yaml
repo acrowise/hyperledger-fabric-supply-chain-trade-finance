@@ -158,6 +158,7 @@ services:
       API_ENDPOINT: proxy.ORG.DOMAIN
       IPFS_PORT: IPFS_API
       ROLE: ROLE_APP
+      ORG: ORG
     volumes:
       - ../tfsc/server:/src/server
       - ../tfsc/src:/src/src

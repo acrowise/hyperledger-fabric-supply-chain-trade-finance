@@ -30,9 +30,8 @@ const initialState = {
 const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [formState, dispatch] = useReducer(formReducer, initialState);
   const [files, setFiles] = useState([]);
-  const [hashes, setHashes] = useState([]);
+  const [hash, setHash] = useState(null);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
-  const [, uploadDocs] = post('uploadDocument')();
   const [, uploadDocument] = post('uploadDocument')();
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -135,8 +134,8 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         <FileUploader
                           files={files}
                           setFiles={setFiles}
-                          hashes={hashes}
-                          setHashes={setHashes}
+                          hash={hash}
+                          setHash={setHash}
                           error={fileRequired}
                         />
                       </div>
@@ -167,7 +166,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                   className="btn-modal"
                   onClick={() => {
                     const hasErrors = Object.keys(errors).find(i => errors[i] === true);
-                    if (files.length === 0 || hashes.length === 0) {
+                    if (files.length === 0 || !hash) {
                       setFileRequired(true);
                     }
                     if (!hasErrors && files.length !== 0) {
@@ -184,25 +183,17 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                         ]
                       });
                       setTimeout(() => {
-                        // const form = new FormData();
-                        // form.append('contractId', dialogIsOpen.item.id);
-                        // form.append('type', 'Packing List');
-                        // files.forEach((f) => {
-                        //   form.append('file', f);
-                        // });
-                        // uploadDocs(form);
-
-                        // uploadDocument({
-                        //   fcn: 'uploadDocument',
-                        //   args: [
-                        //     '0',
-                        //     '1',
-                        //     dialogIsOpen.item.id,
-                        //     hashes[0].hash,
-                        //     'doc description',
-                        //     '1'
-                        //   ]
-                        // });
+                        uploadDocument({
+                          fcn: 'uploadDocument',
+                          args: [
+                            '0',
+                            '1', // Shipment
+                            dialogIsOpen.item.id, // ContractID
+                            hash.hash,
+                            'Packing List',
+                            hash.type
+                          ]
+                        });
                       }, 600);
 
                       setFiles([]);

@@ -57,7 +57,7 @@ const Bids = ({
         fields={
           role === 'factor 1' || role === 'factor 2'
             ? TABLE_MAP.BIDS
-            : Object.assign({}, TABLE_MAP.BIDS, { factor: 'Factor' })
+            : Object.assign({}, TABLE_MAP.BIDS, { factorID: 'Factor' })
         }
         data={filteredData}
         actions={item => (

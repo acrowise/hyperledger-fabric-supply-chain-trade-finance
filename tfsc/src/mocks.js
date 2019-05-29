@@ -3,23 +3,31 @@ export const notifications = {
   acceptOrder: 'orders',
   cancelOrder: 'orders',
   editOrder: 'orders',
+
   requestShipment: 'shipments',
   confirmShipment: 'shipments',
+  uploadDocument: 'shipments',
+  confirmDelivery: 'shipments',
+
   verifyProof: 'proofs',
   proofGenerated: 'proofs',
+
   contractCreated: 'contracts',
   contractUpdated: 'contracts',
+  contractCompleted: 'contracts',
+
   placeInvoice: 'invoices',
   acceptInvoice: 'invoices',
+
+  editBid: 'bids',
   placeBid: 'bids',
   acceptBid: 'bids',
-  editBid: 'bids',
   cabcelBid: 'bids',
-  documentUploaded: 'shipments',
+
   invoiceRegistered: 'invoices',
-  reportGenerated: 'reports',
   removeInvoice: 'invoices',
-  contractCompleted: 'contracts'
+
+  reportGenerated: 'reports'
 };
 
 export const title = {
@@ -29,7 +37,7 @@ export const title = {
   editOrder: 'Order Updated',
   requestShipment: 'Shipment Requested',
   confirmShipment: 'Shipment Confirmed',
-  shipmentDelivered: 'Shipment Delivered',
+  confirmDelivery: 'Shipment Delivered',
   verifyProof: 'Proof Validated',
   proofGenerated: 'Proof Generated',
   contractCreated: 'Contract Created',
@@ -37,7 +45,7 @@ export const title = {
   placeBid: 'Bid Placed',
   acceptBid: 'Bid Accepted',
   editBid: 'Bid Updated',
-  documentUploaded: 'Document Uploaded',
+  uploadDocument: 'Document Uploaded',
   invoiceRegistered: 'Invoice Registered',
   cancelBid: 'Bid Cancelled',
   placeInvoice: 'Invoice Signed',

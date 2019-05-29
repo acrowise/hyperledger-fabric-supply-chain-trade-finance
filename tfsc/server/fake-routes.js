@@ -273,7 +273,7 @@ module.exports = (router, clients) => {
     setTimeout(() => {
       clients.forEach(c => c.emit(
         'notification',
-        JSON.stringify({ data: shipment, contract, type: 'shipmentRequested' })
+        JSON.stringify({ data: shipment, contract, type: 'requestShipment' })
       ));
     }, 500);
 
@@ -314,7 +314,7 @@ module.exports = (router, clients) => {
 
     db.set('shipments', shipments).write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'shipmentDelivered' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: shipment, type: 'confirmDelivery' })));
 
     const contracts = db.get('contracts').value();
     const contract = contracts.find(i => i.key.id === shipment.value.contractId);

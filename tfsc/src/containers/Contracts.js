@@ -26,6 +26,17 @@ const Contracts = ({
   });
 
   useSocket('notification', (message) => {
+    const notification = JSON.parse(message);
+
+    if (notification.type === 'requestShipment') {
+      const newState = data.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(
+        i => i.key.id === notification.data.value.contractID
+      );
+      newState[itemToUpdateIndex].value.state = 2;
+      setData({ result: newState });
+      return;
+    }
     setData(notifications(data.result, message, 'contracts'));
   });
 

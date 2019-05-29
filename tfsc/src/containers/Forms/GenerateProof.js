@@ -169,6 +169,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                 if (!hasErrors) {
                   generateProof({
                     fcn: 'generateProof',
+                    args: [],
                     user: 'supplier',
                     shipmentId: shipment.id,
                     data: formState,

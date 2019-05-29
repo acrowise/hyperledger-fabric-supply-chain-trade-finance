@@ -20,10 +20,7 @@ export const actors = [
   },
   { role: 'Factor 1', description: 'a bank to acquire a debt of buyer' },
   { role: 'Factor 2', description: 'a bank to acquire a debt of buyer' },
-  { role: 'admin', description: 'system administrator' },
-  { role: 'transport_agency', description: 'delete_me' },
-  { role: 'factor', description: 'delete_me' },
-  { role: 'auditor', description: 'delete_me' }
+  { role: 'admin', description: 'system administrator' }
 ];
 
 export const STATUSES = {
@@ -51,8 +48,7 @@ export const STATUSES = {
     0: 'Unknown',
     1: 'Requested',
     2: 'Confirmed',
-    3: 'Approved',
-    4: 'Delivered'
+    3: 'Delivered'
   },
   PROOF: {
     0: 'Unknown',
@@ -183,7 +179,7 @@ export const REVIEWERS = [
 export const TABLE_MAP = {
   SHIPMENTS: {
     id: 'Shipment Id',
-    contractId: 'Contract ID',
+    contractID: 'Contract ID',
     shipFrom: 'From',
     shipTo: 'To',
     transport: 'Transport',
@@ -225,7 +221,7 @@ export const TABLE_MAP = {
     invoiceID: 'Invoice ID',
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
-    // factor: 'Factor',
+    // factorID: 'Factor',
     rate: 'Rate, %',
     totalDue: 'Amount, $',
     paymentDate: 'Payment Date',
@@ -236,7 +232,7 @@ export const TABLE_MAP = {
     debtor: 'Debtor',
     beneficiary: 'Beneficiary',
     totalDue: 'Amount, $',
-    paymentDate: 'Payment Date',
+    dueDate: 'Payment Date',
     owner: 'Owner',
     state: 'Status'
   },
@@ -282,6 +278,11 @@ export const METHODS_MAP = [
   },
   {
     ccMethod: 'confirmShipment',
+    chaincode: 'supply-chain-chaincode',
+    channel: 'common'
+  },
+  {
+    ccMethod: 'confirmDelivery',
     chaincode: 'supply-chain-chaincode',
     channel: 'common'
   },
@@ -396,7 +397,7 @@ export const METHODS_MAP = [
     channel: 'common'
   },
   {
-    ccMethod: 'acceptlBid',
+    ccMethod: 'acceptBid',
     chaincode: 'trade-finance-chaincode',
     channel: 'common'
   },

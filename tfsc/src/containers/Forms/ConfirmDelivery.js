@@ -11,8 +11,8 @@ import { post } from '../../helper/api';
 
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
-  const [deliveryRes, confirmDelivery] = post('confirmDelivery')();
-  const [documentsRes, uploadDocs] = post('uploadDocument')();
+  const [, confirmDelivery] = post('confirmDelivery')();
+  const [, uploadDocs] = post('uploadDocument')();
 
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -38,9 +38,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
           <div className="modal-body">
             <Label>
-              <div style={{marginBottom: 5}}>
-                Delivery Acceptance Form
-              </div>
+              <div style={{ marginBottom: 5 }}>Delivery Acceptance Form</div>
               <FileUploader withPreview files={files} setFiles={setFiles} error={fileRequired} />
               <FormGroup label="Description">
                 <TextArea growVertically={true} large={true} />
@@ -67,7 +65,10 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 if (files.length === 0) {
                   setFileRequired(true);
                 } else {
-                  confirmDelivery({ shipmentId: shipment.id });
+                  confirmDelivery({
+                    fcn: 'confirmDelivery',
+                    args: [shipment.id, '0', '0', '0', '0', '0']
+                  });
                   setFileRequired(false);
 
                   setTimeout(() => {

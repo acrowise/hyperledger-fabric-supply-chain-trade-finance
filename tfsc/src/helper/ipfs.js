@@ -8,10 +8,13 @@ const ipfs = ipfsClient({
 });
 
 const documentTypes = {
-  'image/png': 'png',
-  'image/gif': 'gif',
-  'image/jpeg': 'jpeg',
-  'image/jpg': 'jpg'
+  'image/jpeg': '1',
+  'image/jpg': '1',
+  'image/png': '2',
+  xls: '3',
+  pdf: '4',
+  csv: '5',
+  'image/gif': '6' // FIXME:
 };
 
 const upload = (file) => {

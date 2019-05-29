@@ -5,7 +5,7 @@ const retry = async (options, n) => {
   try {
     return await axios(options);
   } catch (err) {
-    if (n === 1) {
+    if (n === 0) {
       throw err;
     }
     return await retry(options, n - 1);

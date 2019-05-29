@@ -32,7 +32,7 @@ const img = {
 };
 
 function FileUploader({
-  files, setFiles, withPreview, error, hashes, setHashes
+  files, setFiles, withPreview, error, setHash
 }) {
   // const [files, setFiles] = useState([]);
   useEffect(
@@ -50,15 +50,12 @@ function FileUploader({
           if (!document) {
             console.log('no document');
           } else {
-            console.log('ok', document);
-            setHashes([document]);
-            // this.changeDocumentHash(document.hash);
-            // this.changeDocumentType(document.type);
-            // this.props.dispatch(alertActions.success('Document file was uploaded'));
+            console.log('ipfs document added', document);
+            setHash(document);
           }
         },
-        (error) => {
-          console.error(error);
+        (e) => {
+          console.error(e);
         }
       );
       setFiles(

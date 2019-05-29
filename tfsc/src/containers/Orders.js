@@ -66,7 +66,7 @@ const Orders = ({
                     acceptOrder({
                       fcn: 'acceptOrder',
                       args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
-                      peers: [`${actor.id}/peer0`]
+                      peers: [`${actor.org}/peer0`]
                     });
                   }}
                   style={{ marginRight: '5px' }}
@@ -99,7 +99,7 @@ const Orders = ({
                     cancelOrder({
                       fcn: 'cancelOrder',
                       args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
-                      peers: [`${actor.id}/peer0`]
+                      peers: [`${actor.org}/peer0`]
                     });
                   }}
                 >

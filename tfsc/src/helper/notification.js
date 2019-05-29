@@ -22,10 +22,10 @@ const notifications = (state = [], message, tab) => {
       case 'cancelBid':
       case 'editBid':
       case 'acceptInvoice':
-      case 'invoiceRemoved':
+      case 'removeInvoice':
       case 'verifyProof':
       case 'confirmShipment':
-      case 'shipmentDelivered':
+      case 'confirmDelivery':
       case 'contractUpdated': {
         const newState = state.concat([]);
         const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);

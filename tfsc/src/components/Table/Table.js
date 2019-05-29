@@ -6,12 +6,12 @@ import './table.scss';
 
 import { cropId } from '../../helper/utils';
 
-const capitalize = str => str[0].toUpperCase() + str.substring(1);
+// const capitalize = str => str[0].toUpperCase() + str.substring(1);
 
-const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofId']; // FIXME:
+const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofId', 'proofID']; // FIXME:
 const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
 const amount = ['price', 'totalDue'];
-const users = ['factor'];
+// const users = ['factor'];
 
 const Table = ({
   fields, data, actions, onSelect
@@ -37,9 +37,9 @@ const Table = ({
             <tr key={index}>
               {Object.keys(fields).map((j) => {
                 let value = item[j];
-                if (users.includes(j)) {
-                  value = capitalize(value);
-                }
+                // if (users.includes(j)) {
+                //   value = capitalize(value);
+                // }
                 if (dates.includes(j)) {
                   value = format(value, 'DD MMM YYYY');
                 }
