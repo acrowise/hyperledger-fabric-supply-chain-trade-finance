@@ -93,7 +93,7 @@ const Invoices = ({
                         'a', // Buyer Id
                         'b', // SupplierId
                         item.totalDue.toString(), // Total Due,
-                        item.dueDate.toString(),
+                        item.paymentDate.toString(),
                         '0',
                         'b'
                       ]

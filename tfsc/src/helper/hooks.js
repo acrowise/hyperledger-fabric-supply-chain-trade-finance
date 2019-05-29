@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const retry = async (options, n) => {
-  try {
-    return await axios(options);
-  } catch (err) {
-    if (n === 0) {
-      throw err;
-    }
-    return await retry(options, n - 1);
+const retry = (options, n) => axios(options).catch((error) => {
+  if (n === 0) {
+    throw error;
   }
-};
+  return retry(options, n - 1);
+});
 
 // eslint-disable-next-line import/prefer-default-export
 export const usePost = (fn) => {
@@ -28,23 +24,24 @@ export const usePost = (fn) => {
     error: false
   });
   useEffect(() => {
-    const post = async () => {
-      try {
-        const resp = await retry(req, 3);
-        setRes({
-          data: resp.data,
-          pending: false,
-          error: false,
-          complete: true
+    const post = () => {
+      retry(req, 3)
+        .then((resp) => {
+          setRes({
+            data: resp.data,
+            pending: false,
+            error: false,
+            complete: true
+          });
+        })
+        .catch((e) => {
+          setRes({
+            data: null,
+            pending: false,
+            error: true,
+            complete: true
+          });
         });
-      } catch (e) {
-        setRes({
-          data: null,
-          pending: false,
-          error: true,
-          complete: true
-        });
-      }
     };
     if (!req) {
       return;
@@ -76,29 +73,30 @@ export const useGet = (url) => {
     error: false
   });
 
-  const get = async () => {
-    try {
-      const resp = await retry(
-        {
-          method: 'get',
-          url
-        },
-        3
-      );
-      setResponse({
-        data: resp.data,
-        pending: false,
-        error: false,
-        complete: true
+  const get = () => {
+    retry(
+      {
+        method: 'get',
+        url
+      },
+      3
+    )
+      .then((resp) => {
+        setResponse({
+          data: resp.data,
+          pending: false,
+          error: false,
+          complete: true
+        });
+      })
+      .catch((e) => {
+        setResponse({
+          data: [],
+          pending: false,
+          error: true,
+          complete: true
+        });
       });
-    } catch (e) {
-      setResponse({
-        data: [],
-        pending: false,
-        error: true,
-        complete: true
-      });
-    }
   };
 
   useEffect(() => {

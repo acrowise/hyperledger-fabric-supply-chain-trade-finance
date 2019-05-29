@@ -66,6 +66,10 @@ const retry = async (url, n) => {
   }
 };
 
+const emitEvent = (client, data, type) => {
+  client.emit('notification', JSON.stringify({ data, type }));
+};
+
 const listenSocket = () => new Promise((resolve, reject) => {
   const ws = new WebSocket(`ws:///${API_ENDPOINT}/api/notifications`);
 
@@ -114,6 +118,7 @@ const listenSocket = () => new Promise((resolve, reject) => {
       const eventName = event.payload.EventName.split('.')[2];
       const eventId = event.payload.EventName.split('.')[3];
 
+      console.info('chaincode:', chaincode);
       console.info('eventName:', eventName);
       console.info('eventId:', eventId);
 
@@ -125,18 +130,20 @@ const listenSocket = () => new Promise((resolve, reject) => {
 
         console.log(res.data.result);
 
-        clients.forEach(c => c.emit(
-          'notification',
-          JSON.stringify({
-            data: {
-              key: { id: res.data.result.value.entityID },
-              value: res.data.result.value.other
-            },
-            type: eventName
-          })
+        clients.forEach(c => emitEvent(
+          c,
+          {
+            key: { id: res.data.result.value.entityID },
+            value: res.data.result.value.other
+          },
+          eventName
         ));
       } catch (e) {
         console.error(e);
+      }
+
+      if (eventName === 'acceptOrder') {
+        clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
       }
     }
   });
@@ -186,7 +193,11 @@ app.use(express.static(path.join(__dirname, '../dist/client')));
 const html = require('./html');
 
 const renderer = async (req, res) => {
-  const data = Object.assign({ ipfs_port: IPFS_PORT, role: services[ROLE].role, org: services[ROLE].org });
+  const data = Object.assign({
+    ipfs_port: IPFS_PORT,
+    role: services[ROLE].role,
+    org: services[ROLE].org
+  });
 
   return res.send(html(data));
 };
