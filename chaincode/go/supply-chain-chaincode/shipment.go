@@ -45,6 +45,19 @@ type ShipmentKey struct {
 }
 
 type ShipmentValue struct {
+	ContractID   string `json:"contractID"`
+	Consignor    string `json:"consignor"`
+	ShipFrom     string `json:"shipFrom"`
+	ShipTo       string `json:"shipTo"`
+	Transport    string `json:"transport"`
+	Description  string `json:"description"`
+	State        int    `json:"state"`
+	Timestamp    int64  `json:"timestamp"`
+	DeliveryDate int64  `json:"deliveryDate"`
+	UpdatedDate  int64  `json:"updatedDate"`
+}
+
+type ShipmentValueAdditional struct {
 	ContractID   string   `json:"contractID"`
 	Consignor    string   `json:"consignor"`
 	ShipFrom     string   `json:"shipFrom"`
@@ -52,14 +65,20 @@ type ShipmentValue struct {
 	Transport    string   `json:"transport"`
 	Description  string   `json:"description"`
 	State        int      `json:"state"`
-	Documents    []string `json:"documents"`
 	Timestamp    int64    `json:"timestamp"`
 	DeliveryDate int64    `json:"deliveryDate"`
+	Documents    []string `json:"documents"`
+	UpdatedDate  int64    `json:"updatedDate"`
 }
 
 type Shipment struct {
 	Key   ShipmentKey   `json:"key"`
 	Value ShipmentValue `json:"value"`
+}
+
+type ShipmentAdditional struct {
+	Key   ShipmentKey             `json:"key"`
+	Value ShipmentValueAdditional `json:"value"`
 }
 
 func CreateShipment() LedgerData {

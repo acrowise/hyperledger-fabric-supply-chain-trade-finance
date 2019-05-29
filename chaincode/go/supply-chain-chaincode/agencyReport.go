@@ -41,10 +41,9 @@ type AgencyReportKey struct {
 }
 
 type AgencyReportValue struct {
-	Description string   `json:"description"`
-	State       int      `json:"state"`
-	Documents   []string `json:"documents"`
-	Timestamp   int64    `json:"timestamp"`
+	Description string `json:"description"`
+	State       int    `json:"state"`
+	Timestamp   int64  `json:"timestamp"`
 }
 
 type AgencyReport struct {
