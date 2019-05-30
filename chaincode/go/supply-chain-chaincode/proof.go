@@ -18,7 +18,7 @@ const (
 
 const (
 	proofKeyFieldsNumber      = 1
-	proofBasicArgumentsNumber = 3
+	proofBasicArgumentsNumber = 4
 )
 
 //proof state constants (from 0 to 2)
