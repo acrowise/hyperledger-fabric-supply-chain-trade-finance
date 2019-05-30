@@ -9,65 +9,81 @@ import (
 )
 
 const (
-	agencyReportIndex = "AgencyReport"
+	reportIndex = "Report"
 )
 
 const (
-	agencyReportKeyFieldsNumber      = 1
-	agencyReportBasicArgumentsNumber = 7
+	reportKeyFieldsNumber      = 1
+	reportBasicArgumentsNumber = 7
 )
 
 //shipment state constants (from 0 to 4)
 const (
-	stateAgencyReportUnknown = iota
-	stateAgencyReportAccepted
-	stateAgencyReportDeclined
+	stateReportUnknown = iota
+	stateReportAccepted
+	stateReportDeclined
 )
 
 var agencyReportStateLegal = map[int][]int{
-	stateAgencyReportUnknown:  {},
-	stateAgencyReportAccepted: {},
-	stateAgencyReportDeclined: {},
+	stateReportUnknown:  {},
+	stateReportAccepted: {},
+	stateReportDeclined: {},
 }
 
 var agencyReportStateMachine = map[int][]int{
-	stateAgencyReportUnknown:  {stateAgencyReportUnknown},
-	stateAgencyReportAccepted: {stateAgencyReportAccepted},
-	stateAgencyReportDeclined: {stateAgencyReportDeclined},
+	stateReportUnknown:  {stateReportUnknown},
+	stateReportAccepted: {stateReportAccepted},
+	stateReportDeclined: {stateReportDeclined},
 }
 
-type AgencyReportKey struct {
+type ReportKey struct {
 	ID string `json:"id"`
 }
 
-type AgencyReportValue struct {
+type ReportValue struct {
 	Description string `json:"description"`
+	ContractID  string `json:"contractID"`
 	State       int    `json:"state"`
 	Timestamp   int64  `json:"timestamp"`
+	UpdatedDate int64  `json:"updatedDate"`
 }
 
-type AgencyReport struct {
-	Key   AgencyReportKey   `json:"key"`
-	Value AgencyReportValue `json:"value"`
+type ReportValueAdditional struct {
+	Description string   `json:"description"`
+	ContractID  string   `json:"contractID"`
+	State       int      `json:"state"`
+	Timestamp   int64    `json:"timestamp"`
+	Documents   []string `json:"documents"`
+	UpdatedDate int64    `json:"updatedDate"`
+}
+
+type Report struct {
+	Key   ReportKey   `json:"key"`
+	Value ReportValue `json:"value"`
+}
+
+type ReportAdditional struct {
+	Key   ReportKey             `json:"key"`
+	Value ReportValueAdditional `json:"value"`
 }
 
 func CreateAgencyReport() LedgerData {
-	return new(AgencyReport)
+	return new(Report)
 }
 
 //argument order
 //0		1			2
 //ID	Description	State
-func (entity *AgencyReport) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
-	if len(args) < agencyReportBasicArgumentsNumber {
-		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", agencyReportBasicArgumentsNumber))
+func (entity *Report) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
+	if len(args) < reportBasicArgumentsNumber {
+		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", reportBasicArgumentsNumber))
 	}
 	return nil
 }
 
-func (entity *AgencyReport) FillFromCompositeKeyParts(compositeKeyParts []string) error {
-	if len(compositeKeyParts) < agencyReportKeyFieldsNumber {
-		return errors.New(fmt.Sprintf("composite key parts array must contain at least %d items", agencyReportKeyFieldsNumber))
+func (entity *Report) FillFromCompositeKeyParts(compositeKeyParts []string) error {
+	if len(compositeKeyParts) < reportKeyFieldsNumber {
+		return errors.New(fmt.Sprintf("composite key parts array must contain at least %d items", reportKeyFieldsNumber))
 	}
 
 	if id, err := uuid.FromString(compositeKeyParts[0]); err != nil {
@@ -81,7 +97,7 @@ func (entity *AgencyReport) FillFromCompositeKeyParts(compositeKeyParts []string
 	return nil
 }
 
-func (entity *AgencyReport) FillFromLedgerValue(ledgerValue []byte) error {
+func (entity *Report) FillFromLedgerValue(ledgerValue []byte) error {
 	if err := json.Unmarshal(ledgerValue, &entity.Value); err != nil {
 		return err
 	} else {
@@ -89,14 +105,14 @@ func (entity *AgencyReport) FillFromLedgerValue(ledgerValue []byte) error {
 	}
 }
 
-func (entity *AgencyReport) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
+func (entity *Report) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	compositeKeyParts := []string{
 		entity.Key.ID,
 	}
 
-	return stub.CreateCompositeKey(agencyReportIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(reportIndex, compositeKeyParts)
 }
 
-func (entity *AgencyReport) ToLedgerValue() ([]byte, error) {
+func (entity *Report) ToLedgerValue() ([]byte, error) {
 	return json.Marshal(entity.Value)
 }

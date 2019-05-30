@@ -203,7 +203,6 @@ function generateOrdererDockerCompose() {
         -e "s/ORG5/$ORG5/g" \
         -e "s/ORG6/$ORG6/g" \
         -e "s/ORG7/$ORG7/g" \
-        -e "s/ORG8/$ORG8/g" \
         ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
 
 
@@ -793,7 +792,7 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
   done
 
 elif [ "${MODE}" == "down" ]; then
-  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
+  for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7}
   do
     dockerComposeDown ${org}
   done
