@@ -18,7 +18,7 @@ const (
 
 const (
 	proofKeyFieldsNumber      = 1
-	proofBasicArgumentsNumber = 3
+	proofBasicArgumentsNumber = 4
 )
 
 //proof state constants (from 0 to 2)
@@ -50,6 +50,8 @@ type ProofValue struct {
 	State               int                      `json:"state"`
 	Owner               string                   `json:"owner"`
 	Timestamp           int64                    `json:"timestamp"`
+	ContractID          string                   `json:"contractID"`
+	UpdatedDate         int64                    `json:"updatedDate"`
 }
 
 type ProofDataForVerification struct {

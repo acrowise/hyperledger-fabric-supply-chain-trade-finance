@@ -29,6 +29,7 @@ type DocumentValue struct {
 	DocumentDescription string `json:"documentDescription"`
 	DocumentType        int    `json:"documentType"`
 	Timestamp           int64  `json:"timestamp"`
+	UpdatedDate         int64  `json:"updatedDate"`
 }
 
 type Document struct {

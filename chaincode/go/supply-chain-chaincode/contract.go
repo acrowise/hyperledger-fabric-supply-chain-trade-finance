@@ -56,6 +56,7 @@ type ContractValue struct {
 	Documents     []string `json:"documents"`
 	State         int      `json:"state"`
 	Timestamp     int64    `json:"timestamp"`
+	UpdatedDate   int64    `json:"updatedDate"`
 }
 
 type Contract struct {
