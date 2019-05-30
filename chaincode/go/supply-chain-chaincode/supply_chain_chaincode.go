@@ -65,8 +65,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	if function == "placeOrder" {
 		// Buyer places order
 		return cc.placeOrder(stub, args)
-	} else if function == "editOrder" {
-		return cc.editOrder(stub, args)
+	} else if function == "updateOrder" {
+		return cc.updateOrder(stub, args)
 	} else if function == "cancelOrder" {
 		return cc.cancelOrder(stub, args)
 	} else if function == "acceptOrder" {
@@ -113,7 +113,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	}
 	// (optional) add other query functions
 
-	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
+	fnList := "{placeOrder, updateOrder, cancelOrder, acceptOrder, " +
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
 		"acceptInvoice, rejectInvoice, listProofsByOwner, updateProof, " +
@@ -208,7 +208,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 
 //0		1			2			3		4			5		6			7
 //ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	0
-func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
@@ -858,6 +858,8 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
+//0		1			2			3				4					5
+//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -868,81 +870,11 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
-	//checking document exist
-	document := Document{}
-	if err := document.FillFromArguments(stub, args); err != nil {
-		message := fmt.Sprintf("cannot fill an document from arguments: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//generating new document ID and making Key
-	documentID := uuid.Must(uuid.NewV4()).String()
-	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	if ExistsIn(stub, &document, documentIndex) {
-		compositeKey, _ := document.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("document with the key %s already exists", compositeKey))
-	}
-
-	//additional checking
-	documentHash := args[3]
-	checkingResult, err := existsDocumentByHash(stub, documentHash)
+	err, document := processingUploadDocument(stub, args)
 	if err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
+		message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-	if checkingResult {
-		message := fmt.Sprintf("document with hash %s already exists", documentHash)
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	//setting additional values
-	document.Value.EntityID = args[2]
-	document.Value.DocumentHash = documentHash
-	document.Value.DocumentDescription = args[4]
-	document.Value.Timestamp = time.Now().UTC().Unix()
-	document.Value.UpdatedDate = document.Value.Timestamp
-
-	//updating state in ledger
-	if bytes, err := json.Marshal(document); err == nil {
-		Logger.Debug("Document: " + string(bytes))
-	}
-
-	if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	switch document.Value.EntityType {
-	case TypeContract:
-		entityType := Contract{}
-		entityType.Key.ID = document.Value.EntityID
-		if !ExistsIn(stub, &entityType, contractIndex) {
-			compositeKey, _ := entityType.ToCompositeKey(stub)
-			return shim.Error(fmt.Sprintf("contract with the key %s doesn't exist", compositeKey))
-		}
-		if err := LoadFrom(stub, &entityType, contractIndex); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
-		}
-		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
-		entityType.Value.UpdatedDate = time.Now().UTC().Unix()
-		if err := UpdateOrInsertIn(stub, &entityType, contractIndex, []string{""}, ""); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return pb.Response{Status: 500, Message: message}
-		}
-	default:
-		break
+		return shim.Error(message)
 	}
 
 	//emitting Event
@@ -958,6 +890,87 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(nil)
+}
+
+func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (error, Document) {
+
+	//checking document exist
+	document := Document{}
+	if err := document.FillFromArguments(stub, args); err != nil {
+		message := fmt.Sprintf("cannot fill an document from arguments: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	//generating new document ID and making Key
+	documentID := uuid.Must(uuid.NewV4()).String()
+	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	if ExistsIn(stub, &document, documentIndex) {
+		compositeKey, _ := document.ToCompositeKey(stub)
+		message := fmt.Sprintf("document with the key %s already exists", compositeKey)
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	//additional checking
+	checkingResult, err := existsDocumentByHash(stub, document.Value.DocumentHash)
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+	if checkingResult {
+		message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	//setting optional values
+	document.Value.DocumentDescription = args[4]
+
+	//setting automatic values
+	document.Value.Timestamp = time.Now().UTC().Unix()
+	document.Value.UpdatedDate = document.Value.Timestamp
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(document); err == nil {
+		Logger.Debug("Document: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	//appending document ID in contract
+	contract := Contract{}
+	contract.Key.ID = document.Value.EntityID
+	if !ExistsIn(stub, &contract, contractIndex) {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+	if err := LoadFrom(stub, &contract, contractIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+	contract.Value.Documents = append(contract.Value.Documents, document.Key.ID)
+	contract.Value.UpdatedDate = time.Now().UTC().Unix()
+	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
+	return nil, document
 }
 
 //0		1				2		3
@@ -1035,8 +1048,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-//0		1			2
-//ID	SnapShot	State
+//0			1		3
+//ProofID	Result	Description
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1233,8 +1246,8 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 	}
 
 	//filling from arguments
-	agencyReport := Report{}
-	if err := agencyReport.FillFromArguments(stub, args); err != nil {
+	report := Report{}
+	if err := report.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill a report from arguments: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1242,29 +1255,29 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 
 	//generating new report ID and making Key
 	reportID := uuid.Must(uuid.NewV4()).String()
-	if err := agencyReport.FillFromCompositeKeyParts([]string{reportID}); err != nil {
+	if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &agencyReport, reportIndex) {
-		compositeKey, _ := agencyReport.ToCompositeKey(stub)
+	if ExistsIn(stub, &report, reportIndex) {
+		compositeKey, _ := report.ToCompositeKey(stub)
 		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
 	}
 
 	//setting automatic values
-	agencyReport.Value.State = stateReportAccepted
-	agencyReport.Value.Description = args[1]
-	agencyReport.Value.Timestamp = time.Now().UTC().Unix()
-	agencyReport.Value.UpdatedDate = agencyReport.Value.Timestamp
+	report.Value.State = stateReportAccepted
+	report.Value.Description = args[1]
+	report.Value.Timestamp = time.Now().UTC().Unix()
+	report.Value.UpdatedDate = report.Value.Timestamp
 
 	//updating state in ledger
-	if bytes, err := json.Marshal(agencyReport); err == nil {
+	if bytes, err := json.Marshal(report); err == nil {
 		Logger.Debug("Shipment: " + string(bytes))
 	}
 
-	if err := UpdateOrInsertIn(stub, &agencyReport, reportIndex, []string{""}, ""); err != nil {
+	if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1273,8 +1286,8 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 	//emitting Event
 	event := Event{}
 	event.Value.EntityType = reportIndex
-	event.Value.EntityID = agencyReport.Key.ID
-	event.Value.Other = agencyReport.Value
+	event.Value.EntityID = report.Key.ID
+	event.Value.Other = report.Value
 	if err := event.emitState(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
@@ -1435,20 +1448,20 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 	// list all Auditors' reports related to the contract
 	Notifier(stub, NoticeRuningType)
 
-	agencyReports := []Report{}
-	agencyReportsBytes, err := Query(stub, reportIndex, []string{}, CreateAgencyReport, EmptyFilter)
+	reports := []Report{}
+	reportsBytes, err := Query(stub, reportIndex, []string{}, CreateReport, EmptyFilter)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	if err := json.Unmarshal(agencyReportsBytes, &agencyReports); err != nil {
+	if err := json.Unmarshal(reportsBytes, &reports); err != nil {
 		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	resultBytes, err := joinByReportsAndContracts(stub, agencyReports)
+	resultBytes, err := joinByReportsAndContracts(stub, reports)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by report and contract: %s", err.Error())
 		Logger.Error(message)

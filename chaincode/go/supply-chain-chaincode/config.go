@@ -28,7 +28,7 @@ const (
 	TypeUnknown = iota
 	TypeContract
 	TypeShipment
-	TypeAgencyReport
+	TypeReport
 )
 
 // Type of documents

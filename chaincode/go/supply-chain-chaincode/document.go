@@ -51,9 +51,9 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 
 	//checking entityType
 	allowedEntityTypes := map[int]bool{
-		TypeContract:     true,
-		TypeAgencyReport: true,
-		TypeShipment:     true,
+		TypeContract: true,
+		TypeReport:   true,
+		TypeShipment: true,
 	}
 	entityType, err := strconv.Atoi(args[1])
 	if err != nil {
@@ -64,6 +64,20 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	}
 	entity.Value.EntityType = entityType
 
+	entityID := args[2]
+	if entityID == "" {
+		message := fmt.Sprintf("entityID must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.EntityID = entityID
+
+	documentHash := args[3]
+	if entityID == "" {
+		message := fmt.Sprintf("documentHash must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.DocumentHash = documentHash
+
 	//checking documentType
 	allowedDocumentTypes := map[int]bool{
 		DocTypeJPG: true,
@@ -73,6 +87,7 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		DocTypeCSV: true,
 		DocTypeGIF: true,
 	}
+
 	documentType, err := strconv.Atoi(args[5])
 	if err != nil {
 		return errors.New(fmt.Sprintf("documentType is invalid: %s (must be int)", args[5]))

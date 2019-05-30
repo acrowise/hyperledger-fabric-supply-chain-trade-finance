@@ -72,9 +72,9 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	} else if function == "placeBid" {
 		// Factor places a bid for the invoice
 		return cc.placeBid(stub, args)
-	} else if function == "editBid" {
+	} else if function == "updateBid" {
 		// Factor edits the bid
-		return cc.editBid(stub, args)
+		return cc.updateBid(stub, args)
 	} else if function == "cancelBid" {
 		// Factor cancels the bid
 		return cc.cancelBid(stub, args)
@@ -95,7 +95,7 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	}
 	// (optional) add other query functions
 
-	fnList := "{placeInvoice, removeInvoice, placeBid, editBid, cancelBid, acceptBid, " +
+	fnList := "{placeInvoice, removeInvoice, placeBid, updateBid, cancelBid, acceptBid, " +
 		"listBids, listBidsForInvoice, listInvoices}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	Logger.Debug(message)
@@ -615,7 +615,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 
 //0		1		2			3
 //ID	Rate	FactorID	InvoiceID
-func (cc *TradeFinanceChaincode) editBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check specified bid existence
 	// check if caller is bid creator
 	// edit bid

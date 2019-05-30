@@ -24,13 +24,13 @@ const (
 	stateReportDeclined
 )
 
-var agencyReportStateLegal = map[int][]int{
+var reportStateLegal = map[int][]int{
 	stateReportUnknown:  {},
 	stateReportAccepted: {},
 	stateReportDeclined: {},
 }
 
-var agencyReportStateMachine = map[int][]int{
+var reportStateMachine = map[int][]int{
 	stateReportUnknown:  {stateReportUnknown},
 	stateReportAccepted: {stateReportAccepted},
 	stateReportDeclined: {stateReportDeclined},
@@ -67,7 +67,7 @@ type ReportAdditional struct {
 	Value ReportValueAdditional `json:"value"`
 }
 
-func CreateAgencyReport() LedgerData {
+func CreateReport() LedgerData {
 	return new(Report)
 }
 
