@@ -61,20 +61,6 @@ const addDocument = (file) => {
   return hash;
 };
 
-const getDocument = (hash) => {
-  const promise = new Promise((resolve, reject) => {
-    ipfs.get(hash, (err, files) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(files[0].content);
-    });
-  });
-
-  return promise();
-};
-
 export default {
-  addDocument,
-  getDocument
+  addDocument
 };

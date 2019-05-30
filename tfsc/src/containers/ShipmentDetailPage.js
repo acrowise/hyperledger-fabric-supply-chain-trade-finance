@@ -214,7 +214,7 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/getDocument?contractId=${doc.contractId}&name=${doc.name}`}
+                        href={`/getDocument?document=${doc}`}
                         target="_blank"
                       >
                         {doc.type}
