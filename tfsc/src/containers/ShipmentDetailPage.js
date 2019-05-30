@@ -158,8 +158,7 @@ const ShipmentDetailPage = ({
               ) : (
                 <></>
               )}
-              {role === 'transporter'
-              || (role === 'transport_agency' && shipment.state === 'Requested') ? (
+              {role === 'transporter' && shipment.state === 'Requested' ? (
                 <div>
                   <Button
                     style={{ paddingLeft: 30, paddingRight: 30 }}
@@ -171,9 +170,9 @@ const ShipmentDetailPage = ({
                     Confirm Shipment
                   </Button>
                 </div>
-                ) : (
+              ) : (
                 <></>
-                )}
+              )}
             </div>
           </div>
 

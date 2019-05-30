@@ -88,6 +88,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.generateProof(stub, args)
 	} else if function == "verifyProof" {
 		return cc.verifyProof(stub, args)
+	} else if function == "updateProof" {
+		return cc.updateProof(stub, args)
 	} else if function == "submitReport" {
 		return cc.updateReport(stub, args)
 	} else if function == "acceptInvoice" {
@@ -121,7 +123,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	fnList := "{placeOrder, editOrder, cancelOrder, acceptOrder, " +
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
-		"acceptInvoice, rejectInvoice, listProofsByOwner, " +
+		"acceptInvoice, rejectInvoice, listProofsByOwner, updateProof, " +
 		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument, getByQuery}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	Logger.Debug(message)
@@ -959,13 +961,6 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 
 	Notifier(stub, NoticeRuningType)
 
-	//checking role
-	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to generate proof")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
 	// checking proof exist
 	proof := Proof{}
 	if err := proof.FillFromArguments(stub, args); err != nil {
@@ -997,107 +992,13 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Key.ID = uuid.Must(uuid.NewV4()).String()
 	proof.Value.State = stateProofGenerated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
-	proof.Value.ContractID = contractID
 
-	// making arrays of attributes names and values
-	rng, err := idemix.GetRand()
-
-	var attributesArray []AttributeData
-	err = json.Unmarshal([]byte(args[1]), &attributesArray)
-	if err != nil {
-		message := fmt.Sprintf("Input json is invalid. Error \"%s\"", err.Error())
+	// parsing input json and generate Idemix crypto
+	if err := proof.GenerateIdemixCrypto(args[1]); err != nil {
+		message := fmt.Sprintf("Idemix Crypto error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-
-	AttributeNames := make([]string, len(attributesArray))
-	attrs := make([]*FP256BN.BIG, len(AttributeNames))
-	disclosure := make([]byte, len(attributesArray))
-	msg := make([]byte, len(attributesArray))
-	var rhindex int
-
-	for i := range attributesArray {
-		h := sha256.New()
-		// make hash from value of attribute
-		h.Write([]byte(attributesArray[i].AttributeValue))
-		attrs[i] = FP256BN.FromBytes(h.Sum(nil))
-		AttributeNames[i] = attributesArray[i].AttributeName
-		disclosure[i] = attributesArray[i].AttributeDisclosure
-		msg[i] = byte(i)
-		if attributesArray[i].AttributeDisclosure == 0 {
-			rhindex = i
-			// fill hidden field random value
-			attrs[i] = FP256BN.NewBIGint(rand.Intn(10000))
-		}
-	}
-
-	// check Disclosure[rhIndex] == 0
-	if attributesArray[rhindex].AttributeDisclosure != 0 {
-		message := fmt.Sprintf("Idemix requires the revocation handle to remain undisclosed (i.e., Disclosure[rhIndex] == 0). But we have \"%d\"", attributesArray[rhindex].AttributeDisclosure)
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// create a new key pair
-	key, err := idemix.NewIssuerKey(AttributeNames, rng)
-	if err != nil {
-		message := fmt.Sprintf("Issuer key generation should have succeeded but gave error \"%s\"", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// check that the key is valid
-	err = key.GetIpk().Check()
-	if err != nil {
-		message := fmt.Sprintf("Issuer public key should be valid")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// issuance
-	sk := idemix.RandModOrder(rng)
-	ni := idemix.RandModOrder(rng)
-	m := idemix.NewCredRequest(sk, idemix.BigToBytes(ni), key.Ipk, rng)
-
-	cred, err := idemix.NewCredential(key, m, attrs, rng)
-
-	// generate a revocation key pair
-	revocationKey, err := idemix.GenerateLongTermRevocationKey()
-
-	// create CRI that contains no revocation mechanism
-	epoch := 0
-	cri, err := idemix.CreateCRI(revocationKey, []*FP256BN.BIG{}, epoch, idemix.ALG_NO_REVOCATION, rng)
-	if err != nil {
-		message := fmt.Sprintf("Create CRI return error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// signing selective disclosure
-	Nym, RandNym := idemix.MakeNym(sk, key.Ipk, rng)
-	sig, err := idemix.NewSignature(cred, sk, Nym, RandNym, key.Ipk, disclosure, msg, rhindex, cri, rng)
-	if err != nil {
-		message := fmt.Sprintf("Idemix NewSignature return error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	attributeValuesBytes := make([][]byte, len(attrs))
-	for i := 0; i < len(attrs); i++ {
-		row := make([]byte, FP256BN.MODBYTES)
-		attributeValue := attrs[i]
-		attributeValue.ToBytes(row)
-		attributeValuesBytes[i] = row
-	}
-
-	proof.Value.SnapShot = sig
-	proof.Value.DataForVerification.Disclosure = disclosure
-	proof.Value.DataForVerification.Ipk = key.Ipk
-	proof.Value.DataForVerification.Msg = msg
-	proof.Value.DataForVerification.AttributeValues = attributeValuesBytes
-	proof.Value.DataForVerification.RhIndex = rhindex
-	proof.Value.DataForVerification.RevPk = encode(&revocationKey.PublicKey)
-	proof.Value.DataForVerification.Epoch = epoch
 
 	// updating state in ledger
 	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
@@ -1121,17 +1022,15 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-//0
-//ID
+//0		1			2
+//ID	SnapShot	State
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	if err, result := checkAccessForUnit([][]string{Auditor}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to verify a proof")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
+	//allowedUnits := map[string]bool{
+	//	Auditor: true,
+	//}
 
 	// checking proof exist
 	proof := Proof{}
@@ -1218,9 +1117,68 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0			1				2
-//ProofID	Description		Result
-func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+//0		1
+//ID	SnapShot
+func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	// checking proof exist
+	proof := Proof{}
+	if err := proof.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &proof, proofIndex) {
+		compositeKey, _ := proof.ToCompositeKey(stub)
+		message := fmt.Sprintf("proof with the key %s doesn't exist", compositeKey)
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if err := LoadFrom(stub, &proof, proofIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// setting automatic values
+	proof.Value.State = stateProofGenerated
+	proof.Value.Timestamp = time.Now().UTC().Unix()
+
+	// parsing input json and generate Idemix crypto
+	if err := proof.GenerateIdemixCrypto(args[1]); err != nil {
+		message := fmt.Sprintf("Idemix Crypto error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	// updating state in ledger
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	event := Event{}
+	event.Value.EntityType = proofIndex
+	event.Value.EntityID = proof.Key.ID
+	event.Value.Other = proof.Value
+	if err := event.emitState(stub); err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
+//0		1
+//ID	Description
+func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
@@ -1481,18 +1439,19 @@ func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterfa
 
 	//checking role
 	if err, result := checkAccessForUnit([][]string{Auditor}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
+		message := fmt.Sprintf("this organizational unit is not allowed to get proofs by owner")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	//setting automatic values
+	//get owner
 	owner, err := GetMSPID(stub)
 	if err != nil {
 		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	Logger.Debug("Owner: " + owner)
 
 	filterByOwner := func(data LedgerData) bool {
 		entity, ok := data.(*Proof)

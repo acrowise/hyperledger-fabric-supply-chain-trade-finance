@@ -28,13 +28,13 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
   const fields = {
     id: 'Shipment ID',
-    contractId: 'Contract ID',
+    contractID: 'Contract ID',
     shipFrom: 'From',
     shipTo: 'To',
     transport: 'Transport'
   };
 
-  const ids = ['id', 'contractId'];
+  const ids = ['id', 'contractID'];
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen}>
