@@ -128,7 +128,7 @@ const listenSocket = () => {
 
       try {
         const res = await retry(
-          `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?fcn=getEventPayload&args=${eventId}`,
+          `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
           3
         );
 
@@ -200,7 +200,7 @@ router.get('/getDocument', async (req, res) => {
   if (req.query && req.query.document) {
     try {
       const { data } = await retry(
-        `http://${API_ENDPOINT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getDocument&args=${
+        `http://${API_ENDPOINT}/api/channels/common/chaincodes/supply-chain-chaincode?peer=${ORG}/peer0&fcn=getDocument&args=${
           req.query.document
         }`,
         3
