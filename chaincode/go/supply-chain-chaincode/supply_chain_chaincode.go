@@ -1709,6 +1709,7 @@ func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, s
 				Timestamp:    shipment.Value.Timestamp,
 				DeliveryDate: shipment.Value.DeliveryDate,
 				UpdatedDate:  shipment.Value.UpdatedDate,
+				State:        shipment.Value.State,
 			},
 		}
 		// find contract
