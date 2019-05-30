@@ -4,8 +4,14 @@ const path = require('path');
 const WebSocket = require('ws');
 const axios = require('axios');
 const socketIO = require('socket.io');
+const mime = require('mime-types');
+const ipfsClient = require('ipfs-http-client');
 
 const clients = [];
+
+const {
+  PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
+} = process.env;
 
 const services = {
   buyer: {
@@ -45,10 +51,9 @@ const services = {
   }
 };
 
-const {
-  PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
-} = process.env;
-
+const ipfs = ipfsClient({
+  host: `ipfs.${services[ROLE].org}.example.com`
+});
 console.info('API_ENDPOINT', API_ENDPOINT);
 console.info('ROLE', ROLE);
 console.info('ORG', ORG);
@@ -70,8 +75,8 @@ const emitEvent = (client, data, type) => {
   client.emit('notification', JSON.stringify({ data, type }));
 };
 
-const listenSocket = () => new Promise((resolve, reject) => {
-  const ws = new WebSocket(`ws:///${API_ENDPOINT}/api/notifications`);
+const listenSocket = () => {
+  const ws = new WebSocket(`ws://${API_ENDPOINT}/api/notifications`);
 
   function heartbeat() {
     setInterval(() => {
@@ -99,7 +104,6 @@ const listenSocket = () => new Promise((resolve, reject) => {
 
   ws.on('open', () => {
     subscribe();
-    resolve();
   });
 
   ws.on('error', (e) => {
@@ -107,7 +111,7 @@ const listenSocket = () => new Promise((resolve, reject) => {
   });
 
   ws.on('close', () => {
-    reject(Error('ws closed'));
+    throw Error('WS closed');
   });
 
   ws.on('message', async (message) => {
@@ -147,20 +151,6 @@ const listenSocket = () => new Promise((resolve, reject) => {
       }
     }
   });
-});
-
-const connectToWebSockets = async (n) => {
-  const timeout = 10000;
-  try {
-    await listenSocket();
-  } catch (e) {
-    if (n !== 0) {
-      console.log(n);
-      setTimeout(async () => {
-        connectToWebSockets(n - 1);
-      }, timeout);
-    }
-  }
 };
 
 const app = express();
@@ -188,6 +178,50 @@ const router = express.Router();
 //   })
 // );
 
+const getDocument = hash => new Promise((resolve, reject) => {
+  ipfs.get(hash, (err, files) => {
+    if (err) {
+      reject(err);
+    }
+    resolve(files[0].content);
+  });
+});
+
+router.get('/getDocument', async (req, res) => {
+  const t = {
+    'image/jpeg': 1,
+    'image/jpg': 1,
+    'image/png': 2,
+    xls: 3,
+    pdf: 4,
+    csv: 5,
+    'image/gif': 6
+  };
+  if (req.query && req.query.document) {
+    try {
+      const { data } = await retry(
+        `http://${API_ENDPOINT}/api/channels/common/chaincodes/supply-chain-chaincode?fcn=getDocument&args=${
+          req.query.document
+        }`,
+        3
+      );
+
+      const { documentHash, documentType } = data.result.value;
+      const document = await getDocument(documentHash);
+
+      res.set({
+        'Content-type': mime.contentType(Object.keys(t).find(i => t[i] === documentType))
+      });
+      res.send(document);
+      return;
+    } catch (e) {
+      console.error(e);
+      res.end(500);
+    }
+  }
+  res.end(500);
+});
+
 app.use(express.static(path.join(__dirname, '../dist/client')));
 
 const html = require('./html');
@@ -213,7 +247,11 @@ app.use(router);
 const server = app.listen(port, () => {
   console.log(`listening on port: ${PORT}`);
   // Waiting for nginx container
-  connectToWebSockets(6);
+  try {
+    listenSocket();
+  } catch (e) {
+    process.exit(1);
+  }
 });
 
 const io = socketIO(server);
