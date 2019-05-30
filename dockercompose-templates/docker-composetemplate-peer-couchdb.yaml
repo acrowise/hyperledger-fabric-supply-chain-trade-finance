@@ -107,6 +107,7 @@ services:
   api.ORG.DOMAIN:
     container_name: api.ORG.DOMAIN
     image: frag:latest
+    restart: always
     volumes:
       - ../artifacts/crypto-config:/app/crypto-config
       - ../artifacts/api-configs-ORG:/app/configs
@@ -118,6 +119,7 @@ services:
   proxy.ORG.DOMAIN:
     container_name: proxy.ORG.DOMAIN
     image: nginx
+    restart: always
     ports:
       - WWW_PORT:80
     volumes:
@@ -152,6 +154,7 @@ services:
   tsupply-app.ORG.DOMAIN:
     container_name: tsupply-app.ORG.DOMAIN
     image: tsupply-app:latest
+    restart: always
     environment:
       PORT: WWW_PORT
       API_PORT: REST_API_PORT
