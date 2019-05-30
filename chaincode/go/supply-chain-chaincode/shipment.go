@@ -58,17 +58,16 @@ type ShipmentValue struct {
 }
 
 type ShipmentValueAdditional struct {
-	ContractID   string   `json:"contractID"`
-	Consignor    string   `json:"consignor"`
-	ShipFrom     string   `json:"shipFrom"`
-	ShipTo       string   `json:"shipTo"`
-	Transport    string   `json:"transport"`
-	Description  string   `json:"description"`
-	State        int      `json:"state"`
-	Timestamp    int64    `json:"timestamp"`
-	DeliveryDate int64    `json:"deliveryDate"`
-	Documents    []string `json:"documents"`
-	UpdatedDate  int64    `json:"updatedDate"`
+	Contract     ContractAdditional `json:"contract"`
+	Consignor    string             `json:"consignor"`
+	ShipFrom     string             `json:"shipFrom"`
+	ShipTo       string             `json:"shipTo"`
+	Transport    string             `json:"transport"`
+	Description  string             `json:"description"`
+	State        int                `json:"state"`
+	Timestamp    int64              `json:"timestamp"`
+	DeliveryDate int64              `json:"deliveryDate"`
+	UpdatedDate  int64              `json:"updatedDate"`
 }
 
 type Shipment struct {

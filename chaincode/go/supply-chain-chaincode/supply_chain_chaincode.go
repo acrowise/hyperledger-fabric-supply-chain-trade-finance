@@ -1477,7 +1477,7 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	resultBytes, err := joinByShipmentsAndContracts(stub, shipments)
+	resultBytes, err := joinByShipmentsAndContractsAndDocuments(stub, shipments)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by shipment and contract: %s", err.Error())
 		Logger.Error(message)
@@ -1655,8 +1655,9 @@ func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string)
 	return false, nil
 }
 
-func joinByShipmentsAndContracts(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
+func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
 
+	//making map of contracts
 	contracts := []Contract{}
 	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter)
 	if err != nil {
@@ -1675,12 +1676,31 @@ func joinByShipmentsAndContracts(stub shim.ChaincodeStubInterface, shipments []S
 		contractMap[contract.Key] = contract.Value
 	}
 
+	//making map of documents
+	documents := []Document{}
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	documentMap := make(map[DocumentKey]DocumentValue)
+	for _, document := range documents {
+		documentMap[document.Key] = document.Value
+	}
+
 	result := []ShipmentAdditional{}
 	for _, shipment := range shipments {
 		entry := ShipmentAdditional{
 			Key: shipment.Key,
 			Value: ShipmentValueAdditional{
-				ContractID:   shipment.Value.ContractID,
+				Contract:     ContractAdditional{Key: ContractKey{ID: shipment.Value.ContractID}},
 				Consignor:    shipment.Value.Consignor,
 				ShipFrom:     shipment.Value.ShipFrom,
 				ShipTo:       shipment.Value.ShipTo,
@@ -1691,9 +1711,27 @@ func joinByShipmentsAndContracts(stub shim.ChaincodeStubInterface, shipments []S
 				UpdatedDate:  shipment.Value.UpdatedDate,
 			},
 		}
-
-		if contractValue, ok := contractMap[ContractKey{ID: entry.Value.ContractID}]; ok {
-			entry.Value.Documents = contractValue.Documents
+		// find contract
+		if contractValue, ok := contractMap[ContractKey{ID: entry.Value.Contract.Key.ID}]; ok {
+			// fill contact fields
+			entry.Value.Contract.Value.ProductName = contractValue.ProductName
+			entry.Value.Contract.Value.ConsignorName = contractValue.ConsignorName
+			entry.Value.Contract.Value.ConsigneeName = contractValue.ConsigneeName
+			entry.Value.Contract.Value.TotalDue = contractValue.TotalDue
+			entry.Value.Contract.Value.Quantity = contractValue.Quantity
+			entry.Value.Contract.Value.Destination = contractValue.Destination
+			entry.Value.Contract.Value.DueDate = contractValue.DueDate
+			entry.Value.Contract.Value.PaymentDate = contractValue.PaymentDate
+			entry.Value.Contract.Value.State = contractValue.State
+			entry.Value.Contract.Value.Timestamp = contractValue.Timestamp
+			entry.Value.Contract.Value.UpdatedDate = contractValue.UpdatedDate
+			// find document
+			for _, documentID := range contractValue.Documents {
+				if documentValue, ok := documentMap[DocumentKey{ID: documentID}]; ok {
+					// fill document item for result structure
+					entry.Value.Contract.Value.Documents = append(entry.Value.Contract.Value.Documents, Document{Key: DocumentKey{ID: documentID}, Value: documentValue})
+				}
+			}
 		}
 
 		result = append(result, entry)
