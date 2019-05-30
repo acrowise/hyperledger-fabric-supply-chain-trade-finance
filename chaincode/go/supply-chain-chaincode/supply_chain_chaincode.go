@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"crypto/x509"
 	"encoding/json"
@@ -108,8 +107,6 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.getDocument(stub, args)
 	} else if function == "getEventPayload" {
 		return cc.getEventPayload(stub, args)
-	} else if function == "getByQuery" {
-		return cc.getByQuery(stub, args)
 	}
 	// (optional) add other query functions
 
@@ -117,7 +114,7 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		"requestShipment, confirmShipment, uploadDocument, " +
 		"generateProof, verifyProof, submitReport, " +
 		"acceptInvoice, rejectInvoice, listProofsByOwner, updateProof, " +
-		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument, getByQuery}"
+		"listOrders, listContracts, listProofs, listReports, listShipments, getEventPayload, getDocument}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	Logger.Debug(message)
 
@@ -918,13 +915,13 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 	}
 
 	//additional checking
-	checkingResult, err := existsDocumentByHash(stub, document.Value.DocumentHash)
+	findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
 	if err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message), Document{}
 	}
-	if checkingResult {
+	if len(findedDocuments) != 0 {
 		message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
 		Logger.Error(message)
 		return errors.New(message), Document{}
@@ -1503,6 +1500,8 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 	return shim.Success(resultBytes)
 }
 
+//0
+//eventID
 func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1534,26 +1533,8 @@ func (cc *SupplyChainChaincode) getEventPayload(stub shim.ChaincodeStubInterface
 	return shim.Success(result)
 }
 
-//   0
-// "queryString"
-func (cc *SupplyChainChaincode) getByQuery(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	Notifier(stub, NoticeRuningType)
-
-	if len(args) < 1 {
-		return shim.Error("Incorrect number of arguments. Expecting 1")
-	}
-
-	queryString := args[0]
-
-	queryResults, err := getQueryResultForQueryString(stub, queryString)
-	if err != nil {
-		return shim.Error(err.Error())
-	}
-
-	Notifier(stub, NoticeSuccessType)
-	return shim.Success(queryResults)
-}
-
+//0
+//documentID
 func (cc *SupplyChainChaincode) getDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1585,58 +1566,7 @@ func (cc *SupplyChainChaincode) getDocument(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(result)
 }
 
-func getQueryResultForQueryString(stub shim.ChaincodeStubInterface, queryString string) ([]byte, error) {
-
-	fmt.Printf("- getQueryResultForQueryString queryString:\n%s\n", queryString)
-
-	resultsIterator, err := stub.GetQueryResult(queryString)
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	buffer, err := constructQueryResponseFromIterator(resultsIterator)
-	if err != nil {
-		return nil, err
-	}
-
-	fmt.Printf("- getQueryResultForQueryString queryResult:\n%s\n", buffer.String())
-
-	return buffer.Bytes(), nil
-}
-
-func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) (*bytes.Buffer, error) {
-	// buffer is a JSON array containing QueryResults
-	var buffer bytes.Buffer
-	buffer.WriteString("[")
-
-	bArrayMemberAlreadyWritten := false
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-		if err != nil {
-			return nil, err
-		}
-		// Add a comma before array members, suppress it for the first array member
-		if bArrayMemberAlreadyWritten == true {
-			buffer.WriteString(",")
-		}
-		buffer.WriteString("{\"Key\":")
-		buffer.WriteString("\"")
-		buffer.WriteString(queryResponse.Key)
-		buffer.WriteString("\"")
-
-		buffer.WriteString(", \"Record\":")
-		// Record is a JSON object, so we write as-is
-		buffer.WriteString(string(queryResponse.Value))
-		buffer.WriteString("}")
-		bArrayMemberAlreadyWritten = true
-	}
-	buffer.WriteString("]")
-
-	return &buffer, nil
-}
-
-func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) (bool, error) {
+func findDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) ([]Document, error) {
 
 	filterByDocumentHash := func(data LedgerData) bool {
 		entity, ok := data.(*Document)
@@ -1652,20 +1582,16 @@ func existsDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
-		return false, errors.New(message)
+		return documents, errors.New(message)
 	}
 
 	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
 		message := fmt.Sprintf("unable to unmarshal documents query result: %s", err.Error())
 		Logger.Error(message)
-		return false, errors.New(message)
+		return documents, errors.New(message)
 	}
 
-	if len(documents) != 0 {
-		return true, nil
-	}
-
-	return false, nil
+	return documents, nil
 }
 
 func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
