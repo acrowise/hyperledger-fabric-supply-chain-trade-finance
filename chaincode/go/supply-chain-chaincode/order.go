@@ -55,6 +55,7 @@ type OrderValue struct {
 	BuyerID     string  `json:"buyerID"`
 	State       int     `json:"state"`
 	Timestamp   int64   `json:"timestamp"`
+	UpdatedDate int64   `json:"updatedDate"`
 }
 
 type Order struct {

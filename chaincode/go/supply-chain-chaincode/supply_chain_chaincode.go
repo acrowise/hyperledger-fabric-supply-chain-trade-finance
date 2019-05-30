@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"crypto/ecdsa"
-	"crypto/sha256"
 	"crypto/x509"
 	"encoding/json"
 	"encoding/pem"
@@ -12,10 +11,8 @@ import (
 	"github.com/hyperledger/fabric-amcl/amcl/FP256BN"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
-	"github.com/hyperledger/fabric/idemix"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
-	"math/rand"
 	"time"
 )
 
@@ -90,12 +87,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.verifyProof(stub, args)
 	} else if function == "updateProof" {
 		return cc.updateProof(stub, args)
-	} else if function == "submitReport" {
+	} else if function == "updateReport" {
 		return cc.updateReport(stub, args)
-	} else if function == "acceptInvoice" {
-		return cc.acceptInvoice(stub, args)
-	} else if function == "rejectInvoice" {
-		return cc.rejectInvoice(stub, args)
 	} else if function == "listOrders" {
 		// List all orders
 		return cc.listOrders(stub, args)
@@ -180,6 +173,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 
 	order.Value.State = stateOrderNew
 	order.Value.Timestamp = time.Now().UTC().Unix()
+	order.Value.UpdatedDate = order.Value.Timestamp
 	order.Value.BuyerID = creator
 
 	//setting optional values
@@ -274,6 +268,7 @@ func (cc *SupplyChainChaincode) editOrder(stub shim.ChaincodeStubInterface, args
 	orderToUpdate.Value.Price = order.Value.Price
 	orderToUpdate.Value.DueDate = order.Value.DueDate
 	orderToUpdate.Value.PaymentDate = order.Value.PaymentDate
+	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//setting optional values
 	destination := args[4]
@@ -362,6 +357,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 	//setting new values
 	orderToUpdate.Value.State = stateOrderCanceled
+	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(orderToUpdate); err == nil {
@@ -448,6 +444,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 
 	//setting new values
 	orderToUpdate.Value.State = stateOrderAccepted
+	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//creating contract
 	contract := Contract{}
@@ -473,6 +470,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	contract.Value.PaymentDate = orderToUpdate.Value.PaymentDate
 	contract.Value.State = stateContractSigned
 	contract.Value.Timestamp = time.Now().UTC().Unix()
+	contract.Value.UpdatedDate = contract.Value.Timestamp
 
 	if bytes, err := json.Marshal(contract); err == nil {
 		Logger.Debug("Contract: " + string(bytes))
@@ -603,6 +601,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	shipment.Value.Description = args[5]
 	shipment.Value.Consignor = contract.Value.ConsignorName
 	shipment.Value.Timestamp = time.Now().UTC().Unix()
+	shipment.Value.UpdatedDate = shipment.Value.Timestamp
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipment); err == nil {
@@ -617,6 +616,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 
 	//updating contract state
 	contract.Value.State = stateContractProcessed
+	contract.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(contract); err == nil {
 		Logger.Debug("Contract: " + string(bytes))
@@ -691,6 +691,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentConfirmed
+	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
@@ -797,6 +798,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentDelivered
+	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
@@ -811,6 +813,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 
 	//updating contract state
 	contract.Value.State = stateContractCompleted
+	contract.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	if bytes, err := json.Marshal(contract); err == nil {
 		Logger.Debug("Contract: " + string(bytes))
@@ -905,6 +908,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	document.Value.DocumentHash = documentHash
 	document.Value.DocumentDescription = args[4]
 	document.Value.Timestamp = time.Now().UTC().Unix()
+	document.Value.UpdatedDate = document.Value.Timestamp
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(document); err == nil {
@@ -931,6 +935,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 			return shim.Error(message)
 		}
 		entityType.Value.Documents = append(entityType.Value.Documents, document.Key.ID)
+		entityType.Value.UpdatedDate = time.Now().UTC().Unix()
 		if err := UpdateOrInsertIn(stub, &entityType, contractIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -960,6 +965,13 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to upload a document")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	// checking proof exist
 	proof := Proof{}
@@ -992,6 +1004,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	proof.Key.ID = uuid.Must(uuid.NewV4()).String()
 	proof.Value.State = stateProofGenerated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
+	proof.Value.UpdatedDate = proof.Value.Timestamp
 
 	// parsing input json and generate Idemix crypto
 	if err := proof.GenerateIdemixCrypto(args[1]); err != nil {
@@ -1028,9 +1041,11 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	//allowedUnits := map[string]bool{
-	//	Auditor: true,
-	//}
+	if err, result := checkAccessForUnit([][]string{Auditor}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to upload a document")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	// checking proof exist
 	proof := Proof{}
@@ -1094,6 +1109,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	proof.Value.State = stateProofValidated
+	proof.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	// updating state in ledger
 	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
@@ -1122,6 +1138,13 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to upload a document")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	// checking proof exist
 	proof := Proof{}
 	if err := proof.FillFromCompositeKeyParts([]string{args[0]}); err != nil {
@@ -1146,6 +1169,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	// setting automatic values
 	proof.Value.State = stateProofGenerated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
+	proof.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	// parsing input json and generate Idemix crypto
 	if err := proof.GenerateIdemixCrypto(args[1]); err != nil {
@@ -1178,7 +1202,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 
 //0		1
 //ID	Description
-func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
@@ -1233,6 +1257,7 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 	agencyReport.Value.State = stateReportAccepted
 	agencyReport.Value.Description = args[1]
 	agencyReport.Value.Timestamp = time.Now().UTC().Unix()
+	agencyReport.Value.UpdatedDate = agencyReport.Value.Timestamp
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(agencyReport); err == nil {
@@ -1254,84 +1279,6 @@ func (cc *SupplyChainChaincode) submitReport(stub shim.ChaincodeStubInterface, a
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
-	}
-
-	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
-}
-
-//0		1	2	3	4	5	6
-//ID    0	0	0	0	0	0
-func (cc *SupplyChainChaincode) acceptInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id, (optional) description, docs
-	// check role == Buyer
-	// check contract existence
-	// check contract status (to avoid logical conflict, e.g. accept contract rejected previously)
-	// add docs to Shipment (with description optionally)
-	// set contract status to "waiting for payment" (or some other final one)
-	// generate Invoice from contract field
-	// save Shipment, Contract to collection
-	// save Invoice to Trade Finance chaincode ledger
-	Notifier(stub, NoticeRuningType)
-
-	//checking role
-	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to accept an invoice")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	fcnName := "acceptInvoice"
-	chaincodeName := "trade-finance-chaincode"
-	channelName := "common"
-	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
-
-	for _, oneArg := range args {
-		argsByte = append(argsByte, []byte(oneArg))
-	}
-
-	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
-	if response.Status >= 400 {
-		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
-		return pb.Response{Status: 400, Message: message}
-	}
-
-	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
-}
-
-//0		1	2	3	4	5	6
-//ID    0	0	0	0	0	0
-func (cc *SupplyChainChaincode) rejectInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	// args: contract id, docs, (optional) description
-	// check role == Buyer
-	// check contract existence
-	// check contract status (to avoid logical conflict, e.g. reject contract accepted previously)
-	// add docs to Shipment (with description optionally)
-	// set contract status to "rejected" (or some other final one)
-	// save Shipment, Contract to collection
-	Notifier(stub, NoticeRuningType)
-
-	//checking role
-	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to reject an invoice")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	fcnName := "rejectInvoice"
-	chaincodeName := "trade-finance-chaincode"
-	channelName := "common"
-	argsByte := [][]byte{[]byte(fcnName), []byte(args[0]), []byte(args[1]), []byte(args[2]), []byte(args[3]), []byte(args[4]), []byte(args[5]), []byte(args[6])}
-
-	for _, oneArg := range args {
-		argsByte = append(argsByte, []byte(oneArg))
-	}
-
-	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
-	if response.Status >= 400 {
-		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
-		return pb.Response{Status: 400, Message: message}
 	}
 
 	Notifier(stub, NoticeSuccessType)

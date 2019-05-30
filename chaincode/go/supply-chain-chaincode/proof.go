@@ -51,6 +51,7 @@ type ProofValue struct {
 	Owner               string                   `json:"owner"`
 	Timestamp           int64                    `json:"timestamp"`
 	ContractID          string                   `json:"contractID"`
+	UpdatedDate         int64                    `json:"updatedDate"`
 }
 
 type ProofDataForVerification struct {
