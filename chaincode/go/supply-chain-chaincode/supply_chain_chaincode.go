@@ -461,11 +461,12 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	contract.Value.ProductName = orderToUpdate.Value.ProductName
 	contract.Value.ConsignorName = creator
 	contract.Value.ConsigneeName = orderToUpdate.Value.BuyerID
-	contract.Value.TotalDue = orderToUpdate.Value.Price
+	contract.Value.TotalDue = orderToUpdate.Value.Price * float32(orderToUpdate.Value.Quantity)
 	contract.Value.Quantity = orderToUpdate.Value.Quantity
 	contract.Value.Destination = orderToUpdate.Value.Destination
 	contract.Value.DueDate = orderToUpdate.Value.DueDate
 	contract.Value.PaymentDate = orderToUpdate.Value.PaymentDate
+	contract.Value.Price = orderToUpdate.Value.Price
 	contract.Value.State = stateContractSigned
 	contract.Value.Timestamp = time.Now().UTC().Unix()
 	contract.Value.UpdatedDate = contract.Value.Timestamp
