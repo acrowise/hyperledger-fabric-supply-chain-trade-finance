@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
-	"strconv"
 )
 
 const (
@@ -129,17 +128,6 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 	entity.Value.Transport = transport
-
-	//checking deliveryDate
-	deliveryDate, err := strconv.ParseInt(args[6], 10, 64)
-	if err != nil {
-		return errors.New(fmt.Sprintf("unable to parse the deliveryDate: %s", err.Error()))
-	}
-
-	if deliveryDate < 0 {
-		return errors.New("deliveryDate must be larger than zero")
-	}
-	entity.Value.DeliveryDate = int64(deliveryDate)
 
 	return nil
 }
