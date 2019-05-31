@@ -1539,7 +1539,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	resultBytes, err := joinByReportsAndContracts(stub, reports)
+	resultBytes, err := joinByReportsAndDocuments(stub, reports)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by report and contract: %s", err.Error())
 		Logger.Error(message)
@@ -1841,8 +1841,28 @@ func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, s
 	return resultBytes, nil
 }
 
-func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Report) ([]byte, error) {
+func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Report) ([]byte, error) {
 
+	//making shipment map
+	shipments := []Shipment{}
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(shipmentsBytes, &shipments); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	shipmentsMap := make(map[ShipmentKey]ShipmentValue)
+	for _, shipment := range shipments {
+		shipmentsMap[shipment.Key] = shipment.Value
+	}
+
+	//making contract map
 	contracts := []Contract{}
 	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter)
 	if err != nil {
@@ -1861,6 +1881,26 @@ func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Repor
 		contractMap[contract.Key] = contract.Value
 	}
 
+	//making document map
+	documents := []Document{}
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	documentMap := make(map[DocumentKey]DocumentValue)
+	for _, document := range documents {
+		documentMap[document.Key] = document.Value
+	}
+
+	//building result report
 	result := []ReportAdditional{}
 	for _, report := range reports {
 		entry := ReportAdditional{
@@ -1874,8 +1914,19 @@ func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Repor
 			},
 		}
 
-		if contractValue, ok := contractMap[ContractKey{ID: entry.Value.ShipmentID}]; ok {
-			entry.Value.Documents = contractValue.Documents
+		// find shipment
+		if shipmentValue, ok := shipmentsMap[ShipmentKey{ID: entry.Value.ShipmentID}]; ok {
+			//find contract
+			if contractValue, ok := contractMap[ContractKey{ID: shipmentValue.ContractID}]; ok {
+				// find document
+				for _, documentID := range contractValue.Documents {
+					if documentValue, ok := documentMap[DocumentKey{ID: documentID}]; ok {
+						// fill document item for result structure
+						entry.Value.Documents = append(entry.Value.Documents, Document{Key: DocumentKey{ID: documentID}, Value: documentValue})
+					}
+				}
+
+			}
 		}
 
 		result = append(result, entry)
