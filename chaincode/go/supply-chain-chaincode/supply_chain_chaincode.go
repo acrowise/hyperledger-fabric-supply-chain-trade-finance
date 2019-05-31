@@ -856,8 +856,8 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1			2			3				4					5
-//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType
+//0		1			2			3				4					5				6
+//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -946,17 +946,9 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 		return errors.New(message), Document{}
 	}
 
-	// find contractID
-	err, contractID := findContractIDByEntity(stub, document.Value.EntityType, document.Value.EntityID)
-	if err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message), Document{}
-	}
-
 	//appending document ID in contract
 	contract := Contract{}
-	contract.Key.ID = contractID
+	contract.Key.ID = document.Value.ContractID
 	if !ExistsIn(stub, &contract, contractIndex) {
 		compositeKey, _ := contract.ToCompositeKey(stub)
 		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
@@ -1200,7 +1192,15 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	documentHash := args[3]
 	documentType := args[4]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", string(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType}
+		// find contractID
+		err, contractID := findContractIDByEntity(stub, TypeShipment, proof.Value.ShipmentID)
+		if err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+
+		documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType, contractID}
 		err, _ = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
