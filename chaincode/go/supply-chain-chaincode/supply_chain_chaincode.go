@@ -12,6 +12,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
+	"strconv"
 	"time"
 )
 
@@ -855,8 +856,8 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1			2			3				4					5
-//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType
+//0		1			2			3				4					5				6
+//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -947,7 +948,7 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 
 	//appending document ID in contract
 	contract := Contract{}
-	contract.Key.ID = document.Value.EntityID
+	contract.Key.ID = document.Value.ContractID
 	if !ExistsIn(stub, &contract, contractIndex) {
 		compositeKey, _ := contract.ToCompositeKey(stub)
 		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
@@ -971,7 +972,7 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 }
 
 //0		1				2		3
-//ID	ArrayAttributes	State	ContractID
+//ID	ArrayAttributes	Owner	ShipmentID
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	Notifier(stub, NoticeRuningType)
@@ -997,22 +998,43 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	}
 
 	//additional checking
-	contract := Contract{}
-	contractID := args[3]
-	if err := contract.FillFromCompositeKeyParts([]string{contractID}); err != nil {
+	shipment := Shipment{}
+	shipmentID := args[3]
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	if !ExistsIn(stub, &contract, contractIndex) {
-		compositeKey, _ := contract.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("contract with the key %s doesnt exist", compositeKey))
+	if !ExistsIn(stub, &shipment, shipmentIndex) {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesnt exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &shipment, shipmentIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if shipment.Value.Consignor != creator {
+		message := fmt.Sprintf("each supplier can generate proof only for their shipment")
+		Logger.Error(message)
+		return shim.Error(message)
 	}
 
 	// setting automatic values
 	proof.Key.ID = uuid.Must(uuid.NewV4()).String()
 	proof.Value.State = stateProofGenerated
+	proof.Value.ConsignorName = creator
+	proof.Value.ShipmentID = shipmentID
 	proof.Value.Timestamp = time.Now().UTC().Unix()
 	proof.Value.UpdatedDate = proof.Value.Timestamp
 
@@ -1045,8 +1067,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-//0			1		3
-//ProofID	Result	Description
+//0			1				2				3					4
+//ProofID	ReportState		Description		DocumentHash 		DocumentType
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1126,6 +1148,65 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
+	}
+
+	// making report
+	reportState, err := strconv.Atoi(args[1])
+	if err != nil {
+		message := fmt.Sprintf("report State is invalid: %s (must be int", args[1])
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if !Contains(reportStateLegal, reportState) {
+		message := fmt.Sprintf("report State is invalid: %d (must be from 0 to %d)", reportState, len(reportStateLegal))
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	report := Report{}
+	reportID := uuid.Must(uuid.NewV4()).String()
+	if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if ExistsIn(stub, &report, reportIndex) {
+		compositeKey, _ := report.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
+	}
+
+	report.Value.ShipmentID = proof.Value.ShipmentID
+	report.Value.State = reportState
+	report.Value.Description = args[2]
+	report.Value.Timestamp = time.Now().UTC().Unix()
+	report.Value.UpdatedDate = report.Value.Timestamp
+
+	if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	// uploading document
+	documentHash := args[3]
+	documentType := args[4]
+	if documentHash != "" && documentType != "" {
+		// find contractID
+		err, contractID := findContractIDByEntity(stub, TypeShipment, proof.Value.ShipmentID)
+		if err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+
+		documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType, contractID}
+		err, _ = processingUploadDocument(stub, documentFields)
+		if err != nil {
+			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
 	}
 
 	//emitting Event
@@ -1458,7 +1539,7 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	resultBytes, err := joinByReportsAndContracts(stub, reports)
+	resultBytes, err := joinByReportsAndDocuments(stub, reports)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by report and contract: %s", err.Error())
 		Logger.Error(message)
@@ -1594,6 +1675,85 @@ func findDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) (
 	return documents, nil
 }
 
+func findContractIDByEntity(stub shim.ChaincodeStubInterface, entityType int, entityID string) (error, string) {
+
+	contactID := ""
+
+	switch entityType {
+	case TypeContract:
+		contactID = entityID
+
+	case TypeShipment:
+		entity := Shipment{}
+		id := entityID
+		if err := entity.FillFromCompositeKeyParts([]string{id}); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+
+		if !ExistsIn(stub, &entity, shipmentIndex) {
+			compositeKey, _ := entity.ToCompositeKey(stub)
+			message := fmt.Sprintf("shipment with the key %s doesnt exist", compositeKey)
+			Logger.Error(message)
+			return nil, contactID
+		}
+
+		if err := LoadFrom(stub, &entity, shipmentIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+		contactID = entity.Value.ContractID
+	case TypeReport:
+		// firstly getting report by entityID
+		entityOne := Report{}
+		idOne := entityID
+		if err := entityOne.FillFromCompositeKeyParts([]string{idOne}); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+
+		if !ExistsIn(stub, &entityOne, reportIndex) {
+			compositeKey, _ := entityOne.ToCompositeKey(stub)
+			message := fmt.Sprintf("report with the key %s doesnt exist", compositeKey)
+			Logger.Error(message)
+			return nil, contactID
+		}
+
+		if err := LoadFrom(stub, &entityOne, reportIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+		// secondly getting shipment by shipmentID from report
+		entityTwo := Shipment{}
+		idTwo := entityOne.Value.ShipmentID
+		if err := entityTwo.FillFromCompositeKeyParts([]string{idTwo}); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+
+		if !ExistsIn(stub, &entityTwo, shipmentIndex) {
+			compositeKey, _ := entityTwo.ToCompositeKey(stub)
+			message := fmt.Sprintf("shipment with the key %s doesnt exist", compositeKey)
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+
+		if err := LoadFrom(stub, &entityTwo, shipmentIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), contactID
+		}
+		contactID = entityTwo.Value.ContractID
+	}
+
+	return nil, contactID
+}
+
 func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
 
 	//making map of contracts
@@ -1681,8 +1841,28 @@ func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, s
 	return resultBytes, nil
 }
 
-func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Report) ([]byte, error) {
+func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Report) ([]byte, error) {
 
+	//making shipment map
+	shipments := []Shipment{}
+	shipmentsBytes, err := Query(stub, shipmentIndex, []string{}, CreateShipment, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(shipmentsBytes, &shipments); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	shipmentsMap := make(map[ShipmentKey]ShipmentValue)
+	for _, shipment := range shipments {
+		shipmentsMap[shipment.Key] = shipment.Value
+	}
+
+	//making contract map
 	contracts := []Contract{}
 	contractsBytes, err := Query(stub, contractIndex, []string{}, CreateContract, EmptyFilter)
 	if err != nil {
@@ -1701,6 +1881,26 @@ func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Repor
 		contractMap[contract.Key] = contract.Value
 	}
 
+	//making document map
+	documents := []Document{}
+	documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+	if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	documentMap := make(map[DocumentKey]DocumentValue)
+	for _, document := range documents {
+		documentMap[document.Key] = document.Value
+	}
+
+	//building result report
 	result := []ReportAdditional{}
 	for _, report := range reports {
 		entry := ReportAdditional{
@@ -1710,12 +1910,23 @@ func joinByReportsAndContracts(stub shim.ChaincodeStubInterface, reports []Repor
 				State:       report.Value.State,
 				Timestamp:   report.Value.Timestamp,
 				UpdatedDate: report.Value.UpdatedDate,
-				ContractID:  report.Value.ContractID,
+				ShipmentID:  report.Value.ShipmentID,
 			},
 		}
 
-		if contractValue, ok := contractMap[ContractKey{ID: entry.Value.ContractID}]; ok {
-			entry.Value.Documents = contractValue.Documents
+		// find shipment
+		if shipmentValue, ok := shipmentsMap[ShipmentKey{ID: entry.Value.ShipmentID}]; ok {
+			//find contract
+			if contractValue, ok := contractMap[ContractKey{ID: shipmentValue.ContractID}]; ok {
+				// find document
+				for _, documentID := range contractValue.Documents {
+					if documentValue, ok := documentMap[DocumentKey{ID: documentID}]; ok {
+						// fill document item for result structure
+						entry.Value.Documents = append(entry.Value.Documents, Document{Key: DocumentKey{ID: documentID}, Value: documentValue})
+					}
+				}
+
+			}
 		}
 
 		result = append(result, entry)

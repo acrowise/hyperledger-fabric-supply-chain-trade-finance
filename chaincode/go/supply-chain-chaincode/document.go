@@ -25,6 +25,7 @@ type DocumentKey struct {
 type DocumentValue struct {
 	EntityType          int    `json:"entityType"`
 	EntityID            string `json:"entityID"`
+	ContractID          string `json:"contractID"`
 	DocumentHash        string `json:"documentHash"`
 	DocumentDescription string `json:"documentDescription"`
 	DocumentType        int    `json:"documentType"`
@@ -42,8 +43,8 @@ func CreateDocument() LedgerData {
 }
 
 //argument order
-//0		1			2			3				4					5
-//ID	EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType
+//0		1			2			3				4					5				6
+//ID	EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
 func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < documentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))
@@ -96,6 +97,23 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(fmt.Sprintf("unacceptable type of document"))
 	}
 	entity.Value.DocumentType = documentType
+
+	//checking contract
+	contractID := args[6]
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{contractID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	if !ExistsIn(stub, &contract, contractIndex) {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		message := fmt.Sprintf("contract with the key %s doesnt exist", compositeKey)
+		Logger.Error(message)
+		return errors.New(message)
+	}
+	entity.Value.ContractID = contractID
 
 	return nil
 }

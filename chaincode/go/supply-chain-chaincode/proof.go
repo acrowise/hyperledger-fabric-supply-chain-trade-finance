@@ -18,7 +18,7 @@ const (
 
 const (
 	proofKeyFieldsNumber      = 1
-	proofBasicArgumentsNumber = 4
+	proofBasicArgumentsNumber = 3
 )
 
 //proof state constants (from 0 to 2)
@@ -48,9 +48,10 @@ type ProofValue struct {
 	SnapShot            *idemix.Signature        `json:"snapShot"`
 	DataForVerification ProofDataForVerification `json:"dataForVerification"`
 	State               int                      `json:"state"`
+	ConsignorName       string                   `json:"consignorName"`
 	Owner               string                   `json:"owner"`
 	Timestamp           int64                    `json:"timestamp"`
-	ContractID          string                   `json:"contractID"`
+	ShipmentID          string                   `json:"shipmentID"`
 	UpdatedDate         int64                    `json:"updatedDate"`
 }
 
@@ -80,8 +81,8 @@ func CreateProof() LedgerData {
 }
 
 //argument order
-//0		1			2
-//ID	SnapShot	Owner
+//0		1				2		3
+//ID	ArrayAttributes	Owner	ContractID
 func (entity *Proof) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < proofBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", proofBasicArgumentsNumber))
