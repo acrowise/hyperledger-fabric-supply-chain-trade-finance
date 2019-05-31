@@ -32,7 +32,6 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
   const [files, setFiles] = useState([]);
   const [hash, setHash] = useState(null);
   const [shipmentRequestRes, requestShipment, reset] = post('requestShipment')();
-  const [, uploadDocument] = post('uploadDocument')();
   const [fileRequired, setFileRequired] = useState(false);
 
   const errors = {
@@ -179,23 +178,12 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                           formState.shipTo,
                           formState.transport,
                           formState.description,
-                          dialogIsOpen.item.dueDate.toString() // Delivery Date
+                          // dialogIsOpen.item.dueDate.toString(), // Delivery Date
+                          hash.hash,
+                          hash.type
                         ]
+                        // Packing List
                       });
-                      setTimeout(() => {
-                        uploadDocument({
-                          fcn: 'uploadDocument',
-                          args: [
-                            '0',
-                            '1', // Shipment
-                            dialogIsOpen.item.id, // ContractID
-                            hash.hash,
-                            'Packing List',
-                            hash.type
-                          ]
-                        });
-                      }, 600);
-
                       setFiles([]);
                       dispatch({ type: 'reset', payload: initialState });
                     } else {

@@ -13,8 +13,8 @@ import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
+  const [hash, setHash] = useState(null);
   const [shipmentRes, confirmShipment, reset] = post('confirmShipment')();
-  const [, uploadDocs] = post('uploadDocument')();
   const [fileRequired, setFileRequired] = useState(false);
 
   if (!shipmentRes.pending) {
@@ -75,7 +75,13 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   <Label className="col-6 margin-right-auto">
                     Upload Bill of Lading
                     <div style={{ marginTop: 5 }}>
-                      <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
+                      <FileUploader
+                        files={files}
+                        setFiles={setFiles}
+                        hash={hash}
+                        setHash={setHash}
+                        error={fileRequired}
+                      />
                     </div>
                   </Label>
                 </div>
@@ -102,18 +108,12 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     } else {
                       confirmShipment({
                         fcn: 'confirmShipment',
-                        args: [shipment.id, '0', '0', '0', '0', '0']
+                        args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type]
+                        // Bill of Lading
                       });
                       setFileRequired(false);
-                      setTimeout(() => {
-                        const form = new FormData();
-                        form.append('contractId', shipment.contractId);
-                        form.append('type', 'Bill of Lading');
-                        files.forEach((f) => {
-                          form.append('file', f);
-                        });
-                        uploadDocs(form);
-                      }, 600);
+                      setFiles([]);
+                      setHash(null);
                     }
                   }}
                 >
