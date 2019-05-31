@@ -214,10 +214,12 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/getDocument?document=${doc}`}
+                        href={`/getDocument?hash=${doc.value.documentHash}&type=${
+                          doc.value.documentType
+                        }`}
                         target="_blank"
                       >
-                        {doc.type}
+                        {doc.value.documentDescription}
                       </a>
                       {doc.new ? (
                         <div

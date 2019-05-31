@@ -45,7 +45,7 @@ const notifications = (state = [], message, tab) => {
       case 'documentUploaded': {
         const newState = state.concat([]);
         const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentId);
-        itemToUpdate.value.documents.push(notification.data);
+        itemToUpdate.value.contract.value.documents.push(notification.data);
         itemToUpdate.value.events.push(notification.event);
         return { result: newState };
       }

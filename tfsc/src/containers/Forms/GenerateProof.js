@@ -91,11 +91,11 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
               </div>
               <div className="col-6" style={{ flex: 1, padding: 0 }}>
                 <div>
-                  {shipment.documents
+                  {shipment && shipment.documents
                     && shipment.documents.map(doc => (
                       <Checkbox
-                        key={doc.type}
-                        label={doc.type}
+                        key={doc.documentDescription}
+                        label={doc.documentDescription}
                         className="col-4 margin-right-auto"
                         value={formState[doc.field]}
                         onChange={() => dispatch({

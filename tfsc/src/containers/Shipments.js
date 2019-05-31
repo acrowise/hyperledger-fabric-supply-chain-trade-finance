@@ -75,7 +75,12 @@ const Shipments = ({
   let filteredData = shipments.result;
 
   if (!loading && filteredData && filteredData.length > 0) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+    filteredData = filteredData.map(i => Object.assign({}, i.value, {
+      id: i.key.id,
+      contractID: i.value.contract.key.id,
+      state: STATUSES.SHIPMENT[i.value.state],
+      documents: i.value.contract.value.documents
+    }));
 
     if (dataForFilter.length === 0) {
       setDataForFilter(filteredData);
