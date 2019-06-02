@@ -121,7 +121,9 @@ const listenSocket = () => {
       }
 
       if (eventName === 'acceptOrder') {
-        clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+        setTimeout(() => {
+          clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+        }, 1250);
       }
     }
   });

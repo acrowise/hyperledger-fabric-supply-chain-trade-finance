@@ -10,6 +10,15 @@ import { formReducer } from '../../reducers';
 import { INPUTS, REVIEWERS } from '../../constants';
 
 const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
+  const contractFields = [
+    'consignorName',
+    'consigneeName',
+    'totalDue',
+    'quantity',
+    'destination',
+    'dueDate',
+    'paymentDate'
+  ];
   const initialState = {
     contractId: false,
     consignorName: false,
@@ -91,7 +100,8 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
               </div>
               <div className="col-6" style={{ flex: 1, padding: 0 }}>
                 <div>
-                  {shipment && shipment.documents
+                  {shipment
+                    && shipment.documents
                     && shipment.documents.map(doc => (
                       <Checkbox
                         key={doc.documentDescription}
@@ -169,12 +179,18 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                 if (!hasErrors) {
                   generateProof({
                     fcn: 'generateProof',
-                    args: [],
-                    user: 'supplier',
-                    shipmentId: shipment.id,
-                    data: formState,
-                    reviewer: formState.reviewer,
-                    contractId: shipment.contractId
+                    args: [
+                      '0',
+                      JSON.stringify(
+                        contractFields.map(i => ({
+                          AttributeName: i,
+                          AttributeValue: shipment.contract.value[i].toString(),
+                          AttributeDisclosure: formState[i] ? 0 : 1
+                        }))
+                      ),
+                      formState.reviewer.id,
+                      shipment.id
+                    ]
                   });
                   setDialogOpenState(false);
                   dispatch({ type: 'reset', payload: initialState });

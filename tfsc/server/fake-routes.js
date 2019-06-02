@@ -184,7 +184,7 @@ module.exports = (router, clients) => {
       .push(proof)
       .write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'proofGenerated' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: proof, shipment, type: 'generateProof' })));
     res.end('ok');
   });
 

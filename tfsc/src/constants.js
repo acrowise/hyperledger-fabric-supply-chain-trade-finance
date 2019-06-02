@@ -167,11 +167,11 @@ export const INPUTS = {
 
 export const REVIEWERS = [
   {
-    id: 'ggcb',
+    id: 'cMSP',
     title: 'Government Goods Control Bureau'
   },
   {
-    id: 'uscts',
+    id: 'dMSP',
     title: 'US Commercial Trade Service'
   }
 ];

@@ -31,7 +31,7 @@ const ShipmentDetailPage = ({
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'proofGenerated') {
+    if (notification.type === 'generateProof') {
       // FIXME
       const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
       setData({ result: newState });

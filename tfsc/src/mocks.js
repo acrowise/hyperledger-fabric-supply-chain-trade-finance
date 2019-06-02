@@ -10,7 +10,7 @@ export const notifications = {
   confirmDelivery: 'shipments',
 
   verifyProof: 'proofs',
-  proofGenerated: 'proofs',
+  generateProof: 'proofs',
 
   contractCreated: 'contracts',
   contractUpdated: 'contracts',
@@ -39,7 +39,7 @@ export const title = {
   confirmShipment: 'Shipment Confirmed',
   confirmDelivery: 'Shipment Delivered',
   verifyProof: 'Proof Validated',
-  proofGenerated: 'Proof Generated',
+  generateProof: 'Proof Generated',
   contractCreated: 'Contract Created',
   acceptInvoice: 'Invoice Accepted',
   placeBid: 'Bid Placed',
