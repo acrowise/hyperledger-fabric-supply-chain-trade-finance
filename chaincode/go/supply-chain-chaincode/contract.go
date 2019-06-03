@@ -122,7 +122,7 @@ func (entity *Contract) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	if totalDue < 0 {
 		return errors.New("totalDue must be larger than zero")
 	}
-	entity.Value.TotalDue = float32(totalDue)
+	entity.Value.TotalDue = float64(totalDue)
 
 	//checking quantity
 	quantity, err := strconv.Atoi(args[4])
