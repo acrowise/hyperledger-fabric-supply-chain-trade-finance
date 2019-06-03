@@ -35,7 +35,7 @@ const Proofs = ({ data }) => {
               key={proof.key.id}
               style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
             >
-              <p>Proof: {proof.value.agency.id.toUpperCase()}</p>
+              <p>Proof: {proof.value.owner.toUpperCase()}</p>
               {proof.new ? (
                 <div
                   style={{
