@@ -56,13 +56,14 @@ type ProofValue struct {
 }
 
 type ProofDataForVerification struct {
-	Disclosure      []byte                  `json:"disclosure"`
-	Ipk             *idemix.IssuerPublicKey `json:"ipk"`
-	Msg             []byte                  `json:"msg"`
-	AttributeValues [][]byte                `json:"attributeValues"`
-	RhIndex         int                     `json:"rhIndex"`
-	RevPk           string                  `json:"revPk"`
-	Epoch           int                     `json:"epoch"`
+	Disclosure          []byte                  `json:"disclosure"`
+	Ipk                 *idemix.IssuerPublicKey `json:"ipk"`
+	Msg                 []byte                  `json:"msg"`
+	AttributeValuesHash [][]byte                `json:"attributeValuesHash"`
+	AttributeValues     []string                `json:"attributeValues"`
+	RhIndex             int                     `json:"rhIndex"`
+	RevPk               string                  `json:"revPk"`
+	Epoch               int                     `json:"epoch"`
 }
 
 type Proof struct {
@@ -150,6 +151,7 @@ func (entity *Proof) GenerateIdemixCrypto(jsonData string) error {
 	attrs := make([]*FP256BN.BIG, len(AttributeNames))
 	disclosure := make([]byte, len(attributesArray))
 	msg := make([]byte, len(attributesArray))
+	attributeValues := make([]string, len(attributesArray))
 	var rhindex int
 
 	for i := range attributesArray {
@@ -164,6 +166,8 @@ func (entity *Proof) GenerateIdemixCrypto(jsonData string) error {
 			rhindex = i
 			// fill hidden field random value
 			attrs[i] = FP256BN.NewBIGint(rand.Intn(10000))
+		} else {
+			attributeValues[i] = attributesArray[i].AttributeValue
 		}
 	}
 
@@ -230,7 +234,8 @@ func (entity *Proof) GenerateIdemixCrypto(jsonData string) error {
 	entity.Value.DataForVerification.Disclosure = disclosure
 	entity.Value.DataForVerification.Ipk = key.Ipk
 	entity.Value.DataForVerification.Msg = msg
-	entity.Value.DataForVerification.AttributeValues = attributeValuesBytes
+	entity.Value.DataForVerification.AttributeValuesHash = attributeValuesBytes
+	entity.Value.DataForVerification.AttributeValues = attributeValues
 	entity.Value.DataForVerification.RhIndex = rhindex
 	entity.Value.DataForVerification.RevPk = encode(&revocationKey.PublicKey)
 	entity.Value.DataForVerification.Epoch = epoch

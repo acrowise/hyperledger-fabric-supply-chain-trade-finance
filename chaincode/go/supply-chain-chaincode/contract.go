@@ -45,10 +45,11 @@ type ContractKey struct {
 }
 
 type ContractValue struct {
+	Price         float32  `json:"price"`
 	ProductName   string   `json:"productName"`
 	ConsignorName string   `json:"consignorName"`
 	ConsigneeName string   `json:"consigneeName"`
-	TotalDue      float32  `json:"totalDue"`
+	TotalDue      float64  `json:"totalDue"`
 	Quantity      int      `json:"quantity"`
 	Destination   string   `json:"destination"`
 	DueDate       int64    `json:"dueDate"`
@@ -60,10 +61,11 @@ type ContractValue struct {
 }
 
 type ContractValueAdditional struct {
+	Price         float32    `json:"price"`
 	ProductName   string     `json:"productName"`
 	ConsignorName string     `json:"consignorName"`
 	ConsigneeName string     `json:"consigneeName"`
-	TotalDue      float32    `json:"totalDue"`
+	TotalDue      float64    `json:"totalDue"`
 	Quantity      int        `json:"quantity"`
 	Destination   string     `json:"destination"`
 	DueDate       int64      `json:"dueDate"`

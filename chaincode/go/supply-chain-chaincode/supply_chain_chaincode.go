@@ -461,7 +461,8 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	contract.Value.ProductName = orderToUpdate.Value.ProductName
 	contract.Value.ConsignorName = creator
 	contract.Value.ConsigneeName = orderToUpdate.Value.BuyerID
-	contract.Value.TotalDue = orderToUpdate.Value.Price
+	contract.Value.TotalDue = orderToUpdate.Value.Amount
+	contract.Value.Price = orderToUpdate.Value.Price
 	contract.Value.Quantity = orderToUpdate.Value.Quantity
 	contract.Value.Destination = orderToUpdate.Value.Destination
 	contract.Value.DueDate = orderToUpdate.Value.DueDate
@@ -959,17 +960,17 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 	}
 
 	//additional checking
-	findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
-	if err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message), Document{}
-	}
-	if len(findedDocuments) != 0 {
-		message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
-		Logger.Error(message)
-		return errors.New(message), Document{}
-	}
+	//findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
+	//if err != nil {
+	//	message := fmt.Sprintf("persistence error: %s", err.Error())
+	//	Logger.Error(message)
+	//	return errors.New(message), Document{}
+	//}
+	//if len(findedDocuments) != 0 {
+	//	message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
+	//	Logger.Error(message)
+	//	return errors.New(message), Document{}
+	//}
 
 	//setting optional values
 	document.Value.DocumentDescription = args[4]
@@ -1163,11 +1164,11 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	attributeValuesBytes := make([]*FP256BN.BIG, len(proof.Value.DataForVerification.AttributeValues))
+	attributeValuesBytes := make([]*FP256BN.BIG, len(proof.Value.DataForVerification.AttributeValuesHash))
 
-	for i := range proof.Value.DataForVerification.AttributeValues {
-		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i]))
-		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValues[i])
+	for i := range proof.Value.DataForVerification.AttributeValuesHash {
+		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValuesHash[i]))
+		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValuesHash[i])
 	}
 	err = proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
 		proof.Value.DataForVerification.Ipk,
