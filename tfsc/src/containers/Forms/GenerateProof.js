@@ -35,7 +35,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   };
 
   if (shipment.documents) {
-    shipment.documents.forEach(doc => (initialState[doc.type] = false));
+    shipment.documents.forEach(doc => (initialState[doc.value.documentDescription] = false));
   }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
@@ -78,7 +78,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
             }}
           >
             <div className="row">
-              <div className="col-6">
+              <div className="col-8">
                 <div className="row">
                   {INPUTS.GENERATE_PROOF.map(({ label, field }, i) => (
                     <Checkbox
@@ -96,23 +96,19 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                       }
                     />
                   ))}
-                </div>
-              </div>
-              <div className="col-6" style={{ flex: 1, padding: 0 }}>
-                <div>
                   {shipment
                     && shipment.documents
                     && shipment.documents.map(doc => (
                       <Checkbox
-                        key={doc.documentDescription}
-                        label={doc.documentDescription}
-                        className="col-4 margin-right-auto"
+                        key={doc.value.documentDescription}
+                        label={doc.value.documentDescription}
+                        className="col-6"
                         value={formState[doc.field]}
                         onChange={() => dispatch({
                           type: 'change',
                           payload: {
-                            field: doc.type,
-                            value: !formState[doc.type]
+                            field: doc.value.documentDescription,
+                            value: !formState[doc.value.documentDescription]
                           }
                         })
                         }
