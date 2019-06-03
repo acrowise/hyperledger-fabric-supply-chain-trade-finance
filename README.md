@@ -65,7 +65,7 @@ After all containers are up, web interfaces will be at:
 - org7 [http://localhost:3007](http://localhost:3007/)
 - org8 [http://localhost:3008](http://localhost:3008/)
 
-
+- Blockchain explorer [http://localhost:8080](http://localhost:8080/)
 
 ## How it works
 
