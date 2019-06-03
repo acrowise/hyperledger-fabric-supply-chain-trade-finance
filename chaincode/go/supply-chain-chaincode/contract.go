@@ -56,11 +56,32 @@ type ContractValue struct {
 	Documents     []string `json:"documents"`
 	State         int      `json:"state"`
 	Timestamp     int64    `json:"timestamp"`
+	UpdatedDate   int64    `json:"updatedDate"`
+}
+
+type ContractValueAdditional struct {
+	ProductName   string     `json:"productName"`
+	ConsignorName string     `json:"consignorName"`
+	ConsigneeName string     `json:"consigneeName"`
+	TotalDue      float32    `json:"totalDue"`
+	Quantity      int        `json:"quantity"`
+	Destination   string     `json:"destination"`
+	DueDate       int64      `json:"dueDate"`
+	PaymentDate   int64      `json:"paymentDate"`
+	Documents     []Document `json:"documents"`
+	State         int        `json:"state"`
+	Timestamp     int64      `json:"timestamp"`
+	UpdatedDate   int64      `json:"updatedDate"`
 }
 
 type Contract struct {
 	Key   ContractKey   `json:"key"`
 	Value ContractValue `json:"value"`
+}
+
+type ContractAdditional struct {
+	Key   ContractKey             `json:"key"`
+	Value ContractValueAdditional `json:"value"`
 }
 
 func CreateContract() LedgerData {

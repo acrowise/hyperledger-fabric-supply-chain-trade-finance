@@ -11,8 +11,8 @@ import { post } from '../../helper/api';
 
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
+  const [hash, setHash] = useState(null);
   const [, confirmDelivery] = post('confirmDelivery')();
-  const [, uploadDocs] = post('uploadDocument')();
 
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -28,18 +28,17 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
       >
         <Card className="modal" style={{ width: '600px' }}>
           <div className="modal-header">Upload Delivery Acceptance Form</div>
-
-          {/* <p>ShipmentId: {shipment.shipmentId}</p> */}
-          {/* <p>ContractId: {shipment.contractId}</p> */}
-          {/* <p>From: {shipment.shipFrom}</p> */}
-          {/* <p>To: {shipment.shipTo}</p> */}
-          {/* <p>Transport: {shipment.transport}</p> */}
-          {/* <p>Description: {shipment.description}</p> */}
-
           <div className="modal-body">
             <Label>
               <div style={{ marginBottom: 5 }}>Delivery Acceptance Form</div>
-              <FileUploader withPreview files={files} setFiles={setFiles} error={fileRequired} />
+              <FileUploader
+                withPreview
+                files={files}
+                setFiles={setFiles}
+                hash={hash}
+                setHash={setHash}
+                error={fileRequired}
+              />
               <FormGroup label="Description">
                 <TextArea growVertically={true} large={true} />
               </FormGroup>
@@ -67,21 +66,12 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 } else {
                   confirmDelivery({
                     fcn: 'confirmDelivery',
-                    args: [shipment.id, '0', '0', '0', '0', '0']
+                    args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type]
+                    // 'Delivery Acceptance Form'
                   });
                   setFileRequired(false);
-
-                  setTimeout(() => {
-                    const form = new FormData();
-                    form.append('type', 'Delivery Acceptance Form');
-                    form.append('contractId', shipment.contractId);
-                    files.forEach((f) => {
-                      form.append('file', f);
-                    });
-                    uploadDocs(form);
-                    setFiles([]);
-                    setDialogOpenState(false);
-                  }, 600);
+                  setFiles([]);
+                  setHash(null);
                 }
               }}
             >

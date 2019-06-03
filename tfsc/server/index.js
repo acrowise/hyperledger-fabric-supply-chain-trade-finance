@@ -1,59 +1,37 @@
 const express = require('express');
-// const proxy = require('http-proxy-middleware');
 const path = require('path');
 const WebSocket = require('ws');
 const axios = require('axios');
 const socketIO = require('socket.io');
+const mime = require('mime-types');
+const ipfsClient = require('ipfs-http-client');
 
 const clients = [];
-
-const services = {
-  buyer: {
-    port: 30001,
-    role: 'buyer',
-    org: 'a'
-  },
-  supplier: {
-    port: 30002,
-    role: 'supplier',
-    org: 'b'
-  },
-  auditor_1: {
-    port: 30003,
-    role: 'ggcb',
-    org: 'c'
-  },
-  auditor_2: {
-    port: 30004,
-    role: 'uscts',
-    org: 'd'
-  },
-  factor_1: {
-    port: 30005,
-    role: 'factor 1',
-    org: 'e'
-  },
-  factor_2: {
-    port: 30006,
-    role: 'factor 2',
-    org: 'f'
-  },
-  transporter: {
-    port: 30007,
-    role: 'transporter',
-    org: 'g'
-  }
-};
+// let connectedToWS = false;
 
 const {
   PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
 } = process.env;
 
+const roles = {
+  buyer: 'buyer',
+  supplier: 'supplier',
+  auditor_1: 'ggcb',
+  auditor_2: 'uscts',
+  factor_1: 'factor_1',
+  factor_2: 'factor 2',
+  transporter: 'transporter'
+};
+
+const ipfs = ipfsClient({
+  host: `ipfs.${ORG}.example.com`
+});
+
 console.info('API_ENDPOINT', API_ENDPOINT);
 console.info('ROLE', ROLE);
 console.info('ORG', ORG);
 
-const port = process.env.PORT || services[ROLE].port;
+const port = process.env.PORT || 3000;
 
 const retry = async (url, n) => {
   try {
@@ -70,14 +48,14 @@ const emitEvent = (client, data, type) => {
   client.emit('notification', JSON.stringify({ data, type }));
 };
 
-const listenSocket = () => new Promise((resolve, reject) => {
-  const ws = new WebSocket(`ws:///${API_ENDPOINT}/api/notifications`);
+const listenSocket = () => {
+  const ws = new WebSocket(`ws://${API_ENDPOINT}/api/notifications`);
 
-  function heartbeat() {
+  const heartbeat = () => {
     setInterval(() => {
       ws.send('ping');
     }, 10000);
-  }
+  };
 
   const subscribe = () => {
     ws.send(
@@ -99,18 +77,18 @@ const listenSocket = () => new Promise((resolve, reject) => {
 
   ws.on('open', () => {
     subscribe();
-    resolve();
   });
 
   ws.on('error', (e) => {
-    console.error(e);
+    throw e;
   });
 
   ws.on('close', () => {
-    reject(Error('ws closed'));
+    throw Error('WS closed');
   });
 
   ws.on('message', async (message) => {
+    // connectedToWS = true;
     console.info('ws message: ', message);
     const event = JSON.parse(message);
     if (event && event.payload) {
@@ -124,7 +102,7 @@ const listenSocket = () => new Promise((resolve, reject) => {
 
       try {
         const res = await retry(
-          `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?fcn=getEventPayload&args=${eventId}`,
+          `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
           3
         );
 
@@ -143,62 +121,58 @@ const listenSocket = () => new Promise((resolve, reject) => {
       }
 
       if (eventName === 'acceptOrder') {
-        clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+        setTimeout(() => {
+          clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+        }, 1250);
       }
     }
   });
-});
-
-const connectToWebSockets = async (n) => {
-  const timeout = 10000;
-  try {
-    await listenSocket();
-  } catch (e) {
-    if (n !== 0) {
-      console.log(n);
-      setTimeout(async () => {
-        connectToWebSockets(n - 1);
-      }, timeout);
-    }
-  }
 };
 
 const app = express();
 const router = express.Router();
 
-// router.use(
-//   '/api',
-//   proxy({
-//     target: `http://${API_ENDPOINT}`,
-//     changeOrigin: true,
-//     logLevel: 'debug',
-//     onProxyReq: async (proxyReq, req, res) => {
-//       console.info('proxyReq.path', proxyReq.path);
-//     },
-//     onProxyRes: async (proxyRes, req, res) => {
-//       let body = Buffer.from('');
-//       proxyRes.on('data', (data) => {
-//         body = Buffer.concat([body, data]);
-//       });
-//       proxyRes.on('end', () => {
-//         body = body.toString();
-//         // console.info('res from fabric-rest-api-go', body);
-//       });
-//     }
-//   })
-// );
+const getDocument = hash => new Promise((resolve, reject) => {
+  ipfs.get(hash, (err, files) => {
+    if (err) {
+      reject(err);
+    }
+    resolve(files[0].content);
+  });
+});
+
+router.get('/getDocument', async (req, res) => {
+  const t = {
+    'image/jpeg': 1,
+    'image/jpg': 1,
+    'image/png': 2,
+    xls: 3,
+    pdf: 4,
+    csv: 5,
+    'image/gif': 6
+  };
+  if (req.query && req.query.hash && req.query.type) {
+    try {
+      const document = await getDocument(req.query.hash);
+      res.set({
+        'Content-type': mime.contentType(Object.keys(t).find(i => t[i] === req.query.type))
+      });
+      res.send(document);
+      return;
+    } catch (e) {
+      console.error(e);
+      res.end(500);
+    }
+  }
+  res.end(500);
+});
 
 app.use(express.static(path.join(__dirname, '../dist/client')));
 
 const html = require('./html');
 
 const renderer = async (req, res) => {
-  const data = Object.assign({
-    ipfs_port: IPFS_PORT,
-    role: services[ROLE].role,
-    org: services[ROLE].org
-  });
-
+  const data = { ipfs_port: IPFS_PORT, role: roles[ROLE], org: ORG };
   return res.send(html(data));
 };
 
@@ -212,9 +186,19 @@ app.use(router);
 
 const server = app.listen(port, () => {
   console.log(`listening on port: ${PORT}`);
-  // Waiting for nginx container
-  connectToWebSockets(6);
+  try {
+    listenSocket();
+  } catch (e) {
+    process.exit(1);
+  }
 });
+
+// setTimeout(() => {
+//   if (!connectedToWS) {
+//     console.info('restart');
+//     process.exit(1);
+//   }
+// }, 60000);
 
 const io = socketIO(server);
 

@@ -230,6 +230,20 @@ function generateOrdererArtifacts() {
         -e "s/ORG8/$ORG8/g" \
         $TEMPLATES_ARTIFACTS_FOLDER/explorer-config.json > $GENERATED_ARTIFACTS_FOLDER/explorer-config.json
 
+
+    setDockerVersions $f
+}
+
+function generateOrdererArtifacts() {
+    org=$1
+
+    echo "Creating orderer yaml files with $DOMAIN, $ORG1, $ORG2, $ORG3, $DEFAULT_ORDERER_PORT, $DEFAULT_WWW_PORT"
+
+    f="$GENERATED_DOCKER_COMPOSE_FOLDER/docker-compose-$DOMAIN.yaml"
+
+    mkdir -p "$GENERATED_ARTIFACTS_FOLDER/channel"
+
+
     if [[ -n "$org" ]]; then
         sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG1/$org/g" "$TEMPLATES_ARTIFACTS_FOLDER/configtxtemplate-oneOrg-orderer.yaml" > $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
     else

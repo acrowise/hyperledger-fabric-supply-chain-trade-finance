@@ -51,7 +51,7 @@ const Shipments = ({
       }
     }
 
-    if (notification.type === 'proofGenerated' || notification.type === 'verifyProof') {
+    if (notification.type === 'generateProof' || notification.type === 'verifyProof') {
       const newState = shipments.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.shipment.key.id);
       newState[itemToUpdateIndex] = notification.shipment;
@@ -75,7 +75,12 @@ const Shipments = ({
   let filteredData = shipments.result;
 
   if (!loading && filteredData && filteredData.length > 0) {
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.SHIPMENT[i.value.state] }));
+    filteredData = filteredData.map(i => Object.assign({}, i.value, {
+      id: i.key.id,
+      contractID: i.value.contract.key.id,
+      state: STATUSES.SHIPMENT[i.value.state],
+      documents: i.value.contract.value.documents
+    }));
 
     if (dataForFilter.length === 0) {
       setDataForFilter(filteredData);

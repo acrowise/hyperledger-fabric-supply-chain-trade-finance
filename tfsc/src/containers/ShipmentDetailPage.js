@@ -31,7 +31,7 @@ const ShipmentDetailPage = ({
   const onNotification = (message) => {
     const notification = JSON.parse(message);
 
-    if (notification.type === 'proofGenerated') {
+    if (notification.type === 'generateProof') {
       // FIXME
       const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
       setData({ result: newState });
@@ -214,10 +214,12 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/getDocument?contractId=${doc.contractId}&name=${doc.name}`}
+                        href={`/getDocument?hash=${doc.value.documentHash}&type=${
+                          doc.value.documentType
+                        }`}
                         target="_blank"
                       >
-                        {doc.type}
+                        {doc.value.documentDescription}
                       </a>
                       {doc.new ? (
                         <div

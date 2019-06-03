@@ -167,11 +167,11 @@ export const INPUTS = {
 
 export const REVIEWERS = [
   {
-    id: 'ggcb',
+    id: 'cMSP',
     title: 'Government Goods Control Bureau'
   },
   {
-    id: 'uscts',
+    id: 'dMSP',
     title: 'US Commercial Trade Service'
   }
 ];
@@ -257,7 +257,7 @@ export const METHODS_MAP = [
     channel: 'common'
   },
   {
-    ccMethod: 'editOrder',
+    ccMethod: 'updateOrder',
     chaincode: 'supply-chain-chaincode',
     channel: 'common'
   },
@@ -302,6 +302,11 @@ export const METHODS_MAP = [
     channel: 'common'
   },
   {
+    ccMethod: 'updateProof',
+    chaincode: 'supply-chain-chaincode',
+    channel: 'common'
+  },
+  {
     ccMethod: 'submitReport',
     chaincode: 'supply-chain-chaincode',
     channel: 'common'
@@ -328,6 +333,11 @@ export const METHODS_MAP = [
   },
   {
     ccMethod: 'listProofs',
+    chaincode: 'supply-chain-chaincode',
+    channel: 'common'
+  },
+  {
+    ccMethod: 'listProofsByOwner',
     chaincode: 'supply-chain-chaincode',
     channel: 'common'
   },
@@ -387,7 +397,7 @@ export const METHODS_MAP = [
     channel: 'common'
   },
   {
-    ccMethod: 'editBid',
+    ccMethod: 'updateBid',
     chaincode: 'trade-finance-chaincode',
     channel: 'common'
   },

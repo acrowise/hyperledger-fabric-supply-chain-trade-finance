@@ -25,10 +25,12 @@ type DocumentKey struct {
 type DocumentValue struct {
 	EntityType          int    `json:"entityType"`
 	EntityID            string `json:"entityID"`
+	ContractID          string `json:"contractID"`
 	DocumentHash        string `json:"documentHash"`
 	DocumentDescription string `json:"documentDescription"`
 	DocumentType        int    `json:"documentType"`
 	Timestamp           int64  `json:"timestamp"`
+	UpdatedDate         int64  `json:"updatedDate"`
 }
 
 type Document struct {
@@ -41,8 +43,8 @@ func CreateDocument() LedgerData {
 }
 
 //argument order
-//0		1			2			3				4					5
-//ID	EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType
+//0		1			2			3				4					5				6
+//ID	EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
 func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < documentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))
@@ -50,9 +52,9 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 
 	//checking entityType
 	allowedEntityTypes := map[int]bool{
-		TypeContract:     true,
-		TypeAgencyReport: true,
-		TypeShipment:     true,
+		TypeContract: true,
+		TypeReport:   true,
+		TypeShipment: true,
 	}
 	entityType, err := strconv.Atoi(args[1])
 	if err != nil {
@@ -63,6 +65,20 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	}
 	entity.Value.EntityType = entityType
 
+	entityID := args[2]
+	if entityID == "" {
+		message := fmt.Sprintf("entityID must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.EntityID = entityID
+
+	documentHash := args[3]
+	if entityID == "" {
+		message := fmt.Sprintf("documentHash must be not empty")
+		return errors.New(message)
+	}
+	entity.Value.DocumentHash = documentHash
+
 	//checking documentType
 	allowedDocumentTypes := map[int]bool{
 		DocTypeJPG: true,
@@ -72,6 +88,7 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		DocTypeCSV: true,
 		DocTypeGIF: true,
 	}
+
 	documentType, err := strconv.Atoi(args[5])
 	if err != nil {
 		return errors.New(fmt.Sprintf("documentType is invalid: %s (must be int)", args[5]))
@@ -80,6 +97,23 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(fmt.Sprintf("unacceptable type of document"))
 	}
 	entity.Value.DocumentType = documentType
+
+	//checking contract
+	contractID := args[6]
+	contract := Contract{}
+	if err := contract.FillFromCompositeKeyParts([]string{contractID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
+	if !ExistsIn(stub, &contract, contractIndex) {
+		compositeKey, _ := contract.ToCompositeKey(stub)
+		message := fmt.Sprintf("contract with the key %s doesnt exist", compositeKey)
+		Logger.Error(message)
+		return errors.New(message)
+	}
+	entity.Value.ContractID = contractID
 
 	return nil
 }
