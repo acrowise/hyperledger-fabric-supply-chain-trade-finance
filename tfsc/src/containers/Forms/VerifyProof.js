@@ -28,13 +28,11 @@ const ValidateProof = ({
     return <></>;
   }
 
+  const requestedInputs = {};
   const requestedFields = proof.dataForVerification.ipk.attribute_names;
-  const requestedInputs = [];
-  // const requestedDocs = proof.documents;
-
-  requestedFields.forEach((f) => {
-    if (INPUTS.GENERATE_PROOF.find(i => i.field === f)) {
-      requestedInputs.push(f);
+  requestedFields.forEach((item, index) => {
+    if (proof.dataForVerification.attributeValues[index].length > 0) {
+      requestedInputs[item] = proof.dataForVerification.attributeValues[index];
     }
   });
 
@@ -59,12 +57,11 @@ const ValidateProof = ({
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
-                {requestedInputs.map((field) => {
+                {Object.keys(requestedInputs).map((field) => {
                   if (field === 'contractId') {
                     return (
                       <FormGroup className="form-group-horizontal" label="Contract ID">
-                        <InputGroup disabled value={''} />
-                        {/* cropId(proof.contract.key.id) */}
+                        <InputGroup disabled value={cropId(requestedInputs[field])} />
                       </FormGroup>
                     );
                   }
@@ -75,15 +72,14 @@ const ValidateProof = ({
                         <FormGroup className="form-group-horizontal" label={proofField.label}>
                           <InputGroup
                             disabled
-                            value={''} // format(proof.contract.value[field], 'DD MMM YYYY')
+                            value={format(parseInt(requestedInputs[field], 10), 'DD MMM YYYY')}
                           />
                         </FormGroup>
                       );
                     }
                     return (
                       <FormGroup className="form-group-horizontal" label={proofField.label}>
-                        <InputGroup disabled value={''} />
-                        {/* proof.contract.value[field] */}
+                        <InputGroup disabled value={requestedInputs[field]} />
                       </FormGroup>
                     );
                   }
@@ -105,7 +101,7 @@ const ValidateProof = ({
               </div>
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="Shipment number">
-                  <InputGroup disabled value={cropId(proof.shipmentId)} />
+                  <InputGroup disabled value={cropId(proof.shipmentID)} />
                 </FormGroup>
                 <Label>Add report</Label>
                 <FileUploader

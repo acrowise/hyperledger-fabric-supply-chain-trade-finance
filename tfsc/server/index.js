@@ -18,7 +18,7 @@ const roles = {
   supplier: 'supplier',
   auditor_1: 'ggcb',
   auditor_2: 'uscts',
-  factor_1: 'factor_1',
+  factor_1: 'factor 1',
   factor_2: 'factor 2',
   transporter: 'transporter'
 };

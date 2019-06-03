@@ -181,7 +181,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                         contractFields.map(i => ({
                           AttributeName: i,
                           AttributeValue: shipment.contract.value[i].toString(),
-                          AttributeDisclosure: formState[i] ? 0 : 1
+                          AttributeDisclosure: formState[i] ? 1 : 0
                         }))
                       ),
                       formState.reviewer.id,

@@ -18,7 +18,7 @@ const Proofs = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
-  const [data, loading, setData] = get('listProofs');
+  const [data, loading, setData] = get('listProofsByOwner');
 
   const [selectedProof, setSelectedProof] = useState({});
 
