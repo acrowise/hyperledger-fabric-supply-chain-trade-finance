@@ -23,6 +23,16 @@ const roles = {
   transporter: 'transporter'
 };
 
+const ids = {
+  buyer: 'aMSP',
+  supplier: 'bMSP',
+  auditor_1: 'cMSP',
+  auditor_2: 'dMSP',
+  factor_1: 'eMSP',
+  factor_2: 'fMSP',
+  transporter: 'gMSP'
+};
+
 const ipfs = ipfsClient({
   host: `ipfs.${ORG}.example.com`
 });
@@ -175,7 +185,12 @@ app.use(express.static(path.join(__dirname, '../dist/client')));
 const html = require('./html');
 
 const renderer = async (req, res) => {
-  const data = { ipfs_port: IPFS_PORT, role: roles[ROLE], org: ORG };
+  const data = {
+    ipfs_port: IPFS_PORT,
+    role: roles[ROLE],
+    org: ORG,
+    id: ids[ROLE]
+  };
   return res.send(html(data));
 };
 
