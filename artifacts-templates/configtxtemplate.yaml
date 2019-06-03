@@ -177,6 +177,24 @@ Organizations:
       - Host: peer0.ORG7.DOMAIN
         Port: 7051
 
+  - &ORG8
+    Name: ORG8MSP
+    ID: ORG8MSP
+    MSPDir: crypto-config/peerOrganizations/ORG8.DOMAIN/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ORG8MSP.admin','ORG8MSP.peer','ORG8MSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('ORG8MSP.admin','ORG8MSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('ORG8MSP.admin')"
+    AnchorPeers:
+      - Host: peer0.ORG8.DOMAIN
+        Port: 7051
+
 ################################################################################
 #
 #   SECTION: Capabilities
@@ -459,6 +477,7 @@ Profiles:
           - *ORG5
           - *ORG6
           - *ORG7
+          - *ORG8
   common:
     Consortium: SampleConsortium
     Application:
@@ -471,6 +490,7 @@ Profiles:
         - *ORG5
         - *ORG6
         - *ORG7
+        - *ORG8
       Capabilities:
         <<: *ApplicationCapabilities
 
