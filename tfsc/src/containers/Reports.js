@@ -31,7 +31,7 @@ const Reports = ({
   if (!loading && filteredData && filteredData.length > 0) {
     filteredData = filteredData
       .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }))
-      .filter(i => i.factor.toLowerCase() === role);
+      // .filter(i => i.factor.toLowerCase() === role);
 
     if (dataForFilter.length === 0 && filteredData.length !== 0) {
       setDataForFilter(filteredData);

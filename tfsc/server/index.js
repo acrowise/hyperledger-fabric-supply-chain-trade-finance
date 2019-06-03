@@ -120,11 +120,14 @@ const listenSocket = () => {
         console.error(e);
       }
 
-      if (eventName === 'acceptOrder') {
-        setTimeout(() => {
+      setTimeout(() => {
+        if (eventName === 'acceptOrder') {
           clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
-        }, 1250);
-      }
+        }
+        if (eventName === 'verifyProof') {
+          clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
+        }
+      }, 1250);
     }
   });
 };
