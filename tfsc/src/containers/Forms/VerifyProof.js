@@ -19,22 +19,20 @@ const ValidateProof = ({
   dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
   const [files, setFiles] = useState([]);
+  const [hash, setHash] = useState(null);
   const [, verifyProof] = post('verifyProof')();
-  const [, uploadDocs] = post('uploadDocument')();
 
   const [fileRequired, setFileRequired] = useState(false);
 
-  if (!proof || !proof.contract) {
+  if (!proof || !proof.dataForVerification) {
     return <></>;
   }
 
-  const requestedFields = Object.keys(proof.fields).filter(i => proof.fields[i] === true);
-  const requestedInputs = [];
-  const requestedDocs = proof.documents;
-
-  requestedFields.forEach((f) => {
-    if (INPUTS.GENERATE_PROOF.find(i => i.field === f)) {
-      requestedInputs.push(f);
+  const requestedInputs = {};
+  const requestedFields = proof.dataForVerification.ipk.attribute_names;
+  requestedFields.forEach((item, index) => {
+    if (proof.dataForVerification.attributeValues[index].length > 0) {
+      requestedInputs[item] = proof.dataForVerification.attributeValues[index];
     }
   });
 
@@ -59,11 +57,11 @@ const ValidateProof = ({
           <div className="modal-body">
             <div className="row">
               <div className="col-6">
-                {requestedInputs.map((field) => {
+                {Object.keys(requestedInputs).map((field) => {
                   if (field === 'contractId') {
                     return (
                       <FormGroup className="form-group-horizontal" label="Contract ID">
-                        <InputGroup disabled value={cropId(proof.contract.key.id)} />
+                        <InputGroup disabled value={cropId(requestedInputs[field])} />
                       </FormGroup>
                     );
                   }
@@ -74,20 +72,20 @@ const ValidateProof = ({
                         <FormGroup className="form-group-horizontal" label={proofField.label}>
                           <InputGroup
                             disabled
-                            value={format(proof.contract.value[field], 'DD MMM YYYY')}
+                            value={format(parseInt(requestedInputs[field], 10), 'DD MMM YYYY')}
                           />
                         </FormGroup>
                       );
                     }
                     return (
                       <FormGroup className="form-group-horizontal" label={proofField.label}>
-                        <InputGroup disabled value={proof.contract.value[field]} />
+                        <InputGroup disabled value={requestedInputs[field]} />
                       </FormGroup>
                     );
                   }
                   return <></>;
                 })}
-                {requestedDocs.map((d, i) => (
+                {/* {requestedDocs.map((d, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
                     <Icon name="proof-document" />
                     <a
@@ -98,15 +96,21 @@ const ValidateProof = ({
                       {d.type}
                     </a>
                   </div>
-                ))}
+                ))} */}
                 <br />
               </div>
               <div className="col-6">
                 <FormGroup className="form-group-horizontal" label="Shipment number">
-                  <InputGroup disabled value={cropId(proof.shipmentId)} />
+                  <InputGroup disabled value={cropId(proof.shipmentID)} />
                 </FormGroup>
                 <Label>Add report</Label>
-                <FileUploader files={files} setFiles={setFiles} error={fileRequired} />
+                <FileUploader
+                  files={files}
+                  setFiles={setFiles}
+                  hash={hash}
+                  setHash={setHash}
+                  error={fileRequired}
+                />
                 <Label>
                   Description
                   <TextArea
@@ -144,21 +148,14 @@ const ValidateProof = ({
                       setFileRequired(false);
                       verifyProof({
                         fcn: 'verifyProof',
-                        contractId: proof.contract.key.id,
-                        shipmentId: proof.shipmentId,
-                        user: role,
-                        args: [proof.id]
+                        args: [
+                          proof.id,
+                          '1',
+                          '', // FIXME: add description
+                          hash.hash,
+                          hash.type
+                        ]
                       });
-
-                      setTimeout(() => {
-                        const form = new FormData();
-                        form.append('type', role === 'uscts' ? 'USCTS Report' : 'GGCB Report');
-                        form.append('contractId', proof.contract.key.id);
-                        files.forEach((f) => {
-                          form.append('file', f);
-                        });
-                        uploadDocs(form);
-                      }, 600);
                     }
                   }}
                 >
@@ -168,7 +165,24 @@ const ValidateProof = ({
                   large
                   intent="none"
                   className="btn-modal btn-default"
-                  onClick={handleOverlayClose}
+                  onClick={() => {
+                    if (files.length === 0) {
+                      setFileRequired(true);
+                    } else {
+                      setDialogOpenState(false);
+                      setFileRequired(false);
+                      verifyProof({
+                        fcn: 'verifyProof',
+                        args: [
+                          proof.id,
+                          '2',
+                          '', // FIXME: add description
+                          hash.hash,
+                          hash.type
+                        ]
+                      });
+                    }
+                  }}
                 >
                   {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
                 </Button>

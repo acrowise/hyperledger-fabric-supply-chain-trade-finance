@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Overlay, Button, Card } from '@blueprintjs/core';
 import './proofDetail.scss';
 
-import { STATUSES } from '../../constants';
+import { STATUSES, REVIEWERS } from '../../constants';
 import { cropId } from '../../helper/utils';
 
 const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
@@ -27,7 +27,7 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (
             </tr>
             <tr>
               <th>Agency</th>
-              <td>{proof.value ? proof.value.agency.title : 'No data'}</td>
+              <td>{proof.value ? REVIEWERS.find(i => i.id === proof.value.owner).title : 'No data'}</td>
             </tr>
             <tr>
               <th>Status</th>

@@ -18,7 +18,7 @@ const Proofs = ({
   role, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
-  const [data, loading, setData] = get('listProofs');
+  const [data, loading, setData] = get('listProofsByOwner');
 
   const [selectedProof, setSelectedProof] = useState({});
 
@@ -31,7 +31,7 @@ const Proofs = ({
   if (!loading && filteredData && filteredData.length > 0) {
     filteredData = filteredData
       .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.PROOF[i.value.state] }))
-      .filter(i => i.agency.id === role);
+      // .filter(i => i.agency.id === role);
 
     if (dataForFilter.length === 0 && filteredData.length !== 0) {
       setDataForFilter(filteredData);
