@@ -25,16 +25,7 @@
             "peer0.ORG5.DOMAIN": {},
             "peer0.ORG6.DOMAIN": {},
             "peer0.ORG7.DOMAIN": {},
-            "peer0.ORG8.DOMAIN": {},
-            
-            "peer1.ORG1.DOMAIN": {},
-            "peer1.ORG2.DOMAIN": {},
-            "peer1.ORG3.DOMAIN": {},
-            "peer1.ORG4.DOMAIN": {},
-            "peer1.ORG5.DOMAIN": {},
-            "peer1.ORG6.DOMAIN": {},
-            "peer1.ORG7.DOMAIN": {},
-            "peer1.ORG8.DOMAIN": {}
+            "peer0.ORG8.DOMAIN": {}
           },
           "connection": {
             "timeout": {
@@ -121,14 +112,8 @@
             "ssl-target-name-override": "peer0.ORG1.DOMAIN"
           }
         },
-        "peer1.ORG1.DOMAIN": {
-          "url": "grpcs://peer1.ORG1.DOMAIN:7051"
-        },
         "peer0.ORG2.DOMAIN": {
           "url": "grpcs://peer0.ORG2.DOMAIN:7051"
-        },
-        "peer1.ORG2.DOMAIN": {
-          "url": "grpcs://peer1.ORG2.DOMAIN:7051"
         },
         "peer0.ORG3.DOMAIN": {
           "tlsCACerts": {
@@ -140,38 +125,20 @@
             "ssl-target-name-override": "peer0.ORG3.DOMAIN"
           }
         },
-        "peer1.ORG3.DOMAIN": {
-          "url": "grpcs://peer1.ORG3.DOMAIN:7051"
-        },
         "peer0.ORG4.DOMAIN": {
           "url": "grpcs://peer0.ORG4.DOMAIN:7051"
-        },
-        "peer1.ORG4.DOMAIN": {
-          "url": "grpcs://peer1.ORG4.DOMAIN:7051"
         },
         "peer0.ORG5.DOMAIN": {
           "url": "grpcs://peer0.ORG5.DOMAIN:7051"
         },
-        "peer1.ORG5.DOMAIN": {
-          "url": "grpcs://peer1.ORG5.DOMAIN:7051"
-        },
         "peer0.ORG6.DOMAIN": {
           "url": "grpcs://peer0.ORG6.DOMAIN:7051"
-        },
-        "peer1.ORG6.DOMAIN": {
-          "url": "grpcs://peer1.ORG6.DOMAIN:7051"
         },
         "peer0.ORG7.DOMAIN": {
           "url": "grpcs://peer0.ORG7.DOMAIN:7051"
         },
-        "peer1.ORG7.DOMAIN": {
-          "url": "grpcs://peer1.ORG7.DOMAIN:7051"
-        },
         "peer0.ORG8.DOMAIN": {
           "url": "grpcs://peer0.ORG8.DOMAIN:7051"
-        },
-        "peer1.ORG8.DOMAIN": {
-          "url": "grpcs://peer1.ORG8.DOMAIN:7051"
         }
       },
       "orderers": {

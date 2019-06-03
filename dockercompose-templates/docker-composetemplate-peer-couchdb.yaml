@@ -6,7 +6,7 @@ version: '2'
 
 volumes:
   peer0.ORG.DOMAIN:
-  peer1.ORG.DOMAIN:
+#  peer1.ORG.DOMAIN:
 
 services:
 
@@ -52,29 +52,29 @@ services:
       - couchdb.ORG.DOMAIN
     PEER_EXTRA_HOSTS
 
-  peer1.ORG.DOMAIN:
-    container_name: peer1.ORG.DOMAIN
-    extends:
-      file: base-intercept.yaml
-      service: peer-base
-    environment:
-      - CORE_PEER_ID=peer1.ORG.DOMAIN
-      - CORE_PEER_LOCALMSPID=ORGMSP
-      - CORE_PEER_ADDRESS=peer1.ORG.DOMAIN:7051
-      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.ORG.DOMAIN:5984
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ORG.DOMAIN:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ORG.DOMAIN:7051
-    ports:
-      - PEER1_PORT:7051
-      - PEER1_EVENT_PORT:7053
-    volumes:
-        - ../artifacts/crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN/:/etc/hyperledger/crypto/peer
-        - peer1.ORG.DOMAIN:/var/hyperledger/production
-    depends_on:
-      - ca.ORG.DOMAIN
-      - couchdb.ORG.DOMAIN
-    PEER_EXTRA_HOSTS
+#  peer1.ORG.DOMAIN:
+#    container_name: peer1.ORG.DOMAIN
+#    extends:
+#      file: base-intercept.yaml
+#      service: peer-base
+#    environment:
+#      - CORE_PEER_ID=peer1.ORG.DOMAIN
+#      - CORE_PEER_LOCALMSPID=ORGMSP
+#      - CORE_PEER_ADDRESS=peer1.ORG.DOMAIN:7051
+#      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+#      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.ORG.DOMAIN:5984
+#      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ORG.DOMAIN:7051
+#      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.ORG.DOMAIN:7051
+#    ports:
+#      - PEER1_PORT:7051
+#      - PEER1_EVENT_PORT:7053
+#    volumes:
+#        - ../artifacts/crypto-config/peerOrganizations/ORG.DOMAIN/peers/peer1.ORG.DOMAIN/:/etc/hyperledger/crypto/peer
+#        - peer1.ORG.DOMAIN:/var/hyperledger/production
+#    depends_on:
+#      - ca.ORG.DOMAIN
+#      - couchdb.ORG.DOMAIN
+#    PEER_EXTRA_HOSTS
 
   cli.DOMAIN:
     container_name: cli.DOMAIN
@@ -113,7 +113,7 @@ services:
       - ../artifacts/api-configs-ORG:/app/configs
     depends_on:
       - peer0.ORG.DOMAIN
-      - peer1.ORG.DOMAIN
+#      - peer1.ORG.DOMAIN
     API_EXTRA_HOSTS
 
   proxy.ORG.DOMAIN:
