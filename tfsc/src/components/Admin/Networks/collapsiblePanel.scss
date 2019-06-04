@@ -1,0 +1,27 @@
+@import "../../../styles/variables";
+
+
+.collapsible-panel-ntwk {
+  margin: 15px;
+  box-shadow: $box-shadow;
+}
+
+.collapsible-panel-header-ntwk {
+  padding: 8px 30px;
+  background-color: white;
+  color: #1B263C;
+  user-select: none;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  // justify-content: space-between;
+  align-items: center;
+  min-height: 50px;
+}
+
+.collapsible-panel-body-ntwk {
+  padding: 20px;
+  background-color: white;
+}
+
+

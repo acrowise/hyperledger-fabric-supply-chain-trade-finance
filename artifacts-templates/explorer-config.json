@@ -1,154 +1,60 @@
 {
-  "network-configs": {
-    "network-1": {
-      "version": "1.0",
-      "clients": {
-        "client-1": {
-          "tlsEnable": true,
-          "organization": "ORG1",
-          "channel": "common",
-          "credentialStore": {
-            "path": "./tmp/credentialStore_Org1/credential",
-            "cryptoStore": {
-              "path": "./tmp/credentialStore_Org1/crypto"
-            }
-          }
-        }
-      },
-      "channels": {
-        "common": {
-          "peers": {
-            "peer0.ORG1.DOMAIN": {},
-            "peer0.ORG2.DOMAIN": {},
-            "peer0.ORG3.DOMAIN": {},
-            "peer0.ORG4.DOMAIN": {},
-            "peer0.ORG5.DOMAIN": {},
-            "peer0.ORG6.DOMAIN": {},
-            "peer0.ORG7.DOMAIN": {},
-            "peer0.ORG8.DOMAIN": {}
-          },
-          "connection": {
-            "timeout": {
-              "peer": {
-                "endorser": "6000",
-                "eventHub": "6000",
-                "eventReg": "6000"
-              }
-            }
-          }
-        }
-      },
-      "organizations": {
-        "ORG1": {
-          "mspid": "ORG1MSP",
-          "fullpath": false,
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/users/Admin@ORG1.DOMAIN/msp/keystore"
-          },
-          "signedCert": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/users/Admin@ORG1.DOMAIN/msp/signcerts"
-          }
+  "name": "first-network",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "client": {
+    "tlsEnable": true,
+    "adminUser": "admin",
+    "adminPassword": "adminpw",
+    "enableAuthentication": false,
+    "organization": "ORG1",
+    "connection": {
+      "timeout": {
+        "peer": {
+          "endorser": "300"
         },
-        "ORG2": {
-          "mspid": "ORG2MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG2.DOMAIN/users/Admin@ORG2.DOMAIN/msp/keystore"
-          }
-        },
-        "ORG3": {
-          "mspid": "ORG3MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG3.DOMAIN/users/Admin@ORG3.DOMAIN/msp/keystore"
-          },
-          "signedCert": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG3.DOMAIN/users/Admin@ORG3.DOMAIN/msp/signcerts"
-          }
-        },
-        "ORG4": {
-          "mspid": "ORG4MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG4.DOMAIN/users/Admin@ORG4.DOMAIN/msp/keystore"
-          }
-        },
-        "ORG5": {
-          "mspid": "ORG5MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG5.DOMAIN/users/Admin@ORG5.DOMAIN/msp/keystore"
-          }
-        },
-        "ORG6": {
-          "mspid": "ORG6MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG6.DOMAIN/users/Admin@ORG6.DOMAIN/msp/keystore"
-          }
-        },
-        "ORG7": {
-          "mspid": "ORG7MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG7.DOMAIN/users/Admin@ORG7.DOMAIN/msp/keystore"
-          }
-        },
-        "ORG8": {
-          "mspid": "ORG8MSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG8.DOMAIN/users/Admin@ORG8.DOMAIN/msp/keystore"
-          }
-        },
-        "Orderer": {
-          "mspid": "OrdererMSP",
-          "adminPrivateKey": {
-            "path": "/fabric/crypto-config/ordererOrganizations/DOMAIN/users/Admin@DOMAIN/msp/keystore"
-          }
-        }
-      },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "common": {
       "peers": {
-        "peer0.ORG1.DOMAIN": {
-          "tlsCACerts": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/peers/peer0.ORG1.DOMAIN/tls/ca.crt"
-          },
-          "url": "grpcs://peer0.ORG1.DOMAIN:7051",
-          "eventUrl": "grpcs://peer0.ORG1.DOMAIN:7053",
-          "grpcOptions": {
-            "ssl-target-name-override": "peer0.ORG1.DOMAIN"
-          }
-        },
-        "peer0.ORG2.DOMAIN": {
-          "url": "grpcs://peer0.ORG2.DOMAIN:7051"
-        },
-        "peer0.ORG3.DOMAIN": {
-          "tlsCACerts": {
-            "path": "/fabric/crypto-config/peerOrganizations/ORG3.DOMAIN/peers/peer0.ORG3.DOMAIN/tls/ca.crt"
-          },
-          "url": "grpcs://peer0.ORG3.DOMAIN:7051",
-          "eventUrl": "grpcs://peer0.ORG3.DOMAIN:7053",
-          "grpcOptions": {
-            "ssl-target-name-override": "peer0.ORG3.DOMAIN"
-          }
-        },
-        "peer0.ORG4.DOMAIN": {
-          "url": "grpcs://peer0.ORG4.DOMAIN:7051"
-        },
-        "peer0.ORG5.DOMAIN": {
-          "url": "grpcs://peer0.ORG5.DOMAIN:7051"
-        },
-        "peer0.ORG6.DOMAIN": {
-          "url": "grpcs://peer0.ORG6.DOMAIN:7051"
-        },
-        "peer0.ORG7.DOMAIN": {
-          "url": "grpcs://peer0.ORG7.DOMAIN:7051"
-        },
-        "peer0.ORG8.DOMAIN": {
-          "url": "grpcs://peer0.ORG8.DOMAIN:7051"
-        }
+        "peer0.ORG1.DOMAIN": {}
       },
-      "orderers": {
-        "orderer.DOMAIN": {
-          "url": "grpcs://orderer.DOMAIN:7050"
+      "connection": {
+        "timeout": {
+          "peer": {
+            "endorser": "6000",
+            "eventHub": "6000",
+            "eventReg": "6000"
+          }
         }
       }
-    },
-    "network-2": {}
+    }
   },
-  "configtxgenToolPath": "/fabric-samples/bin",
-  "license": "Apache-2.0"
+  "organizations": {
+    "aMSP": {
+      "mspid": "ORG1MSP",
+      "fullpath": true,
+      "adminPrivateKey": {
+        "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/users/Admin@ORG1.DOMAIN/msp/keystore/server.key"
+      },
+      "signedCert": {
+        "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/users/Admin@ORG1.DOMAIN/msp/signcerts/Admin@ORG1.DOMAIN-cert.pem"
+      }
+    }
+  },
+  "peers": {
+    "peer0.ORG1.DOMAIN": {
+      "tlsCACerts": {
+        "path": "/fabric/crypto-config/peerOrganizations/ORG1.DOMAIN/peers/peer0.ORG1.DOMAIN/tls/ca.crt"
+      },
+      "url": "grpcs://peer0.ORG1.DOMAIN:7051",
+      "eventUrl": "grpcs://peer0.ORG1.DOMAIN:7053",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.ORG1.DOMAIN"
+      }
+    }
+  }
 }

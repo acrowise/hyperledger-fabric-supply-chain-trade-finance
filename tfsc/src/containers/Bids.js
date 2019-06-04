@@ -15,7 +15,7 @@ import Loading from '../components/Loading';
 import notifications from '../helper/notification';
 
 const Bids = ({
-  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+  actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = get('listBids');
   const [, acceptBid] = post('acceptBid')();
@@ -55,22 +55,22 @@ const Bids = ({
       <BidForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={
-          role === 'factor 1' || role === 'factor 2'
+          actor.role === 'factor 1' || actor.role === 'factor 2'
             ? TABLE_MAP.BIDS
             : Object.assign({}, TABLE_MAP.BIDS, { factorID: 'Factor' })
         }
         data={filteredData}
         actions={item => (
           <>
-            {role === 'supplier' && item.state === 'Issued' ? (
+            {actor.role === 'supplier' && item.state === 'Issued' ? (
               <div>
                 <Button
                   onClick={() => {
                     acceptBid({
                       fcn: 'acceptBid',
-                      args: [item.id, '0', '0', '0'],
-                      id: item.id, // FIXME:
-                      user: role
+                      args: [item.id, '0', '0', '0']
+                      // id: item.id, // FIXME:
+                      // user: role
                     });
                   }}
                   style={{ marginRight: '5px' }}
@@ -84,7 +84,7 @@ const Bids = ({
               <></>
             )}
 
-            {role === item.factor && item.state === 'Issued' ? ( // FIX FACTOR add map ?
+            {actor.id === item.factorID && item.state === 'Issued' ? ( // FIX FACTOR add map ?
               <div>
                 <Button
                   onClick={() => {
@@ -93,7 +93,9 @@ const Bids = ({
                       state: {
                         id: item.id,
                         rate: item.rate,
-                        action: 'edit'
+                        action: 'update',
+                        actorId: item.factorID,
+                        invoiceId: item.invoiceID
                       }
                     });
                   }}
@@ -107,9 +109,9 @@ const Bids = ({
                   onClick={() => {
                     cancelBid({
                       fcn: 'cancelBid',
-                      args: [item.id, '0', '0', '0'],
-                      id: item.id, // FIXME:
-                      user: role
+                      args: [item.id, '0', '0', '0']
+                      // id: item.id, // FIXME:
+                      // user: role
                     });
                   }}
                 >
