@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
 import { format } from 'date-fns';
 
-import classNames from 'classnames';
-
 import './collapsiblePanel.scss';
 
 const CollapsiblePanel = ({ history }) => {

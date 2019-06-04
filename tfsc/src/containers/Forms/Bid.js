@@ -86,7 +86,12 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
                   if (!hasErrors) {
                     postAction({
                       fcn: `${dialog.state.action}Bid`,
-                      args: ['0', formState.rate, formState.role, formState.invoiceId],
+                      args: [
+                        dialog.state.action === 'place' ? '0' : formState.id,
+                        formState.rate,
+                        dialog.state.actorId,
+                        formState.invoiceId
+                      ],
                       id: formState.id
                     }); // FIXME:  'f' === factor-id
                     setDialog({

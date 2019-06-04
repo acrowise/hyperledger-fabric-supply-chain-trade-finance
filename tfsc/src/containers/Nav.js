@@ -46,35 +46,39 @@ const Nav = ({ role, logout }) => {
         </Navbar.Group>
         {role && (
           <Navbar.Group align={Alignment.RIGHT}>
-            <Popover
-              onClose={() => {
-                setNewNotification(0);
-                setShowNotifications(false);
-              }}
-              isOpen={showNotifications}
-              content={<Notifications />}
-              target={
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center'
-                  }}
-                >
-                  <Button
-                    className="bp3-minimal header-notifications-btn"
-                    style={{ textTransform: 'capitalize' }}
-                    onClick={() => {
-                      setShowNotifications(true);
+            {role !== 'admin' ? (
+              <Popover
+                onClose={() => {
+                  setNewNotification(0);
+                  setShowNotifications(false);
+                }}
+                isOpen={showNotifications}
+                content={<Notifications />}
+                target={
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center'
                     }}
                   >
-                    Notifications
-                    {hasNewNotifications !== 0 && (
-                      <div className="header-notifications-quantity">{hasNewNotifications}</div>
-                    )}
-                  </Button>
-                </div>
-              }
-            />
+                    <Button
+                      className="bp3-minimal header-notifications-btn"
+                      style={{ textTransform: 'capitalize' }}
+                      onClick={() => {
+                        setShowNotifications(true);
+                      }}
+                    >
+                      Notifications
+                      {hasNewNotifications !== 0 && (
+                        <div className="header-notifications-quantity">{hasNewNotifications}</div>
+                      )}
+                    </Button>
+                  </div>
+                }
+              />
+            ) : (
+              <></>
+            )}
 
             <Popover
               // position="auto-end"

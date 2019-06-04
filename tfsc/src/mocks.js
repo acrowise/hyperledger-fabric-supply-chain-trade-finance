@@ -19,7 +19,7 @@ export const notifications = {
   placeInvoice: 'invoices',
   acceptInvoice: 'invoices',
 
-  editBid: 'bids',
+  updateBid: 'bids',
   placeBid: 'bids',
   acceptBid: 'bids',
   cabcelBid: 'bids',
@@ -44,7 +44,7 @@ export const title = {
   acceptInvoice: 'Invoice Accepted',
   placeBid: 'Bid Placed',
   acceptBid: 'Bid Accepted',
-  editBid: 'Bid Updated',
+  updateBid: 'Bid Updated',
   uploadDocument: 'Document Uploaded',
   invoiceRegistered: 'Invoice Registered',
   cancelBid: 'Bid Cancelled',

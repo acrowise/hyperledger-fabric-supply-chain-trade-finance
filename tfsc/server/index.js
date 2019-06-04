@@ -5,10 +5,11 @@ const axios = require('axios');
 const socketIO = require('socket.io');
 const mime = require('mime-types');
 const ipfsClient = require('ipfs-http-client');
+const proxy = require('http-proxy-middleware');
 
 const clients = [];
-// let connectedToWS = false;
 
+const API_PORT = 8080;
 const {
   PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
 } = process.env;
@@ -21,6 +22,16 @@ const roles = {
   factor_1: 'factor 1',
   factor_2: 'factor 2',
   transporter: 'transporter'
+};
+
+const ids = {
+  buyer: 'aMSP',
+  supplier: 'bMSP',
+  auditor_1: 'cMSP',
+  auditor_2: 'dMSP',
+  factor_1: 'eMSP',
+  factor_2: 'fMSP',
+  transporter: 'gMSP'
 };
 
 const ipfs = ipfsClient({
@@ -144,6 +155,28 @@ const getDocument = hash => new Promise((resolve, reject) => {
   });
 });
 
+router.use(
+  '/channels',
+  proxy({
+    target: `http://api.${ORG}.example.com:${API_PORT}`,
+    changeOrigin: true,
+    logLevel: 'debug',
+    onProxyReq: async (proxyReq, req, res) => {
+      console.info('proxyReq.path', proxyReq.path);
+    },
+    onProxyRes: async (proxyRes, req, res) => {
+      let body = Buffer.from('');
+      proxyRes.on('data', (data) => {
+        body = Buffer.concat([body, data]);
+      });
+      proxyRes.on('end', () => {
+        body = body.toString();
+        // console.info('res from fabric-rest-api-go', body);
+      });
+    }
+  })
+);
+
 router.get('/getDocument', async (req, res) => {
   const t = {
     'image/jpeg': 1,
@@ -175,7 +208,12 @@ app.use(express.static(path.join(__dirname, '../dist/client')));
 const html = require('./html');
 
 const renderer = async (req, res) => {
-  const data = { ipfs_port: IPFS_PORT, role: roles[ROLE], org: ORG };
+  const data = {
+    ipfs_port: IPFS_PORT,
+    role: roles[ROLE],
+    org: ORG,
+    id: ids[ROLE]
+  };
   return res.send(html(data));
 };
 
