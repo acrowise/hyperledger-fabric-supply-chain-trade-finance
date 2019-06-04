@@ -5,10 +5,11 @@ const axios = require('axios');
 const socketIO = require('socket.io');
 const mime = require('mime-types');
 const ipfsClient = require('ipfs-http-client');
+const proxy = require('http-proxy-middleware');
 
 const clients = [];
-// let connectedToWS = false;
 
+const API_PORT = 8080;
 const {
   PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
 } = process.env;
@@ -153,6 +154,28 @@ const getDocument = hash => new Promise((resolve, reject) => {
     resolve(files[0].content);
   });
 });
+
+router.use(
+  '/channels',
+  proxy({
+    target: `http://api.${ORG}.example.com:${API_PORT}`,
+    changeOrigin: true,
+    logLevel: 'debug',
+    onProxyReq: async (proxyReq, req, res) => {
+      console.info('proxyReq.path', proxyReq.path);
+    },
+    onProxyRes: async (proxyRes, req, res) => {
+      let body = Buffer.from('');
+      proxyRes.on('data', (data) => {
+        body = Buffer.concat([body, data]);
+      });
+      proxyRes.on('end', () => {
+        body = body.toString();
+        // console.info('res from fabric-rest-api-go', body);
+      });
+    }
+  })
+);
 
 router.get('/getDocument', async (req, res) => {
   const t = {
