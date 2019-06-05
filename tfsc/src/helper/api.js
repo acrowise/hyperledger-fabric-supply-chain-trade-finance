@@ -17,14 +17,22 @@ export const post = method => () => {
   }));
 };
 
+const buildUrl = ({ channel, chaincode, ccMethod }) => {
+  let url = '/api/channels';
+  if (channel) {
+    url += `/${channel}`;
+  }
+  if (chaincode) {
+    url += `/chaincodes/${chaincode}`;
+  }
+  if (ccMethod) {
+    url += `?peer=${state.org}/peer0&fcn=${ccMethod}`;
+  }
+  return url;
+};
+
 export const get = (method) => {
   const params = METHODS_MAP.find(i => i.ccMethod === method);
 
-  return useGet(
-    mockApi
-      ? `/${params.ccMethod}`
-      : `/api/channels/${params.channel}/chaincodes/${params.chaincode}?peer=${
-        state.org
-      }/peer0&fcn=${params.ccMethod}`
-  );
+  return useGet(mockApi ? `/${params.ccMethod}` : buildUrl(params));
 };

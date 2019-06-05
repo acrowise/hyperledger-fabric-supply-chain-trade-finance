@@ -13,40 +13,43 @@ const Admin = () => (
         window.location.assign('/');
       }}
     />
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'row',
-        paddingTop: '85px',
-        paddingLeft: 20,
-        paddingRight: 20
-      }}
-    >
+    <div style={{ paddingTop: '65px' }}>
+      <div style={{ width: '100vw', height: 4, backgroundColor: '#687585' }} />
       <div
         style={{
           display: 'flex',
-          flexDirection: 'column',
-          maxWidth: '45%',
-          flex: 1
+          flexDirection: 'row',
+          paddingTop: 10,
+          paddingLeft: 20,
+          paddingRight: 20
         }}
       >
-        <h3 style={{ paddingLeft: '15px' }}>Networks info</h3>
-        <CollapsiblePanel title="Peers" />
-        <CollapsiblePanel title="Uploaded Chaincodes" />
-        <CollapsiblePanel title="Channels" />
-        <CollapsiblePanel title="Initiated Chaincodes" />
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <h3 style={{ paddingLeft: '15px' }}>Notifications</h3>
-        <div style={{ marginTop: '15px' }}>
-          <Table
-            data={[]}
-            fields={{
-              id: 'Request Number',
-              notification: 'Action',
-              action: ''
-            }}
-          />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '45%',
+            flex: 1
+          }}
+        >
+          <h3 style={{ paddingLeft: '15px' }}>Networks info</h3>
+          <CollapsiblePanel title="Peers" />
+          <CollapsiblePanel title="Uploaded Chaincodes" />
+          <CollapsiblePanel title="Channels" />
+          <CollapsiblePanel title="Initiated Chaincodes" />
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+          <h3 style={{ paddingLeft: '15px' }}>Notifications</h3>
+          <div style={{ marginTop: '15px' }}>
+            <Table
+              data={[]}
+              fields={{
+                id: 'Request Number',
+                notification: 'Action',
+                action: ''
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>

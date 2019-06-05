@@ -77,7 +77,7 @@ const tabs = actor => [
         filterBy={['debtor', 'beneficiary', 'paymentDate', 'owner']}
         statuses={['Issued', 'Signed', 'For Sale', 'Sold', 'Removed']}
       >
-        <Invoices role={actor.role} />
+        <Invoices actor={actor} />
       </Filter>
     )
   },
