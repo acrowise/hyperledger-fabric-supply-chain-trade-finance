@@ -14,28 +14,49 @@ import Table from '../components/Table/Table';
 import Loading from '../components/Loading';
 
 const Invoices = ({
-  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+  actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [bidDialog, setBidDialog] = useState({
     isOpen: false
   });
 
-  const [data, loading, setData] = get('listInvoices');
+  const [invoices, invoicesLoading, setData] = get('listInvoices');
+  const [bids, bidsLoading, setBids] = get('listBids');
 
-  // BUYER
-  const [, acceptInvoice] = post('acceptInvoice')();
-  // SUPPLIER
+  // const [, acceptInvoice] = post('acceptInvoice')();
 
   const [, placeForTradeInvoice] = post('placeInvoice')();
   const [, removeInvoice] = post('removeInvoice')();
 
   useSocket('notification', (message) => {
-    setData(notifications(data.result, message, 'invoices'));
+    const notification = JSON.parse(message);
+    if (notification.type === 'placeBid') {
+      setBids({ result: bids.result.concat(notification.data) });
+      return;
+    }
+    setData(notifications(invoices.result, message, 'invoices'));
   });
 
-  let filteredData = data.result;
+  let filteredData = invoices.result;
 
-  if (!loading && filteredData && filteredData.length > 0) {
+  if (
+    !invoicesLoading
+    && !bidsLoading
+    && invoices.result
+    && bids.result
+    && filteredData.length > 0
+  ) {
+    filteredData.forEach((invoice) => {
+      invoice.value.bids = bids.result
+        .filter(i => i.value.invoiceID === invoice.key.id)
+        .map(i => ({
+          id: i.key.id,
+          rate: i.value.rate,
+          factorID: i.value.factorID,
+          state: i.value.state
+        }));
+    });
+
     filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
 
     if (dataForFilter.length === 0) {
@@ -51,7 +72,7 @@ const Invoices = ({
     });
   }
 
-  return loading ? (
+  return invoicesLoading || bidsLoading ? (
     <Loading />
   ) : (
     <>
@@ -80,7 +101,7 @@ const Invoices = ({
             ) : (
               <></>
             )} */}
-            {role === 'supplier' && item.state === 'Signed' ? (
+            {actor.role === 'supplier' && item.state === 'Signed' ? (
               <div>
                 <Button
                   style={{ marginRight: '5px' }}
@@ -106,7 +127,7 @@ const Invoices = ({
             ) : (
               <></>
             )}
-            {role === 'supplier' && item.state === 'For Sale' ? (
+            {actor.role === 'supplier' && item.state === 'For Sale' ? (
               <Button
                 style={{ marginRight: '5px' }}
                 intent="danger"
@@ -130,7 +151,9 @@ const Invoices = ({
             ) : (
               <></>
             )}
-            {(role === 'factor 1' || role === 'factor 2') && item.state === 'For Sale' ? (
+            {(actor.role === 'factor 1' || actor.role === 'factor 2')
+            && !item.bids.find(i => i.factorID === actor.id)
+            && item.state === 'For Sale' ? (
               <div>
                 <Button
                   style={{ marginRight: '5px' }}
@@ -138,16 +161,16 @@ const Invoices = ({
                   onClick={() => {
                     setBidDialog({
                       isOpen: true,
-                      state: { action: 'place', invoiceId: item.id, role }
+                      state: { action: 'place', invoiceId: item.id, role: actor.role }
                     });
                   }}
                 >
                   Place Bid
                 </Button>
               </div>
-            ) : (
+              ) : (
               <></>
-            )}
+              )}
           </div>
         )}
       />
@@ -156,7 +179,7 @@ const Invoices = ({
 };
 
 Invoices.propTypes = {
-  role: PropTypes.string
+  actor: PropTypes.object
 };
 
 export default Invoices;

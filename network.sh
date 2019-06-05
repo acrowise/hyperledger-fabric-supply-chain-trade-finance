@@ -380,6 +380,7 @@ function generatePeerArtifacts() {
           -e "s/IPFS_API/$ipfs_api/g" \
           -e "s/ROLE_APP/$orgu/g" \
           -e "s/REST_API_PORT/${DEFAULT_API_PORT}/g" \
+          -e "s/ORG_NAME/$org/g" \
           ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
     else
       sed -e "s/PEER_EXTRA_HOSTS/$peer_extra_hosts/g" \
@@ -396,6 +397,7 @@ function generatePeerArtifacts() {
           -e "s/PEER1_EVENT_PORT/$peer1_event_port/g" \
           -e "s/IPFS_API/$ipfs_api/g" \
           -e "s/ROLE_APP/$orgu/g" \
+          -e "s/ORG_NAME/$org/g" \
           ${compose_template} | awk '{gsub(/\[newline\]/, "\n")}1' > ${f}
     fi
 
@@ -415,9 +417,7 @@ function generatePeerArtifacts() {
     docker exec "cliNoCryptoVolume.$org.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Adding generated CA private keys filenames to $f"
-    ca_private_key=$(basename `ls -t $GENERATED_ARTIFACTS_FOLDER/crypto-config/peerOrganizations/"$org.$DOMAIN"/ca/*_sk`)
-    [[ -z  ${ca_private_key}  ]] && echo "empty CA private key" && exit 1
-    sed $SED_OPTS -e "s/CA_PRIVATE_KEY/${ca_private_key}/g" ${f}
+    find  $GENERATED_ARTIFACTS_FOLDER/crypto-config -iname "*_sk*" -exec bash -c 'mv $0 $(echo $0 | sed -e "s/[^/]*_sk/server.key/")' {} \;
 
     # replace in configtx
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" $TEMPLATES_ARTIFACTS_FOLDER/configtx-orgtemplate.yaml > $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
@@ -809,6 +809,12 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
 
   # Start blockchain-explorer
   docker-compose -f $GENERATED_DOCKER_COMPOSE_FOLDER/docker-explorer.yaml up -d
+
+  # Execute migration scritps
+  sleep 3 && docker exec explorer-db.${DOMAIN} /bin/bash /opt/createdb.sh
+
+  # Restart hyperledger explorer
+  docker restart explorer.${DOMAIN}
 
 elif [ "${MODE}" == "down" ]; then
   for org in ${DOMAIN} ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}

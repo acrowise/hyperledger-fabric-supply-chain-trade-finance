@@ -72,6 +72,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   setFileRequired(false);
                   setFiles([]);
                   setHash(null);
+                  setDialogOpenState(false);
                 }
               }}
             >
