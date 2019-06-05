@@ -24,7 +24,7 @@ export const filterData = ({
         }
         return;
       }
-      if (opt === 'shipmentId') {
+      if (opt === 'shipmentID') {
         if (filterOptions[opt]) {
           data = data.filter(i => i[opt].toLowerCase().includes(filterOptions[opt]));
           return;

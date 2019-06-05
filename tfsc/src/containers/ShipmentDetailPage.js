@@ -45,7 +45,7 @@ const ShipmentDetailPage = ({
     }
 
     if (notification.type === 'documentUploaded') {
-      if (notification.event.shipmentId === shipment.id) {
+      if (notification.event.shipmentID === shipment.id) {
         setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
       }
     }
@@ -145,15 +145,6 @@ const ShipmentDetailPage = ({
                   >
                     Accept Delivery
                   </Button>
-                  {/* <Button
-                    style={{ paddingLeft: 30, paddingRight: 30, marginLeft: 15 }}
-                    intent="danger"
-                    onClick={() => {
-                      // setCsDialogOpenState(true);
-                    }}
-                  >
-                    Reject Delivery
-                  </Button> */}
                 </div>
               ) : (
                 <></>

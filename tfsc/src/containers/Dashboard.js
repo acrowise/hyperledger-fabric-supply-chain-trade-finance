@@ -97,7 +97,7 @@ const tabs = actor => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
-      <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Generated', 'Validated']}>
+      <Filter filterBy={['consignorName', 'shipmentID']} statuses={['Generated', 'Validated']}>
         <Proofs role={actor.role} />
       </Filter>
     )
@@ -106,7 +106,7 @@ const tabs = actor => [
     name: 'Reports',
     actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
-      <Filter filterBy={['consignorName', 'shipmentId']} statuses={['Accepted', 'Declined']}>
+      <Filter filterBy={['consignorName', 'shipmentID']} statuses={['Accepted', 'Declined']}>
         <Reports role={actor.role} />
       </Filter>
     )

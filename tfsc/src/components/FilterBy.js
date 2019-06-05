@@ -3,15 +3,14 @@ import React, { useState } from 'react';
 import { Icon, InputGroup } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
 
+import { format } from 'date-fns';
 import { cropId } from '../helper/utils';
 
 import { TABLE_MAP } from '../constants';
 
 const TITLES = Object.assign(
   Object.keys(TABLE_MAP).reduce((res, a) => Object.assign(res, TABLE_MAP[a]), {}),
-  {
-    shipmentId: 'Shipment ID'
-  }
+  { shipmentID: 'Shipment ID' }
 );
 
 const getFilterType = (type) => {
@@ -27,7 +26,7 @@ const getFilterType = (type) => {
       'debtor',
       'beneficiary',
       'owner',
-      'shipmentId'
+      'shipmentID'
     ],
     range: ['totalDue', 'rate']
   };
@@ -74,12 +73,12 @@ const FilterBy = ({ type, data, setFilter }) => {
               <div
                 onClick={() => {
                   setFilter(item);
-                  setSelected(type === 'shipmentId' ? cropId(item) : item);
+                  setSelected(type === 'shipmentID' ? cropId(item) : item);
                 }}
                 key={i}
                 style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
               >
-                <p>{type === 'shipmentId' ? cropId(item) : item}</p>
+                <p>{type === 'shipmentID' ? cropId(item) : item}</p>
               </div>
             ))
           ) : (
@@ -98,7 +97,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                       new Date().getDate()
                     )
                   }
-                  formatDate={date => date.toLocaleDateString()}
+                  formatDate={date => format(date, 'MM/DD/YYYY')}
                   onChange={(date) => {
                     setFilter({ from: date.getTime() });
                   }}
@@ -118,7 +117,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                       new Date().getDate()
                     )
                   }
-                  formatDate={date => date.toLocaleDateString()}
+                  formatDate={date => format(date, 'MM/DD/YYYY')}
                   onChange={(date) => {
                     setFilter({ to: date.getTime() });
                   }}
