@@ -190,11 +190,17 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = orderIndex
-	event.Value.EntityID = order.Key.ID
-	event.Value.Other = order.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = orderIndex
+	eventValue.EntityID = order.Key.ID
+	eventValue.Other = order.Value
+	eventValue.Action = eventPlaceOrder
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -284,11 +290,17 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = orderIndex
-	event.Value.EntityID = orderToUpdate.Key.ID
-	event.Value.Other = orderToUpdate.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = orderIndex
+	eventValue.EntityID = orderToUpdate.Key.ID
+	eventValue.Other = orderToUpdate.Value
+	eventValue.Action = eventUpdateOrder
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -369,11 +381,17 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = orderIndex
-	event.Value.EntityID = orderToUpdate.Key.ID
-	event.Value.Other = orderToUpdate.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = orderIndex
+	eventValue.EntityID = orderToUpdate.Key.ID
+	eventValue.Other = orderToUpdate.Value
+	eventValue.Action = eventCancelOrder
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -516,11 +534,17 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = orderIndex
-	event.Value.EntityID = orderToUpdate.Key.ID
-	event.Value.Other = orderToUpdate.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event = acceptOrder
+	eventValue := EventValue{}
+	eventValue.EntityType = orderIndex
+	eventValue.EntityID = orderToUpdate.Key.ID
+	eventValue.Other = orderToUpdate.Value
+	eventValue.Action = eventAcceptOrder
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -630,11 +654,12 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	}
 
 	// uploading document
+	document := Document{}
 	documentHash := args[6]
 	documentType := args[7]
 	if documentHash != "" && documentType != "" {
 		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, shipment.Value.Description, documentType, shipment.Value.ContractID}
-		err, _ = processingUploadDocument(stub, documentFields)
+		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -642,12 +667,31 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		}
 	}
 
+	if bytes, err := json.Marshal(document); err == nil {
+		Logger.Debug("Document: " + string(bytes))
+	}
+
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = shipmentIndex
-	event.Value.EntityID = shipment.Key.ID
-	event.Value.Other = shipment.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event1 = requestShipment
+	eventValue := EventValue{}
+	eventValue.EntityType = shipmentIndex
+	eventValue.EntityID = shipment.Key.ID
+	eventValue.Other = shipment.Value
+	eventValue.Action = eventRequestShipment
+	events.Values = append(events.Values, eventValue)
+
+	if documentHash != "" && documentType != "" {
+		//event2 = uploadDocument
+		eventValue.EntityType = documentIndex
+		eventValue.EntityID = document.Key.ID
+		eventValue.Other = document.Value
+		eventValue.Action = eventUploadDocument
+		events.Values = append(events.Values, eventValue)
+	}
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -705,7 +749,6 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentConfirmed
 	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
-	shipmentToUpdate.Value.Description = args[5]
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
@@ -719,11 +762,14 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	// uploading document
+	document := Document{}
 	documentHash := args[6]
 	documentType := args[7]
+	documentDescription := args[5]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, shipmentToUpdate.Value.Description, documentType, shipmentToUpdate.Value.ContractID}
-		err, _ := processingUploadDocument(stub, documentFields)
+		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentDescription, documentType, shipmentToUpdate.Value.ContractID}
+		var err error
+		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -732,11 +778,26 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = shipmentIndex
-	event.Value.EntityID = shipmentToUpdate.Key.ID
-	event.Value.Other = shipmentToUpdate.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event1 = confirmShipment
+	eventValue := EventValue{}
+	eventValue.EntityType = shipmentIndex
+	eventValue.EntityID = shipmentToUpdate.Key.ID
+	eventValue.Other = shipmentToUpdate.Value
+	eventValue.Action = eventConfirmShipment
+	events.Values = append(events.Values, eventValue)
+
+	if documentHash != "" && documentType != "" {
+		//event2 = uploadDocument
+		eventValue.EntityType = documentIndex
+		eventValue.EntityID = document.Key.ID
+		eventValue.Other = document.Value
+		eventValue.Action = eventUploadDocument
+		events.Values = append(events.Values, eventValue)
+	}
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -826,7 +887,6 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentDelivered
 	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
-	shipmentToUpdate.Value.Description = args[5]
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
@@ -855,11 +915,13 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	}
 
 	// uploading document
+	documentDescription := args[5]
 	documentHash := args[6]
 	documentType := args[7]
+	document := Document{}
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, shipmentToUpdate.Value.Description, documentType, shipmentToUpdate.Value.ContractID}
-		err, _ := processingUploadDocument(stub, documentFields)
+		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentDescription, documentType, shipmentToUpdate.Value.ContractID}
+		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -886,11 +948,33 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = shipmentIndex
-	event.Value.EntityID = shipmentToUpdate.Key.ID
-	event.Value.Other = shipmentToUpdate.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event1 = confirmDelivery
+	eventValue := EventValue{}
+	eventValue.EntityType = shipmentIndex
+	eventValue.EntityID = shipmentToUpdate.Key.ID
+	eventValue.Other = shipmentToUpdate.Value
+	eventValue.Action = eventConfirmDelivery
+	events.Values = append(events.Values, eventValue)
+
+	//event2 = contractCompleted
+	eventValue.EntityType = contractIndex
+	eventValue.EntityID = contract.Key.ID
+	eventValue.Other = contract.Value
+	eventValue.Action = eventCotractCompleted
+	events.Values = append(events.Values, eventValue)
+
+	if documentHash != "" && documentType != "" {
+		//event3 = uploadDocument
+		eventValue.EntityType = documentIndex
+		eventValue.EntityID = document.Key.ID
+		eventValue.Other = document.Value
+		eventValue.Action = eventUploadDocument
+		events.Values = append(events.Values, eventValue)
+	}
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -920,11 +1004,17 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = documentIndex
-	event.Value.EntityID = document.Key.ID
-	event.Value.Other = document.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event = uploadDocument
+	eventValue := EventValue{}
+	eventValue.EntityType = documentIndex
+	eventValue.EntityID = document.Key.ID
+	eventValue.Other = document.Value
+	eventValue.Action = eventUploadDocument
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -959,6 +1049,7 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 		return errors.New(message), Document{}
 	}
 
+	//TODO: uncomment after testing
 	//additional checking
 	//findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
 	//if err != nil {
@@ -1097,11 +1188,17 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = proofIndex
-	event.Value.EntityID = proof.Key.ID
-	event.Value.Other = proof.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event = generateProof
+	eventValue := EventValue{}
+	eventValue.EntityType = proofIndex
+	eventValue.EntityID = proof.Key.ID
+	eventValue.Other = proof.Value
+	eventValue.Action = eventGenerateProof
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1159,7 +1256,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	if proof.Value.State != stateProofGenerated {
+	if proof.Value.State != stateProofGenerated && proof.Value.State != stateProofUpdated {
 		message := fmt.Sprintf("invalid state of proof")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -1184,16 +1281,6 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	proof.Value.State = stateProofValidated
-	proof.Value.UpdatedDate = time.Now().UTC().Unix()
-
-	// updating state in ledger
-	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
 	// making report
 	reportState, err := strconv.Atoi(args[1])
 	if err != nil {
@@ -1207,26 +1294,51 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	report := Report{}
-	reportID := uuid.Must(uuid.NewV4()).String()
-	if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
+	reports := []Report{}
+
+	if proof.Value.State == stateProofGenerated {
+		// making new report
+		report := Report{}
+		reportID := uuid.Must(uuid.NewV4()).String()
+		if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		report.Value.ShipmentID = proof.Value.ShipmentID
+		report.Value.State = reportState
+		report.Value.Description = args[2]
+		report.Value.Timestamp = time.Now().UTC().Unix()
+		report.Value.UpdatedDate = report.Value.Timestamp
+		reports = append(reports, report)
+	} else {
+		// update exist report
+		reports, err = findReportByProofID(stub, proof.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find existing report: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		for _, report := range reports {
+			report.Value.State = reportState
+			report.Value.Description = args[2]
+			report.Value.UpdatedDate = time.Now().UTC().Unix()
+		}
 	}
 
-	if ExistsIn(stub, &report, reportIndex) {
-		compositeKey, _ := report.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
+	for _, report := range reports {
+		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
 	}
 
-	report.Value.ShipmentID = proof.Value.ShipmentID
-	report.Value.State = reportState
-	report.Value.Description = args[2]
-	report.Value.Timestamp = time.Now().UTC().Unix()
-	report.Value.UpdatedDate = report.Value.Timestamp
+	proof.Value.State = stateProofValidated
+	proof.Value.UpdatedDate = time.Now().UTC().Unix()
 
-	if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+	// updating state in ledger
+	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1235,6 +1347,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	// uploading document
 	documentHash := args[3]
 	documentType := args[4]
+	document := Document{}
 	if documentHash != "" && documentType != "" {
 		// find contractID
 		err, contractID := findContractIDByEntity(stub, TypeShipment, proof.Value.ShipmentID)
@@ -1244,21 +1357,47 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			return shim.Error(message)
 		}
 
-		documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType, contractID}
-		err, _ = processingUploadDocument(stub, documentFields)
-		if err != nil {
-			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
+		for _, report := range reports {
+			documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType, contractID}
+			err, document = processingUploadDocument(stub, documentFields)
+			if err != nil {
+				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
+				Logger.Error(message)
+				return shim.Error(message)
+			}
 		}
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = proofIndex
-	event.Value.EntityID = proof.Key.ID
-	event.Value.Other = proof.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event1 = verifyProof
+	eventValue := EventValue{}
+	eventValue.EntityType = proofIndex
+	eventValue.EntityID = proof.Key.ID
+	eventValue.Other = proof.Value
+	eventValue.Action = eventVerifyProof
+	events.Values = append(events.Values, eventValue)
+
+	//event2 = submitReport
+	for _, report := range reports {
+		eventValue.EntityType = reportIndex
+		eventValue.EntityID = report.Key.ID
+		eventValue.Other = report.Value
+		eventValue.Action = eventSubmitReport
+		events.Values = append(events.Values, eventValue)
+	}
+
+	if documentHash != "" && documentType != "" {
+		//event3 = uploadDocument
+		eventValue.EntityType = documentIndex
+		eventValue.EntityID = document.Key.ID
+		eventValue.Other = document.Value
+		eventValue.Action = eventUploadDocument
+		events.Values = append(events.Values, eventValue)
+	}
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1302,7 +1441,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	// setting automatic values
-	proof.Value.State = stateProofGenerated
+	proof.Value.State = stateProofUpdated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
 	proof.Value.UpdatedDate = time.Now().UTC().Unix()
 
@@ -1321,11 +1460,17 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = proofIndex
-	event.Value.EntityID = proof.Key.ID
-	event.Value.Other = proof.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event = updateProof
+	eventValue := EventValue{}
+	eventValue.EntityType = proofIndex
+	eventValue.EntityID = proof.Key.ID
+	eventValue.Other = proof.Value
+	eventValue.Action = eventUpdateProof
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1406,11 +1551,17 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = reportIndex
-	event.Value.EntityID = report.Key.ID
-	event.Value.Other = report.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event = updateReport
+	eventValue := EventValue{}
+	eventValue.EntityType = reportIndex
+	eventValue.EntityID = report.Key.ID
+	eventValue.Other = report.Value
+	eventValue.Action = eventUpdateReport
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1617,6 +1768,17 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
+	for _, shipment := range shipments {
+		shipmentHistory, err := getHistoryByEntity(stub, shipmentIndex, shipment.Key.ID, CreateShipment)
+		if err != nil {
+			message := fmt.Sprintf("cannot get history for entity %s with ID: %s . Error: %s", shipmentIndex, shipment.Key.ID, err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		fmt.Println("######### Debug history ########")
+		fmt.Println(shipmentHistory)
+	}
+
 	resultBytes, err := joinByShipmentsAndContractsAndDocuments(stub, shipments)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by shipment and contract: %s", err.Error())
@@ -1722,6 +1884,33 @@ func findDocumentByHash(stub shim.ChaincodeStubInterface, documentHash string) (
 	}
 
 	return documents, nil
+}
+
+func findReportByProofID(stub shim.ChaincodeStubInterface, proofID string) ([]Report, error) {
+
+	filterByProofID := func(data LedgerData) bool {
+		entity, ok := data.(*Report)
+		if ok && entity.Value.ProofID == proofID {
+			return true
+		}
+		return false
+	}
+
+	reports := []Report{}
+	reportsBytes, err := Query(stub, reportIndex, []string{}, CreateReport, filterByProofID)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return reports, errors.New(message)
+	}
+
+	if err := json.Unmarshal(reportsBytes, &reports); err != nil {
+		message := fmt.Sprintf("unable to unmarshal reports query result: %s", err.Error())
+		Logger.Error(message)
+		return reports, errors.New(message)
+	}
+
+	return reports, nil
 }
 
 func findContractIDByEntity(stub shim.ChaincodeStubInterface, entityType int, entityID string) (error, string) {
@@ -2040,52 +2229,64 @@ func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Repor
 	return resultBytes, nil
 }
 
-func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
-	eventAction, _ := stub.GetFunctionAndParameters()
-	eventID := uuid.Must(uuid.NewV4()).String()
+func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 
-	if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
-		message := fmt.Sprintf(err.Error())
-		return errors.New(message)
+	for index, eventValues := range events.Values {
+		eventAction := eventValues.Action
+		eventID := uuid.Must(uuid.NewV4()).String()
+
+		event := Event{}
+		if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
+			message := fmt.Sprintf(err.Error())
+			return errors.New(message)
+		}
+
+		creator, err := GetMSPID(stub)
+		if err != nil {
+			message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		config := Config{}
+		if err := LoadFrom(stub, &config, configIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+
+			return errors.New(message)
+		}
+
+		event.Value.Creator = creator
+		event.Value.Timestamp = time.Now().UTC().Unix()
+
+		bytes, err := json.Marshal(event)
+		if err != nil {
+			message := fmt.Sprintf("Error marshaling: %s", err.Error())
+			return errors.New(message)
+		}
+		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + strconv.Itoa(eventAction) + "." + eventID
+		events.Keys[index] = EventKey{ID: eventName}
+
+		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+		Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
 	}
 
-	creator, err := GetMSPID(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message)
-	}
-
-	config := Config{}
-	if err := LoadFrom(stub, &config, eventIndex); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-
-		return errors.New(message)
-	}
-
-	event.Value.Creator = creator
-	event.Value.Timestamp = time.Now().UTC().Unix()
-
-	bytes, err := json.Marshal(event)
+	generalKey, err := json.Marshal(events.Keys)
 	if err != nil {
 		message := fmt.Sprintf("Error marshaling: %s", err.Error())
 		return errors.New(message)
 	}
-	eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
-	if err = stub.SetEvent(eventName, bytes); err != nil {
+
+	if err := stub.SetEvent(string(generalKey), nil); err != nil {
 		message := fmt.Sprintf("Error setting event: %s", err.Error())
 		return errors.New(message)
 	}
-	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
-
-	if err := UpdateOrInsertIn(stub, event, eventIndex, []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message)
-	}
-
-	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
-	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
 
 	return nil
 }

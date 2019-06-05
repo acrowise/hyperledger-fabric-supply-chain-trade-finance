@@ -298,6 +298,67 @@ func queryImpl(it shim.StateQueryIteratorInterface, createEntry FactoryMethod, s
 	return entries, nil
 }
 
+func getHistoryByEntity(stub shim.ChaincodeStubInterface, index string, entityID string,
+	createEntry FactoryMethod) ([]interface{}, error) {
+
+	entries := []interface{}{}
+
+	entity := createEntry()
+
+	if err := entity.FillFromCompositeKeyParts([]string{entityID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	if !ExistsIn(stub, entity, index) {
+		compositeKey, _ := entity.ToCompositeKey(stub)
+		message := fmt.Sprintf("entity with the key %s doesnt exist", compositeKey)
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	compositeKey, err := entity.ToCompositeKey(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot create composite key :%s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	it, err := stub.GetHistoryForKey(compositeKey)
+	if err != nil {
+		message := fmt.Sprintf("unable to get history for key %s: %s", compositeKey, err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			message := fmt.Sprintf("unable to get an element next to a history iterator: %s", err.Error())
+			return nil, errors.New(message)
+		}
+
+		ledgerDataLogger.Debug(fmt.Sprintf("Response: {%s, %s}", response.Timestamp.Seconds, string(response.Value)))
+
+		entry := struct {
+			TxID      string      `json:"txid"`
+			Timestamp int64       `json:"timestamp"`
+			Value     interface{} `json:"value"`
+		}{
+			TxID:      response.TxId,
+			Timestamp: response.Timestamp.Seconds,
+			Value:     response.Value,
+		}
+
+		entries = append(entries, entry)
+	}
+
+	defer it.Close()
+
+	return entries, nil
+}
+
 func getOrganization(certificate []byte) (string, error) {
 	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
@@ -379,11 +440,11 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 
 	switch typeNotice {
 	case NoticeRuningType:
-		Logger.Info(fmt.Sprintf("%s.%s is running", ChaincodeName, fnc))
-		Logger.Debug(fmt.Sprintf("%s.%s", ChaincodeName, fnc))
+		Logger.Info(fmt.Sprintf("%s.%s is running", chaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("%s.%s", chaincodeName, fnc))
 	case NoticeSuccessType:
-		Logger.Info(fmt.Sprintf("%s.%s exited without errors", ChaincodeName, fnc))
-		Logger.Debug(fmt.Sprintf("Success: %s.%s", ChaincodeName, fnc))
+		Logger.Info(fmt.Sprintf("%s.%s exited without errors", chaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("Success: %s.%s", chaincodeName, fnc))
 	default:
 		Logger.Debug("Unknown typeNotice: %d", typeNotice)
 	}

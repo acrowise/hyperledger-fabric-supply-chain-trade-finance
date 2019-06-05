@@ -7,6 +7,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
+	"strconv"
 	"time"
 )
 
@@ -159,11 +160,17 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = invoiceIndex
-	event.Value.EntityID = invoice.Key.ID
-	event.Value.Other = invoice.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventRegisterInvoice
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -254,11 +261,17 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = invoiceIndex
-	event.Value.EntityID = invoice.Key.ID
-	event.Value.Other = invoice.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventPlaceInvoice
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -337,11 +350,17 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = invoiceIndex
-	event.Value.EntityID = invoice.Key.ID
-	event.Value.Other = invoice.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventRemoveInvoice
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -363,8 +382,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	//TODO: remove TA access for this method after implementing confirmDelivery method
-	if err, result := checkAccessForUnit([][]string{Buyer, TransportAgency}, stub); err != nil || !result {
+	if err, result := checkAccessForUnit([][]string{Buyer}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to accept an invoice")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -428,11 +446,17 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = invoiceIndex
-	event.Value.EntityID = invoice.Key.ID
-	event.Value.Other = invoice.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventAcceptInvoice
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -517,11 +541,17 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = invoiceIndex
-	event.Value.EntityID = invoice.Key.ID
-	event.Value.Other = invoice.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventRejectInvoice
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -599,11 +629,17 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = bidIndex
-	event.Value.EntityID = bid.Key.ID
-	event.Value.Other = bid.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = bidIndex
+	eventValue.EntityID = bid.Key.ID
+	eventValue.Other = bid.Value
+	eventValue.Action = eventPlaceBid
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -690,11 +726,17 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = bidIndex
-	event.Value.EntityID = bid.Key.ID
-	event.Value.Other = bid.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = bidIndex
+	eventValue.EntityID = bidToUpdate.Key.ID
+	eventValue.Other = bidToUpdate.Value
+	eventValue.Action = eventUpdateBid
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -764,11 +806,17 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = bidIndex
-	event.Value.EntityID = bid.Key.ID
-	event.Value.Other = bid.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = bidIndex
+	eventValue.EntityID = bidToUpdate.Key.ID
+	eventValue.Other = bidToUpdate.Value
+	eventValue.Action = eventCancelBid
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -872,11 +920,24 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//emitting Event
-	event := Event{}
-	event.Value.EntityType = bidIndex
-	event.Value.EntityID = bid.Key.ID
-	event.Value.Other = bid.Value
-	if err := event.emitState(stub); err != nil {
+	events := Events{}
+
+	//event1 = invoiceSold
+	eventValue := EventValue{}
+	eventValue.EntityType = invoiceIndex
+	eventValue.EntityID = invoice.Key.ID
+	eventValue.Other = invoice.Value
+	eventValue.Action = eventInvoiceSold
+	events.Values = append(events.Values, eventValue)
+
+	//event2 = acceptBid
+	eventValue.EntityType = bidIndex
+	eventValue.EntityID = bidToUpdate.Key.ID
+	eventValue.Other = bidToUpdate.Value
+	eventValue.Action = eventAcceptBid
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1074,52 +1135,64 @@ func (cc *TradeFinanceChaincode) getEventPayload(stub shim.ChaincodeStubInterfac
 	return shim.Success(result)
 }
 
-func (event *Event) emitState(stub shim.ChaincodeStubInterface) error {
-	eventAction, _ := stub.GetFunctionAndParameters()
-	eventID := uuid.Must(uuid.NewV4()).String()
+func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 
-	if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
-		message := fmt.Sprintf(err.Error())
-		return errors.New(message)
+	for index, eventValues := range events.Values {
+		eventAction := eventValues.Action
+		eventID := uuid.Must(uuid.NewV4()).String()
+
+		event := Event{}
+		if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
+			message := fmt.Sprintf(err.Error())
+			return errors.New(message)
+		}
+
+		creator, err := GetMSPID(stub)
+		if err != nil {
+			message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		config := Config{}
+		if err := LoadFrom(stub, &config, configIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+
+			return errors.New(message)
+		}
+
+		event.Value.Creator = creator
+		event.Value.Timestamp = time.Now().UTC().Unix()
+
+		bytes, err := json.Marshal(event)
+		if err != nil {
+			message := fmt.Sprintf("Error marshaling: %s", err.Error())
+			return errors.New(message)
+		}
+		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + strconv.Itoa(eventAction) + "." + eventID
+		events.Keys[index] = EventKey{ID: eventName}
+
+		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+		Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
 	}
 
-	creator, err := GetMSPID(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message)
-	}
-
-	config := Config{}
-	if err := LoadFrom(stub, &config, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-
-		return errors.New(message)
-	}
-
-	event.Value.Creator = creator
-	event.Value.Timestamp = time.Now().UTC().Unix()
-
-	bytes, err := json.Marshal(event)
+	generalKey, err := json.Marshal(events.Keys)
 	if err != nil {
 		message := fmt.Sprintf("Error marshaling: %s", err.Error())
 		return errors.New(message)
 	}
-	eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
-	if err = stub.SetEvent(eventName, bytes); err != nil {
+
+	if err := stub.SetEvent(string(generalKey), nil); err != nil {
 		message := fmt.Sprintf("Error setting event: %s", err.Error())
 		return errors.New(message)
 	}
-	Logger.Debug(fmt.Sprintf("EventName: %s", eventName))
-
-	if err := UpdateOrInsertIn(stub, event, "", []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message)
-	}
-
-	Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
-	Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
 
 	return nil
 }

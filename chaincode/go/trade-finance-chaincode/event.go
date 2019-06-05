@@ -26,12 +26,18 @@ type EventValue struct {
 	Creator    string      `json:"creator"`
 	EntityType string      `json:"entityType"`
 	EntityID   string      `json:"entityID"`
+	Action     int         `json:"action"`
 	Other      interface{} `json:"other"`
 }
 
 type Event struct {
 	Key   EventKey   `json:"key"`
 	Value EventValue `json:"value"`
+}
+
+type Events struct {
+	Keys   []EventKey   `json:"generalKey"`
+	Values []EventValue `json:"values"`
 }
 
 func CreateEvent() LedgerData {

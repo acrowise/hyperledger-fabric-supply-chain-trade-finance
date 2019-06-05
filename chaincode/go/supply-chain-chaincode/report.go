@@ -43,6 +43,7 @@ type ReportKey struct {
 type ReportValue struct {
 	Description string `json:"description"`
 	ShipmentID  string `json:"shipmentID"`
+	ProofID     string `json:"proofID"`
 	State       int    `json:"state"`
 	Timestamp   int64  `json:"timestamp"`
 	UpdatedDate int64  `json:"updatedDate"`
@@ -51,6 +52,7 @@ type ReportValue struct {
 type ReportValueAdditional struct {
 	Description string     `json:"description"`
 	ShipmentID  string     `json:"shipmentID"`
+	ProofID     string     `json:"proofID"`
 	State       int        `json:"state"`
 	Timestamp   int64      `json:"timestamp"`
 	Documents   []Document `json:"documents"`

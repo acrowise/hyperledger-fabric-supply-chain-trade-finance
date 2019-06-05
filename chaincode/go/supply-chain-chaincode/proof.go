@@ -26,18 +26,21 @@ const (
 	stateProofUnknown = iota
 	stateProofGenerated
 	stateProofValidated
+	stateProofUpdated
 )
 
 var proofStateLegal = map[int][]int{
 	stateProofUnknown:   {},
 	stateProofGenerated: {},
 	stateProofValidated: {},
+	stateProofUpdated:   {},
 }
 
 var proofStateMachine = map[int][]int{
 	stateProofUnknown:   {stateProofUnknown},
 	stateProofGenerated: {stateProofGenerated, stateProofValidated},
 	stateProofValidated: {stateProofValidated},
+	stateProofUpdated:   {stateProofUpdated},
 }
 
 type ProofKey struct {
