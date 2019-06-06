@@ -138,6 +138,22 @@ function FileUploader({
               <Icon name="document" />
             </span>
             <span>{file.name}</span>
+            <p
+              style={{
+                color: 'black',
+                marginBottom: 0,
+                marginLeft: 5,
+                cursor: 'pointer'
+              }}
+              onClick={(e) => {
+                const f = files.concat([]);
+                f.splice(i, 1);
+                setFiles(f);
+                e.preventDefault();
+              }}
+            >
+              [x]
+            </p>
           </li>
         ))}
       </ul>
