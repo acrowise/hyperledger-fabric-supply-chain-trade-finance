@@ -417,7 +417,7 @@ function generatePeerArtifacts() {
     docker exec "cliNoCryptoVolume.$org.$DOMAIN" bash -c "chown -R $UID:$GID ."
 
     echo "Adding generated CA private keys filenames to $f"
-    find  $GENERATED_ARTIFACTS_FOLDER/crypto-config -iname "*_sk*" -exec bash -c 'mv $0 $(echo $0 | sed -e "s/[^/]*_sk/server.key/")' {} \;
+    find  $GENERATED_ARTIFACTS_FOLDER/crypto-config -iname "*_sk*" -exec bash -c 'cp $0 $(echo $0 | sed -e "s/[^/]*_sk/server.key/")' {} \;
 
     # replace in configtx
     sed -e "s/DOMAIN/$DOMAIN/g" -e "s/ORG/$org/g" $TEMPLATES_ARTIFACTS_FOLDER/configtx-orgtemplate.yaml > $GENERATED_ARTIFACTS_FOLDER/configtx.yaml
