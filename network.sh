@@ -29,6 +29,7 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${FACTOR_ONE:="factor_1"}
 : ${FACTOR_TWO:="factor_2"}
 : ${TRANSPORTER:="transporter"}
+: ${GUARANTOR:="guarantor"}
 
 : ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
 : ${PEERS_PEER_TMPL:="peers_peer"}
@@ -853,7 +854,7 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG5} 3005       11054   11051      11053            11056      11058           11001      11984        ${FACTOR_ONE}
   generatePeerArtifacts ${ORG6} 3006       12054   12051      12053            12056      12058           12001      12984        ${FACTOR_TWO}
   generatePeerArtifacts ${ORG7} 3007       13054   13051      13053            13056      13058           13001      13984        ${TRANSPORTER}
-  generatePeerArtifacts ${ORG8} 3008       14054   14051      14053            14056      14058           14001      14984        ${TRANSPORTER}
+  generatePeerArtifacts ${ORG8} 3008       14054   14051      14053            14056      14058           14001      14984        ${GUARANTOR}
 
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import cookies from 'js-cookie';
+// import cookies from 'js-cookie';
 import jwt from 'jsonwebtoken';
 
 const AuthContext = React.createContext();
 const AuthConsumer = AuthContext.Consumer;
 
+const { localStorage } = window;
+
 const getActor = () => {
-  const token = cookies.get('token');
+  const token = localStorage.getItem('token');
   return token ? jwt.decode(token) : null;
 };
 
@@ -23,7 +25,7 @@ const AuthProvider = (props) => {
     axios
       .post('/login')
       .then(({ data }) => {
-        cookies.set('token', data.jwt);
+        localStorage.setItem('token', data.jwt);
         setState({ isAuth: true, actor: jwt.decode(data.jwt) });
       })
       .catch((error) => {
@@ -33,7 +35,7 @@ const AuthProvider = (props) => {
   };
 
   const logout = () => {
-    cookies.remove('token');
+    localStorage.removeItem('token');
     setState({ isAuth: false, actor: null });
   };
 

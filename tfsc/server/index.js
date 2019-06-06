@@ -26,7 +26,8 @@ const ACTORS = {
   auditor_2: { role: 'uscts', id: 'dMSP' },
   factor_1: { role: 'factor 1', id: 'eMSP' },
   factor_2: { role: 'factor 2', id: 'fMSP' },
-  transporter: { role: 'transporter', id: 'gMSP' }
+  transporter: { role: 'transporter', id: 'gMSP' },
+  guarantor: { role: 'guarantor', id: 'hMSP' }
 };
 
 const ipfs = ipfsClient({
