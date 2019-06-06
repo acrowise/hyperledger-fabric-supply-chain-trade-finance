@@ -8,6 +8,7 @@ import { Select } from '@blueprintjs/select';
 import { post } from '../../helper/api';
 import { formReducer } from '../../reducers';
 import { INPUTS, REVIEWERS } from '../../constants';
+import Icons from '../../components/Icon/Icon';
 
 const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const contractFields = [
@@ -99,20 +100,28 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                   {shipment
                     && shipment.documents
                     && shipment.documents.map(doc => (
-                      <Checkbox
-                        key={doc.value.documentDescription}
-                        label={doc.value.documentDescription}
+                      <div
                         className="col-6"
-                        value={formState[doc.field]}
-                        onChange={() => dispatch({
-                          type: 'change',
-                          payload: {
-                            field: doc.value.documentDescription,
-                            value: !formState[doc.value.documentDescription]
+                        key={doc.value.documentDescription}
+                        style={{ display: 'flex', paddingLeft: 0, alignItems: 'center' }}
+                      >
+                        <div style={{ marginRight: 5 }}>
+                          <Icons name="proof-document" />
+                        </div>
+                        <Checkbox
+                          style={{ marginBottom: 3 }}
+                          label={doc.value.documentDescription}
+                          value={formState[doc.field]}
+                          onChange={() => dispatch({
+                            type: 'change',
+                            payload: {
+                              field: doc.value.documentDescription,
+                              value: !formState[doc.value.documentDescription]
+                            }
+                          })
                           }
-                        })
-                        }
-                      />
+                        />
+                      </div>
                     ))}
                 </div>
               </div>
@@ -211,7 +220,8 @@ GenerateProof.propTypes = {
   role: PropTypes.string,
   invoiceId: PropTypes.string,
   dialogIsOpen: PropTypes.bool,
-  setDialogOpenState: PropTypes.func
+  setDialogOpenState: PropTypes.func,
+  shipment: PropTypes.object
 };
 
 export default GenerateProof;
