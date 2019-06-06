@@ -7,7 +7,6 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 	"github.com/satori/go.uuid"
-	"strconv"
 	"time"
 )
 
@@ -1137,8 +1136,10 @@ func (cc *TradeFinanceChaincode) getEventPayload(stub shim.ChaincodeStubInterfac
 
 func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 
-	for _, eventValues := range events.Values {
-		eventAction := eventValues.Action
+	Logger.Debug("### emitEvent started ###")
+
+	for _, value := range events.Values {
+		eventAction := value.Action
 		eventID := uuid.Must(uuid.NewV4()).String()
 
 		event := Event{}
@@ -1146,6 +1147,7 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 			message := fmt.Sprintf(err.Error())
 			return errors.New(message)
 		}
+		event.Value = value
 
 		creator, err := GetMSPID(stub)
 		if err != nil {
@@ -1169,7 +1171,7 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 			message := fmt.Sprintf("Error marshaling: %s", err.Error())
 			return errors.New(message)
 		}
-		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + strconv.Itoa(eventAction) + "." + eventID
+		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
 		events.Keys = append(events.Keys, EventKey{ID: eventName})
 
 		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
@@ -1194,6 +1196,7 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 	}
 	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
 
+	Logger.Debug("### emitEvent success ###")
 	return nil
 }
 

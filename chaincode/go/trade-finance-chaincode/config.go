@@ -31,17 +31,16 @@ const (
 
 // Type of events
 const (
-	eventUnknown = iota
-	eventRegisterInvoice
-	eventAcceptInvoice
-	eventRejectInvoice
-	eventPlaceInvoice
-	eventRemoveInvoice
-	eventPlaceBid
-	eventUpdateBid
-	eventCancelBid
-	eventAcceptBid
-	eventInvoiceSold
+	eventRegisterInvoice = "registerInvoice"
+	eventAcceptInvoice   = "acceptInvoice"
+	eventRejectInvoice   = "rejectInvoice"
+	eventPlaceInvoice    = "placeInvoice"
+	eventRemoveInvoice   = "removeInvoice"
+	eventPlaceBid        = "placeBid"
+	eventUpdateBid       = "updateBid"
+	eventCancelBid       = "cancelBid"
+	eventAcceptBid       = "acceptBid"
+	eventInvoiceSold     = ""
 )
 
 var Logger = shim.NewLogger(chaincodeName)

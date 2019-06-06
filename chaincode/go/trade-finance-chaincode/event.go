@@ -26,7 +26,7 @@ type EventValue struct {
 	Creator    string      `json:"creator"`
 	EntityType string      `json:"entityType"`
 	EntityID   string      `json:"entityID"`
-	Action     int         `json:"action"`
+	Action     string      `json:"action"`
 	Other      interface{} `json:"other"`
 }
 

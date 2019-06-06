@@ -44,21 +44,20 @@ const (
 
 // Type of events
 const (
-	eventUnknown = iota
-	eventPlaceOrder
-	eventUpdateOrder
-	eventCancelOrder
-	eventAcceptOrder
-	eventRequestShipment
-	eventConfirmShipment
-	eventCotractCompleted
-	eventConfirmDelivery
-	eventUploadDocument
-	eventGenerateProof
-	eventVerifyProof
-	eventUpdateProof
-	eventSubmitReport
-	eventUpdateReport
+	eventPlaceOrder       = "placeOrder"
+	eventUpdateOrder      = "updateOrder"
+	eventCancelOrder      = "cancelOrder"
+	eventAcceptOrder      = "acceptOrder"
+	eventRequestShipment  = "requestShipment"
+	eventConfirmShipment  = "confirmShipment"
+	eventCotractCompleted = ""
+	eventConfirmDelivery  = "confirmDelivery"
+	eventUploadDocument   = "uploadDocument"
+	eventGenerateProof    = "generateProof"
+	eventVerifyProof      = "verifyProof"
+	eventUpdateProof      = "updateProof"
+	eventSubmitReport     = ""
+	eventUpdateReport     = "updateReport"
 )
 
 // Numerical constants
