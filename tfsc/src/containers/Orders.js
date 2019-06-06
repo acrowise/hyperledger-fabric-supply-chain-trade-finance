@@ -21,6 +21,7 @@ const Orders = ({
   const [data, loading, setData] = get('listOrders');
   const [, acceptOrder] = post('acceptOrder')();
   const [, cancelOrder] = post('cancelOrder')();
+  const [, guarenteeOrder] = post('guarenteeOrder')();
 
   const [dialog, setDialog] = useState({
     state: null,
@@ -59,6 +60,25 @@ const Orders = ({
         data={filteredData}
         actions={item => (
           <>
+            {actor.role === 'bank' && item.state === 'New' ? (
+              <div className="nowrap">
+                <Button
+                  onClick={() => {
+                    guarenteeOrder({
+                      fcn: 'guarenteeOrder',
+                      args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
+                      peers: [`${actor.org}/peer0`]
+                    });
+                  }}
+                  style={{ marginRight: '5px' }}
+                  intent="primary"
+                >
+                  Guarantee
+                </Button>
+              </div>
+            ) : (
+              <></>
+            )}
             {actor.role === 'supplier' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button

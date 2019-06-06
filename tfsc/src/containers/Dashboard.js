@@ -46,7 +46,7 @@ const NewPurchaseOrder = ({ actor }) => {
 const tabs = actor => [
   {
     name: 'Orders',
-    actors: ['buyer', 'supplier'],
+    actors: ['buyer', 'supplier', 'bank'],
     panel: (
       <Filter
         filterBy={['totalDue', 'destination', 'dueDate', 'paymentDate']}
@@ -59,7 +59,7 @@ const tabs = actor => [
   },
   {
     name: 'Contracts',
-    actors: ['buyer', 'supplier', 'bank'],
+    actors: ['buyer', 'supplier'],
     panel: (
       <Filter
         filterBy={['consignorName', 'consigneeName', 'totalDue', 'dueDate', 'paymentDate']}
