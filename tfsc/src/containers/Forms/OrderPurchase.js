@@ -5,6 +5,7 @@ import {
 } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
 
+import { format } from 'date-fns';
 import { post } from '../../helper/api';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
@@ -133,7 +134,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                           )
                         }
                         value={formState.dueDate}
-                        formatDate={date => date.toLocaleDateString()}
+                        formatDate={date => format(date, 'MM/DD/YYYY')}
                         onChange={(date) => {
                           dispatch({
                             type: 'change',
@@ -153,7 +154,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                       <DateInput
                         minDate={new Date()}
                         value={formState.paymentDate}
-                        formatDate={date => date.toLocaleDateString()}
+                        formatDate={date => format(date, 'MM/DD/YYYY')}
                         onChange={(date) => {
                           dispatch({
                             type: 'change',

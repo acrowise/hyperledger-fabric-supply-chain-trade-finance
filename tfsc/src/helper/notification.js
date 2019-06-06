@@ -3,8 +3,6 @@ import { notifications as types } from '../mocks';
 const notifications = (state = [], message, tab) => {
   const notification = JSON.parse(message);
 
-  const orders = ['placeOrder', 'acceptOrder', 'cancelOrder', 'editOrder'];
-
   if (types[notification.type] === tab) {
     switch (notification.type) {
       // case 'contractCreated':
@@ -43,7 +41,7 @@ const notifications = (state = [], message, tab) => {
         return state;
       case 'documentUploaded': {
         const newState = state.concat([]);
-        const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentId);
+        const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentID);
         itemToUpdate.value.contract.value.documents.push(notification.data);
         itemToUpdate.value.events.push(notification.event);
         return { result: newState };

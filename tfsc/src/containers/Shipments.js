@@ -50,20 +50,6 @@ const Shipments = ({
         );
       }
     }
-
-    if (notification.type === 'generateProof' || notification.type === 'verifyProof') {
-      // const newState = shipments.result.concat([]);
-      // const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.shipmentID);
-      // newState[itemToUpdateIndex] = notification.data;
-      // setData({ result: newState });
-
-      // showShipmentDetail(
-      //   Object.assign({}, notification.shipment.value, {
-      //     id: notification.shipment.key.id,
-      //     state: STATUSES.SHIPMENT[notification.shipment.value.state]
-      //   })
-      // );
-    }
   };
 
   useSocket('notification', onNotification);

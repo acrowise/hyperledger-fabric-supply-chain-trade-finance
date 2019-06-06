@@ -61,8 +61,7 @@ const Proofs = ({ data }) => {
 };
 
 Proofs.propTypes = {
-  dialogIsOpen: PropTypes.bool,
-  setDialogOpenState: PropTypes.func
+  data: PropTypes.array
 };
 
 export default Proofs;

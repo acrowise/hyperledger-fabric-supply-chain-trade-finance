@@ -5,38 +5,35 @@ const axios = require('axios');
 const socketIO = require('socket.io');
 const mime = require('mime-types');
 const ipfsClient = require('ipfs-http-client');
-const proxy = require('http-proxy-middleware');
 
 const clients = [];
 
-const API_PORT = 8080;
 const {
   PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
 } = process.env;
 
-const roles = {
-  buyer: 'buyer',
-  supplier: 'supplier',
-  auditor_1: 'ggcb',
-  auditor_2: 'uscts',
-  factor_1: 'factor 1',
-  factor_2: 'factor 2',
-  transporter: 'transporter'
-};
+const {
+  METHODS_MAP,
+  SUPPLY_CHAIN_CHAINCODE,
+  TRADE_FINANCE_CHAINCODE
+} = require('../src/constants');
 
-const ids = {
-  buyer: 'aMSP',
-  supplier: 'bMSP',
-  auditor_1: 'cMSP',
-  auditor_2: 'dMSP',
-  factor_1: 'eMSP',
-  factor_2: 'fMSP',
-  transporter: 'gMSP'
+const ACTORS = {
+  buyer: { role: 'buyer', id: 'aMSP' },
+  supplier: { role: 'supplier', id: 'bMSP' },
+  auditor_1: { role: 'ggcb', id: 'cMSP' },
+  auditor_2: { role: 'uscts', id: 'dMSP' },
+  factor_1: { role: 'factor 1', id: 'eMSP' },
+  factor_2: { role: 'factor 2', id: 'fMSP' },
+  transporter: { role: 'transporter', id: 'gMSP' }
 };
 
 const ipfs = ipfsClient({
   host: `ipfs.${ORG}.example.com`
 });
+
+const app = express();
+const router = express.Router();
 
 console.info('API_ENDPOINT', API_ENDPOINT);
 console.info('ROLE', ROLE);
@@ -51,7 +48,7 @@ const retry = async (url, n) => {
     if (n === 0) {
       throw err;
     }
-    return await retry(url, n - 1);
+    return retry(url, n - 1);
   }
 };
 
@@ -68,21 +65,15 @@ const listenSocket = () => {
     }, 10000);
   };
 
+  const subscribeMessage = chaincode => JSON.stringify({
+    event: 'cc_event',
+    channel: 'common',
+    chaincode
+  });
+
   const subscribe = () => {
-    ws.send(
-      JSON.stringify({
-        event: 'cc_event',
-        channel: 'common',
-        chaincode: 'supply-chain-chaincode'
-      })
-    );
-    ws.send(
-      JSON.stringify({
-        event: 'cc_event',
-        channel: 'common',
-        chaincode: 'trade-finance-chaincode'
-      })
-    );
+    ws.send(subscribeMessage(SUPPLY_CHAIN_CHAINCODE));
+    ws.send(subscribeMessage(TRADE_FINANCE_CHAINCODE));
     heartbeat();
   };
 
@@ -103,13 +94,14 @@ const listenSocket = () => {
     console.info('ws message: ', message);
     const event = JSON.parse(message);
     if (event && event.payload) {
-      const chaincode = event.payload.EventName.split('.')[1];
-      const eventName = event.payload.EventName.split('.')[2];
-      const eventId = event.payload.EventName.split('.')[3];
+      const payload = event.payload.EventName.split('.');
+      const chaincode = payload[1];
+      const eventName = payload[2];
+      const eventId = payload[3];
 
+      console.info('eventId:', eventId);
       console.info('chaincode:', chaincode);
       console.info('eventName:', eventName);
-      console.info('eventId:', eventId);
 
       try {
         const res = await retry(
@@ -119,32 +111,35 @@ const listenSocket = () => {
 
         console.log(res.data.result);
 
-        clients.forEach(c => emitEvent(
-          c,
-          {
-            key: { id: res.data.result.value.entityID },
-            value: res.data.result.value.other
-          },
-          eventName
-        ));
+        const { actors } = METHODS_MAP.find(i => i.ccMethod === eventName);
+
+        if (actors && actors.includes(ROLE)) {
+          clients.forEach(c => emitEvent(
+            c,
+            {
+              key: { id: res.data.result.value.entityID },
+              value: res.data.result.value.other
+            },
+            eventName
+          ));
+
+          setTimeout(() => {
+            if (eventName === 'acceptOrder') {
+              clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+            }
+            if (eventName === 'verifyProof') {
+              clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
+            }
+          }, 1250);
+        } else {
+          console.info(`${ROLE} is not subscribed to ${eventName}`);
+        }
       } catch (e) {
         console.error(e);
       }
-
-      setTimeout(() => {
-        if (eventName === 'acceptOrder') {
-          clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
-        }
-        if (eventName === 'verifyProof') {
-          clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
-        }
-      }, 1250);
     }
   });
 };
-
-const app = express();
-const router = express.Router();
 
 const getDocument = hash => new Promise((resolve, reject) => {
   ipfs.get(hash, (err, files) => {
@@ -155,30 +150,8 @@ const getDocument = hash => new Promise((resolve, reject) => {
   });
 });
 
-router.use(
-  '/channels',
-  proxy({
-    target: `http://api.${ORG}.example.com:${API_PORT}`,
-    changeOrigin: true,
-    logLevel: 'debug',
-    onProxyReq: async (proxyReq, req, res) => {
-      console.info('proxyReq.path', proxyReq.path);
-    },
-    onProxyRes: async (proxyRes, req, res) => {
-      let body = Buffer.from('');
-      proxyRes.on('data', (data) => {
-        body = Buffer.concat([body, data]);
-      });
-      proxyRes.on('end', () => {
-        body = body.toString();
-        // console.info('res from fabric-rest-api-go', body);
-      });
-    }
-  })
-);
-
 router.get('/getDocument', async (req, res) => {
-  const t = {
+  const types = {
     'image/jpeg': 1,
     'image/jpg': 1,
     'image/png': 2,
@@ -191,7 +164,7 @@ router.get('/getDocument', async (req, res) => {
     try {
       const document = await getDocument(req.query.hash);
       res.set({
-        'Content-type': mime.contentType(Object.keys(t).find(i => t[i] === req.query.type))
+        'Content-type': mime.contentType(Object.keys(types).find(i => types[i] === req.query.type))
       });
       res.send(document);
       return;
@@ -210,9 +183,9 @@ const html = require('./html');
 const renderer = async (req, res) => {
   const data = {
     ipfs_port: IPFS_PORT,
-    role: roles[ROLE],
+    role: ACTORS[ROLE].role,
     org: ORG,
-    id: ids[ROLE]
+    id: ACTORS[ROLE].id
   };
   return res.send(html(data));
 };
@@ -226,7 +199,7 @@ router.use('*', renderer);
 app.use(router);
 
 const server = app.listen(port, () => {
-  console.log(`listening on port: ${PORT}`);
+  console.info(`listening on port: ${PORT}`);
   try {
     listenSocket();
   } catch (e) {
@@ -234,15 +207,13 @@ const server = app.listen(port, () => {
   }
 });
 
-// setTimeout(() => {
-//   if (!connectedToWS) {
-//     console.info('restart');
-//     process.exit(1);
-//   }
-// }, 60000);
-
 const io = socketIO(server);
 
 io.on('connection', (client) => {
   clients.push(client);
+
+  client.on('disconnect', () => {
+    const i = clients.indexOf(client);
+    clients.splice(i, 1);
+  });
 });
