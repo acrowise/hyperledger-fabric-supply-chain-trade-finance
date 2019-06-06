@@ -458,7 +458,6 @@ function joinChannel() {
     info "joining channel $channel_name by all peers of $org using $f"
 
     docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
-    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
 }
 
 function instantiateChaincode () {

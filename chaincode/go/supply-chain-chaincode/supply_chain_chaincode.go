@@ -2264,7 +2264,7 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 			return errors.New(message)
 		}
 		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + strconv.Itoa(eventAction) + "." + eventID
-		events.Keys[index] = EventKey{ID: eventName}
+		events.Keys = append(events.Keys, EventKey{ID: eventName})
 
 		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
