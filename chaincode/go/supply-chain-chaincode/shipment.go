@@ -67,6 +67,17 @@ type ShipmentValueAdditional struct {
 	Timestamp    int64              `json:"timestamp"`
 	DeliveryDate int64              `json:"deliveryDate"`
 	UpdatedDate  int64              `json:"updatedDate"`
+	Timeline     ShipmentTimeline   `json:"timeline"`
+}
+
+type ShipmentTimeline struct {
+	ShipmentRequested []Event `json:"shipmentRequested"`
+	ShipmentConfirmed []Event `json:"shipmentConfirmed"`
+	ShipmentDelivered []Event `json:"shipmentDelivered"`
+	ProofsGenerated   []Event `json:"proofsGenerated"`
+	ProofsValidated   []Event `json:"proofsValidated"`
+	ReportsSubmited   []Event `json:"reportsSubmited"`
+	DocumentsUploaded []Event `json:"documentsUploaded"`
 }
 
 type Shipment struct {

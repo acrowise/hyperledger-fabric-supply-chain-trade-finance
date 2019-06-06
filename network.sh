@@ -806,6 +806,12 @@ if [ "${MODE}" == "up" -a "${ORG}" == "" ]; then
     joinChannel $org common
   done
 
+  # restart tsupply-app containers
+  for org in ${ORG1} ${ORG2} ${ORG3} ${ORG4} ${ORG5} ${ORG6} ${ORG7} ${ORG8}
+  do
+    docker restart "tsupply-app.${org}.${DOMAIN}"
+  done
+
   # Start blockchain-explorer
   docker-compose -f $GENERATED_DOCKER_COMPOSE_FOLDER/docker-explorer.yaml up -d
 

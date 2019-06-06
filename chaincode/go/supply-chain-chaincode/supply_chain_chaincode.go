@@ -1779,7 +1779,7 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 		fmt.Println(shipmentHistory)
 	}
 
-	resultBytes, err := joinByShipmentsAndContractsAndDocuments(stub, shipments)
+	resultBytes, err := joinByShipmentsAndContractsAndDocumentsAndEvents(stub, shipments)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by shipment and contract: %s", err.Error())
 		Logger.Error(message)
@@ -1913,6 +1913,87 @@ func findReportByProofID(stub shim.ChaincodeStubInterface, proofID string) ([]Re
 	return reports, nil
 }
 
+func findEventByActionAndEntity(stub shim.ChaincodeStubInterface, action string, entityID string) ([]Event, error) {
+
+	filterByActionAndEntityID := func(data LedgerData) bool {
+		entity, ok := data.(*Event)
+		if ok && entity.Value.Action == action && entity.Value.EntityID == entityID {
+			return true
+		}
+		return false
+	}
+
+	events := []Event{}
+	eventsBytes, err := Query(stub, eventIndex, []string{}, CreateEvent, filterByActionAndEntityID)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return events, errors.New(message)
+	}
+
+	if err := json.Unmarshal(eventsBytes, &events); err != nil {
+		message := fmt.Sprintf("unable to unmarshal events query result: %s", err.Error())
+		Logger.Error(message)
+		return events, errors.New(message)
+	}
+
+	return events, nil
+}
+
+func findProofsByShipment(stub shim.ChaincodeStubInterface, shipmentID string) ([]Proof, error) {
+
+	filterByShipmentID := func(data LedgerData) bool {
+		entity, ok := data.(*Proof)
+		if ok && entity.Value.ShipmentID == shipmentID {
+			return true
+		}
+		return false
+	}
+
+	proofs := []Proof{}
+	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, filterByShipmentID)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return proofs, errors.New(message)
+	}
+
+	if err := json.Unmarshal(proofsBytes, &proofs); err != nil {
+		message := fmt.Sprintf("unable to unmarshal proofs query result: %s", err.Error())
+		Logger.Error(message)
+		return proofs, errors.New(message)
+	}
+
+	return proofs, nil
+}
+
+func findReportsByShipment(stub shim.ChaincodeStubInterface, shipmentID string) ([]Report, error) {
+
+	filterByShipmentID := func(data LedgerData) bool {
+		entity, ok := data.(*Report)
+		if ok && entity.Value.ShipmentID == shipmentID {
+			return true
+		}
+		return false
+	}
+
+	reports := []Report{}
+	reportsBytes, err := Query(stub, reportIndex, []string{}, CreateReport, filterByShipmentID)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return reports, errors.New(message)
+	}
+
+	if err := json.Unmarshal(reportsBytes, &reports); err != nil {
+		message := fmt.Sprintf("unable to unmarshal reports query result: %s", err.Error())
+		Logger.Error(message)
+		return reports, errors.New(message)
+	}
+
+	return reports, nil
+}
+
 func findContractIDByEntity(stub shim.ChaincodeStubInterface, entityType int, entityID string) (error, string) {
 
 	contactID := ""
@@ -1992,7 +2073,7 @@ func findContractIDByEntity(stub shim.ChaincodeStubInterface, entityType int, en
 	return nil, contactID
 }
 
-func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
+func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInterface, shipments []Shipment) ([]byte, error) {
 
 	//making map of contracts
 	contracts := []Contract{}
@@ -2069,6 +2150,107 @@ func joinByShipmentsAndContractsAndDocuments(stub shim.ChaincodeStubInterface, s
 					// fill document item for result structure
 					entry.Value.Contract.Value.Documents = append(entry.Value.Contract.Value.Documents, Document{Key: DocumentKey{ID: documentID}, Value: documentValue})
 				}
+			}
+		}
+		//collecting events for timeline
+
+		//find ShipmentRequested
+		events, err := findEventByActionAndEntity(stub, eventRequestShipment, entry.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find eventRequestShipment: %s", err.Error())
+			Logger.Error(message)
+			return nil, errors.New(message)
+		}
+		for _, event := range events {
+			entry.Value.Timeline.ShipmentRequested = append(entry.Value.Timeline.ShipmentRequested, event)
+		}
+
+		//find ShipmentConfirmed
+		events, err = findEventByActionAndEntity(stub, eventConfirmShipment, entry.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find eventConfirmShipment: %s", err.Error())
+			Logger.Error(message)
+			return nil, errors.New(message)
+		}
+		for _, event := range events {
+			entry.Value.Timeline.ShipmentConfirmed = append(entry.Value.Timeline.ShipmentConfirmed, event)
+		}
+
+		//find ShipmentDelivered
+		events, err = findEventByActionAndEntity(stub, eventConfirmDelivery, entry.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find eventConfirmDelivery: %s", err.Error())
+			Logger.Error(message)
+			return nil, errors.New(message)
+		}
+		for _, event := range events {
+			entry.Value.Timeline.ShipmentDelivered = append(entry.Value.Timeline.ShipmentDelivered, event)
+		}
+
+		//find DocumentsUploaded
+		for _, document := range entry.Value.Contract.Value.Documents {
+
+			events, err = findEventByActionAndEntity(stub, eventUploadDocument, document.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find eventUploadDocument: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.DocumentsUploaded = append(entry.Value.Timeline.DocumentsUploaded, event)
+			}
+		}
+
+		//find ReportsSubmited
+		reports, err := findReportsByShipment(stub, entry.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find reports by shipment: %s", err.Error())
+			Logger.Error(message)
+			return nil, errors.New(message)
+		}
+
+		for _, report := range reports {
+			events, err = findEventByActionAndEntity(stub, eventSubmitReport, report.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find ReportsSubmited: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.ReportsSubmited = append(entry.Value.Timeline.ReportsSubmited, event)
+			}
+		}
+
+		//find ProofsGenerated
+		proofs, err := findProofsByShipment(stub, entry.Key.ID)
+		if err != nil {
+			message := fmt.Sprintf("cannot find proofs by shipment: %s", err.Error())
+			Logger.Error(message)
+			return nil, errors.New(message)
+		}
+
+		for _, proof := range proofs {
+			events, err = findEventByActionAndEntity(stub, eventGenerateProof, proof.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find ProofsGenerated: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.ProofsGenerated = append(entry.Value.Timeline.ProofsGenerated, event)
+			}
+		}
+
+		//find ProofsValidated
+		for _, proof := range proofs {
+			events, err = findEventByActionAndEntity(stub, eventVerifyProof, proof.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find ProofsValidated: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.ProofsValidated = append(entry.Value.Timeline.ProofsValidated, event)
 			}
 		}
 

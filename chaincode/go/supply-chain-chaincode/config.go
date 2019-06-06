@@ -56,7 +56,7 @@ const (
 	eventGenerateProof    = "generateProof"
 	eventVerifyProof      = "verifyProof"
 	eventUpdateProof      = "updateProof"
-	eventSubmitReport     = ""
+	eventSubmitReport     = "submitReport"
 	eventUpdateReport     = "updateReport"
 )
 
