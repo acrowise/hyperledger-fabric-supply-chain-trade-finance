@@ -2231,7 +2231,7 @@ func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Repor
 
 func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 
-	for index, eventValues := range events.Values {
+	for _, eventValues := range events.Values {
 		eventAction := eventValues.Action
 		eventID := uuid.Must(uuid.NewV4()).String()
 
