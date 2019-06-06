@@ -5,11 +5,12 @@ const axios = require('axios');
 const socketIO = require('socket.io');
 const mime = require('mime-types');
 const ipfsClient = require('ipfs-http-client');
+const jwt = require('jsonwebtoken');
 
 const clients = [];
 
 const {
-  PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG
+  PORT, API_ENDPOINT, ROLE, IPFS_PORT, ORG, JWT_SECRET = 'tfsc-secret'
 } = process.env;
 
 const {
@@ -149,6 +150,18 @@ const getDocument = hash => new Promise((resolve, reject) => {
     resolve(files[0].content);
   });
 });
+
+router.post('/login', async (_, res) => res.json({
+  jwt: jwt.sign(
+    {
+      ipfs_port: IPFS_PORT,
+      role: ACTORS[ROLE].role,
+      org: ORG,
+      id: ACTORS[ROLE].id
+    },
+    JWT_SECRET
+  )
+}));
 
 router.get('/getDocument', async (req, res) => {
   const types = {
