@@ -7,11 +7,11 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-const ChaincodeName = "TradeFinanceChaincode"
+const chaincodeName = "TradeFinanceChaincode"
 
 // Namespaces constants
 const (
-	ConfigIndex = "ConfigTF"
+	configIndex = "ConfigTF"
 )
 
 // OrganizationalUnit constants
@@ -29,7 +29,22 @@ const (
 	configBasicArgumentsNumber = 1
 )
 
-var Logger = shim.NewLogger(ChaincodeName)
+// Type of events
+const (
+	eventUnknown = iota
+	eventRegisterInvoice
+	eventAcceptInvoice
+	eventRejectInvoice
+	eventPlaceInvoice
+	eventRemoveInvoice
+	eventPlaceBid
+	eventUpdateBid
+	eventCancelBid
+	eventAcceptBid
+	eventInvoiceSold
+)
+
+var Logger = shim.NewLogger(chaincodeName)
 
 type Config struct {
 	Key   ConfigKey   `json:"key"`
@@ -97,7 +112,7 @@ func (data *Config) FillFromLedgerValue(ledgerBytes []byte) error {
 func (data *Config) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	compositeKeyParts := []string{""}
 
-	return stub.CreateCompositeKey(ConfigIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(configIndex, compositeKeyParts)
 }
 
 func (data *Config) ToLedgerValue() ([]byte, error) {

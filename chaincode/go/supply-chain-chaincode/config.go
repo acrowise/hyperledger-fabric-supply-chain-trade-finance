@@ -7,11 +7,11 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
-const ChaincodeName = "SupplyChainChaincode"
+const chaincodeName = "SupplyChainChaincode"
 
 // Namespaces constants
 const (
-	ConfigIndex = "ConfigSC"
+	configIndex = "ConfigSC"
 )
 
 // OrganizationalUnit constants
@@ -42,13 +42,32 @@ const (
 	DocTypeGIF
 )
 
+// Type of events
+const (
+	eventUnknown = iota
+	eventPlaceOrder
+	eventUpdateOrder
+	eventCancelOrder
+	eventAcceptOrder
+	eventRequestShipment
+	eventConfirmShipment
+	eventCotractCompleted
+	eventConfirmDelivery
+	eventUploadDocument
+	eventGenerateProof
+	eventVerifyProof
+	eventUpdateProof
+	eventSubmitReport
+	eventUpdateReport
+)
+
 // Numerical constants
 const (
 	configKeyFieldsNumber      = 0
 	configBasicArgumentsNumber = 2
 )
 
-var Logger = shim.NewLogger(ChaincodeName)
+var Logger = shim.NewLogger(chaincodeName)
 
 type Config struct {
 	Key   ConfigKey   `json:"key"`
@@ -116,7 +135,7 @@ func (data *Config) FillFromLedgerValue(ledgerBytes []byte) error {
 func (data *Config) ToCompositeKey(stub shim.ChaincodeStubInterface) (string, error) {
 	compositeKeyParts := []string{""}
 
-	return stub.CreateCompositeKey(ConfigIndex, compositeKeyParts)
+	return stub.CreateCompositeKey(configIndex, compositeKeyParts)
 }
 
 func (data *Config) ToLedgerValue() ([]byte, error) {

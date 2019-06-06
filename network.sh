@@ -29,7 +29,7 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${FACTOR_ONE:="factor_1"}
 : ${FACTOR_TWO:="factor_2"}
 : ${TRANSPORTER:="transporter"}
-: ${GUARANTOR:="guarantor"}
+: ${BANK:="bank"}
 
 : ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
 : ${PEERS_PEER_TMPL:="peers_peer"}
@@ -369,6 +369,7 @@ function generatePeerArtifacts() {
           -e "s/API_EXTRA_HOSTS/$api_extra_hosts/g" \
           -e "s/DOMAIN/$DOMAIN/g" \
           -e "s/\([^ ]\)ORG/\1$org/g" \
+          -e "s/ORG_NAME/$org/g" \
           -e "s/WWW_PORT/$www_port/g" \
           -e "s/CA_PORT/$ca_port/g" \
           -e "s/PEER0_PORT/$peer0_port/g" \
@@ -387,6 +388,7 @@ function generatePeerArtifacts() {
           -e "s/API_EXTRA_HOSTS/$api_extra_hosts/g" \
           -e "s/DOMAIN/$DOMAIN/g" \
           -e "s/\([^ ]\)ORG/\1$org/g" \
+          -e "s/ORG_NAME/$org/g" \
           -e "s/WWW_PORT/$www_port/g" \
           -e "s/CA_PORT/$ca_port/g" \
           -e "s/PEER0_PORT/$peer0_port/g" \
@@ -456,7 +458,6 @@ function joinChannel() {
     info "joining channel $channel_name by all peers of $org using $f"
 
     docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
-    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer channel join -b $channel_name.block"
 }
 
 function instantiateChaincode () {
@@ -499,10 +500,10 @@ function installChaincode() {
     info "installing chaincode $n to peers of $org from ./chaincode/go/$p $v using $f"
 
     echo "docker exec \"cli.$org.$DOMAIN\" bash -c \"CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang "
-    echo " && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang\""
+   # echo " && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang\""
 
-    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang \
-    && CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang"
+    docker exec "cli.$org.$DOMAIN" bash -c "CORE_PEER_ADDRESS=peer0.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang" # \
+    #&& CORE_PEER_ADDRESS=peer1.$org.$DOMAIN:7051 peer chaincode install -n $n -v $v -p $p -l $lang"
 }
 
 function installPackage() {
@@ -854,7 +855,7 @@ elif [ "${MODE}" == "generate" ]; then
   generatePeerArtifacts ${ORG5} 3005       11054   11051      11053            11056      11058           11001      11984        ${FACTOR_ONE}
   generatePeerArtifacts ${ORG6} 3006       12054   12051      12053            12056      12058           12001      12984        ${FACTOR_TWO}
   generatePeerArtifacts ${ORG7} 3007       13054   13051      13053            13056      13058           13001      13984        ${TRANSPORTER}
-  generatePeerArtifacts ${ORG8} 3008       14054   14051      14053            14056      14058           14001      14984        ${GUARANTOR}
+  generatePeerArtifacts ${ORG8} 3008       14054   14051      14053            14056      14058           14001      14984        ${BANK}
 
   generateOrdererDockerCompose ${ORG1}
   generateOrdererArtifacts

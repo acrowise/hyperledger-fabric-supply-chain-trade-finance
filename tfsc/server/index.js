@@ -27,7 +27,7 @@ const ACTORS = {
   factor_1: { role: 'factor 1', id: 'eMSP' },
   factor_2: { role: 'factor 2', id: 'fMSP' },
   transporter: { role: 'transporter', id: 'gMSP' },
-  guarantor: { role: 'guarantor', id: 'hMSP' }
+  bank: { role: 'bank', id: 'hMSP' }
 };
 
 const ipfs = ipfsClient({

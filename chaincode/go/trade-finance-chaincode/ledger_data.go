@@ -379,11 +379,11 @@ func Notifier(stub shim.ChaincodeStubInterface, typeNotice int) {
 
 	switch typeNotice {
 	case NoticeRuningType:
-		Logger.Info(fmt.Sprintf("%s.%s is running", ChaincodeName, fnc))
-		Logger.Debug(fmt.Sprintf("%s.%s", ChaincodeName, fnc))
+		Logger.Info(fmt.Sprintf("%s.%s is running", chaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("%s.%s", chaincodeName, fnc))
 	case NoticeSuccessType:
-		Logger.Info(fmt.Sprintf("%s.%s exited without errors", ChaincodeName, fnc))
-		Logger.Debug(fmt.Sprintf("Success: %s.%s", ChaincodeName, fnc))
+		Logger.Info(fmt.Sprintf("%s.%s exited without errors", chaincodeName, fnc))
+		Logger.Debug(fmt.Sprintf("Success: %s.%s", chaincodeName, fnc))
 	default:
 		Logger.Debug("Unknown typeNotice: %d", typeNotice)
 	}

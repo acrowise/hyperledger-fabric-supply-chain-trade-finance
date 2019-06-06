@@ -115,7 +115,7 @@ func (entity *Contract) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	entity.Value.ConsigneeName = consigneeName
 
 	// checking totalDue
-	totalDue, err := strconv.ParseFloat(args[3], 32)
+	totalDue, err := strconv.ParseFloat(args[3], 64)
 	if err != nil {
 		return errors.New(fmt.Sprintf("unable to parse the totalDue: %s", err.Error()))
 	}
