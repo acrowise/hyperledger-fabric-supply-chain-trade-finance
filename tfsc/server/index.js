@@ -129,9 +129,9 @@ const listenSocket = () => {
               if (eventName === 'acceptOrder') {
                 clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
               }
-              if (eventName === 'verifyProof') {
-                clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
-              }
+              // if (eventName === 'verifyProof') {
+              //   clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
+              // }
             }, 1250);
           } else {
             console.info(`${ROLE} is not subscribed to ${eventName}`);

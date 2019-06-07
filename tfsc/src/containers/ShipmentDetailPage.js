@@ -63,7 +63,6 @@ const ShipmentDetailPage = ({
     const notification = JSON.parse(message);
 
     if (notification.type === 'generateProof') {
-      // FIXME:
       const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
       setData({ result: newState });
 
@@ -78,12 +77,11 @@ const ShipmentDetailPage = ({
 
       updateEvents(notification);
     }
-
-    // if (notification.type === 'uploadDocument') {
-    //   if (notification.event.shipmentID === shipment.id) {
-    //     setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
-    //   }
-    // }
+    if (notification.type === 'uploadDocument') {
+      if (notification.data.value.contractID === shipment.contractID) {
+        setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
+      }
+    }
   };
 
   useSocket('notification', onNotification);

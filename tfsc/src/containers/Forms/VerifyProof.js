@@ -144,18 +144,19 @@ const ValidateProof = ({
                     if (files.length === 0) {
                       setFileRequired(true);
                     } else {
-                      setDialogOpenState(false);
-                      setFileRequired(false);
                       verifyProof({
                         fcn: 'verifyProof',
                         args: [
                           proof.id,
                           '1',
-                          '', // FIXME: add description
+                          'verifyProof', // FIXME: add description
                           hash.hash,
                           hash.type
                         ]
                       });
+                      setDialogOpenState(false);
+                      setFileRequired(false);
+                      setHash(null);
                     }
                   }}
                 >
@@ -169,18 +170,19 @@ const ValidateProof = ({
                     if (files.length === 0) {
                       setFileRequired(true);
                     } else {
-                      setDialogOpenState(false);
-                      setFileRequired(false);
                       verifyProof({
                         fcn: 'verifyProof',
                         args: [
                           proof.id,
                           '2',
-                          '', // FIXME: add description
+                          'verifyProof-prohibited', // FIXME: add description
                           hash.hash,
                           hash.type
                         ]
                       });
+                      setDialogOpenState(false);
+                      setFileRequired(false);
+                      setHash(null);
                     }
                   }}
                 >

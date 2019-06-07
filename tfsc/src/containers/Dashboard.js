@@ -48,11 +48,7 @@ const tabs = actor => [
     name: 'Orders',
     actors: ['buyer', 'supplier', 'bank'],
     panel: (
-      <Filter
-        filterBy={['totalDue', 'destination', 'dueDate', 'paymentDate']}
-        statuses={['New', 'Accepted', 'Cancelled']}
-        actionComponent={<NewPurchaseOrder actor={actor} />}
-      >
+      <Filter tab="orders" actionComponent={<NewPurchaseOrder actor={actor} />}>
         <Orders actor={actor} />
       </Filter>
     )
@@ -61,10 +57,7 @@ const tabs = actor => [
     name: 'Contracts',
     actors: ['buyer', 'supplier'],
     panel: (
-      <Filter
-        filterBy={['consignorName', 'consigneeName', 'totalDue', 'dueDate', 'paymentDate']}
-        statuses={['Signed', 'Processed', 'Completed']}
-      >
+      <Filter tab="contracts">
         <Contracts role={actor.role} />
       </Filter>
     )
@@ -73,10 +66,7 @@ const tabs = actor => [
     name: 'Invoices',
     actors: ['buyer', 'supplier', 'factor 1', 'factor 2', 'bank'],
     panel: (
-      <Filter
-        filterBy={['debtor', 'beneficiary', 'paymentDate', 'owner']}
-        statuses={['Issued', 'Signed', 'For Sale', 'Sold', 'Removed']}
-      >
+      <Filter tab="invoices">
         <Invoices actor={actor} />
       </Filter>
     )
@@ -85,10 +75,7 @@ const tabs = actor => [
     name: 'Shipments',
     actors: ['buyer', 'supplier', 'transporter', 'transport_agency'],
     panel: (
-      <Filter
-        filterBy={['shipFrom', 'shipTo', 'transport']}
-        statuses={['Requested', 'Confirmed', 'Delivered']}
-      >
+      <Filter tab="shipments">
         <Shipments role={actor.role} />
       </Filter>
     )
@@ -97,8 +84,8 @@ const tabs = actor => [
     name: 'Proofs',
     actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
-      <Filter filterBy={['consignorName', 'shipmentID']} statuses={['Generated', 'Validated']}>
-        <Proofs role={actor.role} />
+      <Filter tab="proofs">
+        <Proofs actor={actor} />
       </Filter>
     )
   },
@@ -106,7 +93,7 @@ const tabs = actor => [
     name: 'Reports',
     actors: ['ggcb', 'uscts', 'auditor'],
     panel: (
-      <Filter filterBy={['consignorName', 'shipmentID']} statuses={['Accepted', 'Declined']}>
+      <Filter tab="reports">
         <Reports role={actor.role} />
       </Filter>
     )
@@ -115,10 +102,7 @@ const tabs = actor => [
     name: 'Bids',
     actors: ['factor 1', 'factor 2', 'supplier'],
     panel: (
-      <Filter
-        filterBy={['debtor', 'beneficiary', 'rate', 'paymentDate']}
-        statuses={['Issued', 'Accepted', 'Cancelled', 'Removed']}
-      >
+      <Filter tab="bids">
         <Bids actor={actor} />
       </Filter>
     )
@@ -191,14 +175,6 @@ const Dashboard = ({ actor }) => {
   );
 };
 
-Dashboard.propTypes = {
-  location: PropTypes.shape({
-    state: PropTypes.shape({
-      role: PropTypes.string
-    })
-  })
-};
-
 function Wrapper(props) {
   return (
     <AuthConsumer>
@@ -214,5 +190,26 @@ function Wrapper(props) {
     </AuthConsumer>
   );
 }
+
+Dashboard.propTypes = {
+  actor: PropTypes.shape({
+    role: PropTypes.string
+  })
+};
+
+NewPurchaseOrder.propTypes = {
+  actor: PropTypes.shape({
+    role: PropTypes.string
+  })
+};
+
+Title.propTypes = {
+  title: PropTypes.string,
+  notification: PropTypes.string
+};
+
+Panel.propTypes = {
+  panel: PropTypes.element
+};
 
 export default Wrapper;

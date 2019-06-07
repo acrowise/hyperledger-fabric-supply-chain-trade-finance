@@ -483,8 +483,8 @@ const NOTIFICATIONS_TAB = {
   invoiceRegistered: 'invoices',
   removeInvoice: 'invoices',
 
-  reportGenerated: 'reports',
   submitReport: 'reports'
+  // submitReport: 'reports'
 };
 
 const EVENTS_MAP = {
@@ -506,11 +506,42 @@ const EVENTS_MAP = {
   invoiceRegistered: 'Invoice Registered',
   cancelBid: 'Bid Cancelled',
   placeInvoice: 'Invoice Signed',
-  reportGenerated: 'Report Created',
+  submitReport: 'Report Created',
   removeInvoice: 'Invoice Removed',
   contractCompleted: 'Contract Completed',
-  contractUpdated: 'Contract Updated',
-  submitReport: 'Report Submitted'
+  contractUpdated: 'Contract Updated'
+  // submitReport: 'Report Submitted'
+};
+
+const FILTERS = {
+  orders: {
+    filterBy: ['totalDue', 'destination', 'dueDate', 'paymentDate'],
+    statuses: ['New', 'Accepted', 'Cancelled']
+  },
+  contracts: {
+    filterBy: ['consignorName', 'consigneeName', 'totalDue', 'dueDate', 'paymentDate'],
+    statuses: ['Signed', 'Processed', 'Completed']
+  },
+  invoices: {
+    filterBy: ['debtor', 'beneficiary', 'paymentDate', 'owner'],
+    statuses: ['Issued', 'Signed', 'For Sale', 'Sold', 'Removed']
+  },
+  shipments: {
+    filterBy: ['shipFrom', 'shipTo', 'transport'],
+    statuses: ['Requested', 'Confirmed', 'Delivered']
+  },
+  proofs: {
+    filterBy: ['consignorName', 'shipmentID'],
+    statuses: ['Generated', 'Validated']
+  },
+  reports: {
+    filterBy: ['consignorName', 'shipmentID'],
+    statuses: ['Accepted', 'Declined']
+  },
+  bids: {
+    filterBy: ['debtor', 'beneficiary', 'rate', 'paymentDate'],
+    statuses: ['Issued', 'Accepted', 'Cancelled', 'Removed']
+  }
 };
 
 module.exports = {
@@ -523,5 +554,6 @@ module.exports = {
   SUPPLY_CHAIN_CHAINCODE,
   TRADE_FINANCE_CHAINCODE,
   EVENTS_MAP,
-  NOTIFICATIONS_TAB
+  NOTIFICATIONS_TAB,
+  FILTERS
 };
