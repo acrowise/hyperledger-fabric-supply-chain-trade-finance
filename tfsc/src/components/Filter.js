@@ -4,9 +4,9 @@ import { RadioGroup, Radio, InputGroup } from '@blueprintjs/core';
 
 import FilterBy from './FilterBy';
 
-const Filter = ({
-  children, statuses, actionComponent, filterBy
-}) => {
+import { FILTERS } from '../constants';
+
+const Filter = ({ tab, children, actionComponent }) => {
   const [filter, setFilter] = useState('');
   const [search, setSearch] = useState('');
   const [content, setContent] = useState(false);
@@ -15,7 +15,7 @@ const Filter = ({
 
   const data = {};
   if (dataForFilter) {
-    filterBy.forEach((field) => {
+    FILTERS[tab].filterBy.forEach((field) => {
       data[field] = dataForFilter.map(i => i[field]);
     });
   }
@@ -45,7 +45,7 @@ const Filter = ({
             className="dashboard-panel-header-radiogroup"
           >
             <Radio label="All" value={''} className="radio-button" />
-            {statuses.map(s => (
+            {FILTERS[tab].statuses.map(s => (
               <Radio key={s} label={s} value={s} className="radio-button" />
             ))}
           </RadioGroup>
@@ -66,7 +66,7 @@ const Filter = ({
       <div className="dashboard-panel-body layout-container">
         <aside className="layout-aside">
           <h4>Filter by</h4>
-          {filterBy.map((f, i) => (
+          {FILTERS[tab].filterBy.map((f, i) => (
             <div key={i} className="filter-select-wrap">
               <FilterBy
                 type={f}

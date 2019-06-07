@@ -39,9 +39,9 @@ const notifications = (state = [], message, tab) => {
       case 'uploadDocument': {
         const newState = state.concat([]);
         const itemToUpdate = newState.find(
-          i => i.key.id === notification.data.value.other.contractID
+          i => i.value.contract.key.id === notification.data.value.contractID
         );
-        itemToUpdate.value.contract.value.documents.push(notification.data.value.other);
+        itemToUpdate.value.contract.value.documents.push(notification.data.value);
         // TODO: add item to timeline
         return { result: newState };
       }
