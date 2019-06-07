@@ -41,22 +41,24 @@ type ReportKey struct {
 }
 
 type ReportValue struct {
-	Description string `json:"description"`
-	ShipmentID  string `json:"shipmentID"`
-	ProofID     string `json:"proofID"`
-	State       int    `json:"state"`
-	Timestamp   int64  `json:"timestamp"`
-	UpdatedDate int64  `json:"updatedDate"`
+	Description   string `json:"description"`
+	ShipmentID    string `json:"shipmentID"`
+	ProofID       string `json:"proofID"`
+	ConsignorName string `json:"consignorName"`
+	State         int    `json:"state"`
+	Timestamp     int64  `json:"timestamp"`
+	UpdatedDate   int64  `json:"updatedDate"`
 }
 
 type ReportValueAdditional struct {
-	Description string     `json:"description"`
-	ShipmentID  string     `json:"shipmentID"`
-	ProofID     string     `json:"proofID"`
-	State       int        `json:"state"`
-	Timestamp   int64      `json:"timestamp"`
-	Documents   []Document `json:"documents"`
-	UpdatedDate int64      `json:"updatedDate"`
+	Description   string     `json:"description"`
+	ShipmentID    string     `json:"shipmentID"`
+	ProofID       string     `json:"proofID"`
+	ConsignorName string     `json:"consignorName"`
+	State         int        `json:"state"`
+	Timestamp     int64      `json:"timestamp"`
+	Documents     []Document `json:"documents"`
+	UpdatedDate   int64      `json:"updatedDate"`
 }
 
 type Report struct {

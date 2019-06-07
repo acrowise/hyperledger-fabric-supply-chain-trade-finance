@@ -23,14 +23,14 @@ type DocumentKey struct {
 }
 
 type DocumentValue struct {
-	EntityType          int    `json:"entityType"`
-	EntityID            string `json:"entityID"`
-	ContractID          string `json:"contractID"`
-	DocumentHash        string `json:"documentHash"`
-	DocumentDescription string `json:"documentDescription"`
-	DocumentType        int    `json:"documentType"`
-	Timestamp           int64  `json:"timestamp"`
-	UpdatedDate         int64  `json:"updatedDate"`
+	EntityType   int    `json:"entityType"`
+	EntityID     string `json:"entityID"`
+	ContractID   string `json:"contractID"`
+	DocumentHash string `json:"documentHash"`
+	DocumentMeta string `json:"documentMeat"`
+	DocumentType int    `json:"documentType"`
+	Timestamp    int64  `json:"timestamp"`
+	UpdatedDate  int64  `json:"updatedDate"`
 }
 
 type Document struct {
@@ -43,8 +43,8 @@ func CreateDocument() LedgerData {
 }
 
 //argument order
-//0		1			2			3				4					5				6
-//ID	EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
+//0		1			2			3				4				5				6
+//ID	EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
 func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < documentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))

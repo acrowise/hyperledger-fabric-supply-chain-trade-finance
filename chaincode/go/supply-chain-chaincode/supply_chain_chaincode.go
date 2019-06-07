@@ -554,8 +554,8 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6				7
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	DocumentHash	DocumentType
+//0		1			2			3		4			5			6				7				8
+//ID	ContractID	ShipFrom	ShipTo	Transport	Description	DocumentHash	DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -657,8 +657,9 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	document := Document{}
 	documentHash := args[6]
 	documentType := args[7]
+	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, shipment.Value.Description, documentType, shipment.Value.ContractID}
+		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, documentMeta, documentType, shipment.Value.ContractID}
 		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -701,8 +702,8 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1	2	3	4	5 			6				7
-//ID	0	0	0	0	Description DocumentHash	DocumentType
+//0		1	2	3	4	5 			6				7				8
+//ID	0	0	0	0	Description DocumentHash	DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -750,6 +751,10 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.State = stateShipmentConfirmed
 	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
+	if shippmentDesription := args[5]; shippmentDesription != "" {
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
+	}
+
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
 		Logger.Debug("Shipment: " + string(bytes))
@@ -765,9 +770,9 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	document := Document{}
 	documentHash := args[6]
 	documentType := args[7]
-	documentDescription := args[5]
+	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentDescription, documentType, shipmentToUpdate.Value.ContractID}
+		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
 		var err error
 		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
@@ -807,8 +812,8 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1	2	3	4	5			6				7
-//ID	0	0	0	0	Description	DocumentHash	DocumentType
+//0		1	2	3	4	5			6				7				8
+//ID	0	0	0	0	Description	DocumentHash	DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -888,6 +893,10 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.State = stateShipmentDelivered
 	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
 
+	if shippmentDesription := args[5]; shippmentDesription != "" {
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
+	}
+
 	//updating state in ledger
 	if bytes, err := json.Marshal(shipmentToUpdate); err == nil {
 		Logger.Debug("Shipment: " + string(bytes))
@@ -915,12 +924,12 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	}
 
 	// uploading document
-	documentDescription := args[5]
 	documentHash := args[6]
 	documentType := args[7]
+	documentMeta := args[8]
 	document := Document{}
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentDescription, documentType, shipmentToUpdate.Value.ContractID}
+		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
 		err, document = processingUploadDocument(stub, documentFields)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -985,7 +994,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 }
 
 //0		1			2			3				4					5				6
-//0		EntityType	EntityID	DocumentHash 	DocumentDescription	DocumentType	ContractID
+//0		EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1064,7 +1073,7 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 	//}
 
 	//setting optional values
-	document.Value.DocumentDescription = args[4]
+	document.Value.DocumentMeta = args[4]
 
 	//setting automatic values
 	document.Value.Timestamp = time.Now().UTC().Unix()
@@ -1208,8 +1217,8 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	return shim.Success(nil)
 }
 
-//0			1				2				3					4
-//ProofID	ReportState		Description		DocumentHash 		DocumentType
+//0			1				2				3					4				5
+//ProofID	ReportState		Description		DocumentHash 		DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1308,6 +1317,8 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.ShipmentID = proof.Value.ShipmentID
 		report.Value.State = reportState
 		report.Value.Description = args[2]
+		report.Value.ProofID = proof.Key.ID
+		report.Value.ConsignorName = proof.Value.ConsignorName
 		report.Value.Timestamp = time.Now().UTC().Unix()
 		report.Value.UpdatedDate = report.Value.Timestamp
 		reports = append(reports, report)
@@ -1347,6 +1358,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	// uploading document
 	documentHash := args[3]
 	documentType := args[4]
+	documentMeta := args[5]
 	document := Document{}
 	if documentHash != "" && documentType != "" {
 		// find contractID
@@ -1358,7 +1370,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		}
 
 		for _, report := range reports {
-			documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, report.Value.Description, documentType, contractID}
+			documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
 			err, document = processingUploadDocument(stub, documentFields)
 			if err != nil {
 				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -2381,11 +2393,13 @@ func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Repor
 		entry := ReportAdditional{
 			Key: report.Key,
 			Value: ReportValueAdditional{
-				Description: report.Value.Description,
-				State:       report.Value.State,
-				Timestamp:   report.Value.Timestamp,
-				UpdatedDate: report.Value.UpdatedDate,
-				ShipmentID:  report.Value.ShipmentID,
+				Description:   report.Value.Description,
+				ProofID:       report.Value.ProofID,
+				ConsignorName: report.Value.ConsignorName,
+				State:         report.Value.State,
+				Timestamp:     report.Value.Timestamp,
+				UpdatedDate:   report.Value.UpdatedDate,
+				ShipmentID:    report.Value.ShipmentID,
 			},
 		}
 
