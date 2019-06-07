@@ -1,4 +1,4 @@
-import { notifications as types } from '../mocks';
+import { NOTIFICATIONS_TAB as types } from '../constants';
 
 const notifications = (state = [], message, tab) => {
   const notification = JSON.parse(message);
@@ -15,14 +15,11 @@ const notifications = (state = [], message, tab) => {
       case 'acceptOrder':
       case 'cancelOrder':
       case 'editOrder':
-      // case 'acceptBid':
       case 'cancelBid':
       case 'updateBid':
       case 'acceptInvoice':
       case 'removeInvoice':
       case 'verifyProof':
-      // case 'confirmShipment':
-      // case 'confirmDelivery':
       case 'contractUpdated': {
         const newState = state.concat([]);
         const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
@@ -39,11 +36,13 @@ const notifications = (state = [], message, tab) => {
           return { result: newState };
         }
         return state;
-      case 'documentUploaded': {
+      case 'uploadDocument': {
         const newState = state.concat([]);
-        const itemToUpdate = newState.find(i => i.key.id === notification.event.shipmentID);
-        itemToUpdate.value.contract.value.documents.push(notification.data);
-        itemToUpdate.value.events.push(notification.event);
+        const itemToUpdate = newState.find(
+          i => i.key.id === notification.data.value.other.contractID
+        );
+        itemToUpdate.value.contract.value.documents.push(notification.data.value.other);
+        // TODO: add item to timeline
         return { result: newState };
       }
       case 'acceptBid': {

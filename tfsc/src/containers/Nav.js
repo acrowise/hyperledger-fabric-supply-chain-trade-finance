@@ -5,7 +5,7 @@ import {
 } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import logo from '../logo.svg';
-import { title } from '../mocks';
+import { EVENTS_MAP } from '../constants';
 import Profile from '../components/Icon/Profile';
 import Icon from '../components/Icon/Icon';
 
@@ -25,7 +25,7 @@ const Nav = ({ role, logout }) => {
       {notifications.map((n, i) => (
         <div key={i.toString()} className="header-notifications-item">
           <Icon name="tick" />
-          <p style={{ paddingLeft: '15px' }}>{title[n.type]}</p>
+          <p style={{ paddingLeft: '15px' }}>{EVENTS_MAP[n.type]}</p>
         </div>
       ))}
     </div>

@@ -91,57 +91,57 @@ const listenSocket = () => {
     throw Error('WS closed');
   });
 
-    ws.on('message', async (message) => {
-        // connectedToWS = true;
-        console.info('ws message: ', message);
-        const event = JSON.parse(message);
-        if (event && event.payload) {
-            try {
-                JSON.parse(event.payload.EventName).forEach(async (item) => {
-                    const payload = item.id.split('.');
-                    const chaincode = payload[1];
-                    const eventName = payload[2];
-                    const eventId = payload[3];
+  ws.on('message', async (message) => {
+    console.info('ws message: ', message);
+    const event = JSON.parse(message);
+    if (event && event.payload) {
+      try {
+        JSON.parse(event.payload.EventName).forEach(async (item) => {
+          const payload = item.id.split('.');
+          const chaincode = payload[1];
+          const eventName = payload[2];
+          const eventId = payload[3];
 
-                    console.info('eventId:', eventId);
-                    console.info('chaincode:', chaincode);
-                    console.info('eventName:', eventName);
-                    const res = await retry(
-                        `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
-                        3
-                    );
+          console.info('eventId:', eventId);
+          console.info('chaincode:', chaincode);
+          console.info('eventName:', eventName);
 
-                    console.log(res.data.result);
+          const { actors } = METHODS_MAP.find(i => i.ccMethod === eventName);
 
-                    const {actors} = METHODS_MAP.find(i => i.ccMethod === eventName);
+          if (actors && actors.includes(ROLE)) {
+            const res = await retry(
+              `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
+              3
+            );
 
-                    if (actors && actors.includes(ROLE)) {
-                        clients.forEach(c => emitEvent(
-                            c,
-                            {
-                                key: {id: res.data.result.value.entityID},
-                                value: res.data.result.value.other
-                            },
-                            eventName
-                        ));
+            console.log(res.data.result);
 
-                        setTimeout(() => {
-                            if (eventName === 'acceptOrder') {
-                                clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
-                            }
-                            if (eventName === 'verifyProof') {
-                                clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
-                            }
-                        }, 1250);
-                    } else {
-                        console.info(`${ROLE} is not subscribed to ${eventName}`);
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    });
+            clients.forEach(c => emitEvent(
+              c,
+              {
+                key: { id: res.data.result.value.entityID },
+                value: res.data.result.value.other
+              },
+              eventName
+            ));
+
+            setTimeout(() => {
+              if (eventName === 'acceptOrder') {
+                clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+              }
+              if (eventName === 'verifyProof') {
+                clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
+              }
+            }, 1250);
+          } else {
+            console.info(`${ROLE} is not subscribed to ${eventName}`);
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  });
 };
 
 const getDocument = hash => new Promise((resolve, reject) => {

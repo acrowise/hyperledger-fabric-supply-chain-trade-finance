@@ -17,6 +17,8 @@ import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
 import Icons from '../components/Icon/Icon';
 
+import { EVENTS_MAP } from '../constants';
+
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
@@ -27,6 +29,35 @@ const ShipmentDetailPage = ({
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
 
   const [docs, setDocs] = useState(shipment.documents);
+  const [events, setEvents] = useState(
+    shipment.timeline
+      ? Object.keys(shipment.timeline)
+        .reduce((res, value) => {
+          if (shipment.timeline[value]) {
+            return res.concat(shipment.timeline[value]);
+          }
+          return res.concat([]);
+        }, [])
+        .map(({ key, value }) => ({
+          id: key.id,
+          date: value.timestamp,
+          action: EVENTS_MAP[value.action],
+          user: value.creator
+        }))
+      : []
+  );
+
+  const updateEvents = (notification) => {
+    const newEvents = events.concat([
+      {
+        id: notification.data.key.id,
+        date: notification.data.value.timestamp,
+        action: EVENTS_MAP[notification.type],
+        user: notification.data.value.owner
+      }
+    ]);
+    setEvents(newEvents);
+  };
 
   const onNotification = (message) => {
     const notification = JSON.parse(message);
@@ -35,6 +66,8 @@ const ShipmentDetailPage = ({
       // FIXME:
       const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
       setData({ result: newState });
+
+      updateEvents(notification);
     }
 
     if (notification.type === 'verifyProof') {
@@ -42,13 +75,15 @@ const ShipmentDetailPage = ({
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex].value = notification.data.value;
       setData({ result: newState });
+
+      updateEvents(notification);
     }
 
-    if (notification.type === 'documentUploaded') {
-      if (notification.event.shipmentID === shipment.id) {
-        setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
-      }
-    }
+    // if (notification.type === 'uploadDocument') {
+    //   if (notification.event.shipmentID === shipment.id) {
+    //     setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
+    //   }
+    // }
   };
 
   useSocket('notification', onNotification);
@@ -167,8 +202,8 @@ const ShipmentDetailPage = ({
             </div>
           </div>
 
-          <Timeline shipment={shipment} events={shipment.events} />
-          <CollapsiblePanel history={shipment.events ? shipment.events.concat([]) : []} />
+          <Timeline shipment={shipment} events={events} />
+          <CollapsiblePanel history={shipment.timeline ? events.concat([]) : []} />
         </div>
 
         <div className="layout-aside">

@@ -259,25 +259,25 @@ const METHODS_MAP = [
     ccMethod: 'placeOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier']
+    actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'updateOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier']
+    actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'cancelOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier']
+    actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'acceptOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier']
+    actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'requestShipment',
@@ -330,13 +330,13 @@ const METHODS_MAP = [
     ccMethod: 'acceptInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'rejectInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'listOrders',
@@ -387,31 +387,31 @@ const METHODS_MAP = [
     ccMethod: 'registerInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'placeInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'removeInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'acceptInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'rejectInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'factor_1', 'factor_2']
+    actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'placeBid',
@@ -454,6 +454,65 @@ const METHODS_MAP = [
   }
 ];
 
+const NOTIFICATIONS_TAB = {
+  placeOrder: 'orders',
+  acceptOrder: 'orders',
+  cancelOrder: 'orders',
+  editOrder: 'orders',
+
+  requestShipment: 'shipments',
+  confirmShipment: 'shipments',
+  uploadDocument: 'shipments',
+  confirmDelivery: 'shipments',
+
+  verifyProof: 'proofs',
+  generateProof: 'proofs',
+
+  contractCreated: 'contracts',
+  contractUpdated: 'contracts',
+  contractCompleted: 'contracts',
+
+  placeInvoice: 'invoices',
+  acceptInvoice: 'invoices',
+
+  updateBid: 'bids',
+  placeBid: 'bids',
+  acceptBid: 'bids',
+  cabcelBid: 'bids',
+
+  invoiceRegistered: 'invoices',
+  removeInvoice: 'invoices',
+
+  reportGenerated: 'reports',
+  submitReport: 'reports'
+};
+
+const EVENTS_MAP = {
+  placeOrder: 'Order Created',
+  acceptOrder: 'Order Accepted',
+  cancelOrder: 'Order Cancelled',
+  editOrder: 'Order Updated',
+  requestShipment: 'Shipment Requested',
+  confirmShipment: 'Shipment Confirmed',
+  confirmDelivery: 'Shipment Delivered',
+  verifyProof: 'Proof Validated',
+  generateProof: 'Proof Generated',
+  contractCreated: 'Contract Created',
+  acceptInvoice: 'Invoice Accepted',
+  placeBid: 'Bid Placed',
+  acceptBid: 'Bid Accepted',
+  updateBid: 'Bid Updated',
+  uploadDocument: 'Document Uploaded',
+  invoiceRegistered: 'Invoice Registered',
+  cancelBid: 'Bid Cancelled',
+  placeInvoice: 'Invoice Signed',
+  reportGenerated: 'Report Created',
+  removeInvoice: 'Invoice Removed',
+  contractCompleted: 'Contract Completed',
+  contractUpdated: 'Contract Updated',
+  submitReport: 'Report Submitted'
+};
+
 module.exports = {
   actors,
   REVIEWERS,
@@ -462,5 +521,7 @@ module.exports = {
   TABLE_MAP,
   METHODS_MAP,
   SUPPLY_CHAIN_CHAINCODE,
-  TRADE_FINANCE_CHAINCODE
+  TRADE_FINANCE_CHAINCODE,
+  EVENTS_MAP,
+  NOTIFICATIONS_TAB
 };

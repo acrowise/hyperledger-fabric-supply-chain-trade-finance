@@ -18,7 +18,7 @@ import Bids from './Bids';
 import OrderPurchaseForm from './Forms/OrderPurchase';
 
 import { AuthConsumer } from '../context/auth';
-import { notifications } from '../mocks';
+import { NOTIFICATIONS_TAB } from '../constants';
 
 const NewPurchaseOrder = ({ actor }) => {
   const [dialog, setDialog] = useState({
@@ -128,7 +128,7 @@ const tabs = actor => [
 const Title = ({ title, notification }) => (
   <div className="dashboard-tabs-tab">
     <p>{title}</p>
-    {notifications[notification] === title.toLowerCase() ? (
+    {NOTIFICATIONS_TAB[notification] === title.toLowerCase() ? (
       <div
         style={{
           marginLeft: '5px',
