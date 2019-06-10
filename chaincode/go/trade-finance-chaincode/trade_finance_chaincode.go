@@ -918,6 +918,38 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	//setting state canceled for another bids for current invoice
+	filterByInvoice := func(data LedgerData) bool {
+		entity, ok := data.(*Bid)
+		if ok && entity.Value.InvoiceID == invoice.Key.ID {
+			return true
+		}
+
+		return false
+	}
+
+	bids := []Bid{}
+	bidsBytes, err := Query(stub, bidIndex, []string{}, CreateBid, filterByInvoice)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(bidsBytes, &bids); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	for _, bid := range bids {
+		bid.Value.State = stateBidCanceled
+		if err := UpdateOrInsertIn(stub, &bid, bidIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+	}
+
 	//emitting Event
 	events := Events{}
 
