@@ -1760,7 +1760,7 @@ func (cc *SupplyChainChaincode) listProofsByShipment(stub shim.ChaincodeStubInte
 
 	filterByShipment := func(data LedgerData) bool {
 		entity, ok := data.(*Proof)
-		if ok && entity.Value.Owner == shipmentID {
+		if ok && entity.Value.ShipmentID == shipmentID {
 			return true
 		}
 
