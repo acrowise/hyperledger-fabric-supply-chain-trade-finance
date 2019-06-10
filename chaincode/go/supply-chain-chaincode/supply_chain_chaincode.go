@@ -514,10 +514,6 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 
 	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoicePaymentDate), []byte("0")}
 
-	for _, oneArg := range args {
-		argsByte = append(argsByte, []byte(oneArg))
-	}
-
 	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
 	if response.Status >= 400 {
 		message := fmt.Sprintf("Unable to invoke \"%s\": %s", chaincodeName, response.Message)
@@ -662,7 +658,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
 		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, documentMeta, documentType, shipment.Value.ContractID}
-		err, document = processingUploadDocument(stub, documentFields)
+		err, document = processingUploadDocument(stub, documentFields, contract)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -776,7 +772,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	if documentHash != "" && documentType != "" {
 		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
 		var err error
-		err, document = processingUploadDocument(stub, documentFields)
+		err, document = processingUploadDocument(stub, documentFields, Contract{})
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -932,7 +928,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	document := Document{}
 	if documentHash != "" && documentType != "" {
 		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
-		err, document = processingUploadDocument(stub, documentFields)
+		err, document = processingUploadDocument(stub, documentFields, contract)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 			Logger.Error(message)
@@ -1007,7 +1003,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
-	err, document := processingUploadDocument(stub, args)
+	err, document := processingUploadDocument(stub, args, Contract{})
 	if err != nil {
 		message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 		Logger.Error(message)
@@ -1035,7 +1031,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	return shim.Success(nil)
 }
 
-func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (error, Document) {
+func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, contract Contract) (error, Document) {
 
 	//checking document exist
 	document := Document{}
@@ -1093,18 +1089,19 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string) (
 	}
 
 	//appending document ID in contract
-	contract := Contract{}
-	contract.Key.ID = document.Value.ContractID
-	if !ExistsIn(stub, &contract, contractIndex) {
-		compositeKey, _ := contract.ToCompositeKey(stub)
-		message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
-		Logger.Error(message)
-		return errors.New(message), Document{}
-	}
-	if err := LoadFrom(stub, &contract, contractIndex); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message), Document{}
+	if contract.Key.ID == "" {
+		contract.Key.ID = document.Value.ContractID
+		if !ExistsIn(stub, &contract, contractIndex) {
+			compositeKey, _ := contract.ToCompositeKey(stub)
+			message := fmt.Sprintf("contract with the key %s doesn't exist", compositeKey)
+			Logger.Error(message)
+			return errors.New(message), Document{}
+		}
+		if err := LoadFrom(stub, &contract, contractIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message), Document{}
+		}
 	}
 	contract.Value.Documents = append(contract.Value.Documents, document.Key.ID)
 	contract.Value.UpdatedDate = time.Now().UTC().Unix()
@@ -1373,7 +1370,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 
 		for _, report := range reports {
 			documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
-			err, document = processingUploadDocument(stub, documentFields)
+			err, document = processingUploadDocument(stub, documentFields, Contract{})
 			if err != nil {
 				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
 				Logger.Error(message)
