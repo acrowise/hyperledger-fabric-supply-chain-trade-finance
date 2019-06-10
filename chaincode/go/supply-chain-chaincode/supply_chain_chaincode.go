@@ -893,6 +893,13 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+
+	if proofs == nil {
+		message := fmt.Sprintf("cannot confirm delivery. Shipment doesn't have proofs.")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	for _, proof := range proofs {
 		if proof.Value.State != stateProofValidated {
 			message := fmt.Sprintf("cannot confirm delivery with current state: %s of proof: %s", strconv.Itoa(proof.Value.State), proof.Key.ID)
