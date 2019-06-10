@@ -108,40 +108,42 @@ const listenSocket = () => {
           console.info('chaincode:', chaincode);
           console.info('eventName:', eventName);
 
-          const { actors } = METHODS_MAP.find(i => i.ccMethod === eventName);
+          if (eventName !== '') {
+            const { actors } = METHODS_MAP.find(i => i.ccMethod === eventName);
 
-          if (actors && actors.includes(ROLE)) {
-            const res = await retry(
-              `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
-              3
-            );
+            if (actors && actors.includes(ROLE)) {
+              const res = await retry(
+                `http://${API_ENDPOINT}/api/channels/common/chaincodes/${chaincode}?peer=${ORG}/peer0&fcn=getEventPayload&args=${eventId}`,
+                3
+              );
 
-            console.log(res.data.result);
+              setTimeout(
+                () => {
+                  clients.forEach(c => emitEvent(
+                    c,
+                    {
+                      key: {
+                        id: res.data.result.value.entityID
+                      },
+                      value: Object.assign({}, res.data.result.value.other, {
+                        eventId: res.data.result.key.id,
+                        creator: res.data.result.value.creator
+                      })
+                    },
+                    eventName
+                  ));
+                },
+                eventName === 'uploadDocument' ? 1250 : 0
+              );
 
-            setTimeout(
-              () => {
-                clients.forEach(c => emitEvent(
-                  c,
-                  {
-                    key: { id: res.data.result.value.entityID },
-                    value: res.data.result.value.other
-                  },
-                  eventName
-                ));
-              },
-              eventName === 'uploadDocument' ? 1250 : 0
-            );
-
-            setTimeout(() => {
-              if (eventName === 'acceptOrder') {
-                clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
-              }
-              // if (eventName === 'verifyProof') {
-              //   clients.forEach(c => emitEvent(c, {}, 'reportGenerated'));
-              // }
-            }, 1250);
-          } else {
-            console.info(`${ROLE} is not subscribed to ${eventName}`);
+              setTimeout(() => {
+                if (eventName === 'acceptOrder') {
+                  clients.forEach(c => emitEvent(c, {}, 'contractCreated'));
+                }
+              }, 1250);
+            } else {
+              console.info(`${ROLE} is not subscribed to ${eventName}`);
+            }
           }
         });
       } catch (e) {

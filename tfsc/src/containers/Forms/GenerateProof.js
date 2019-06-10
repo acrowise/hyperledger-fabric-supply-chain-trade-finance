@@ -102,7 +102,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                     && shipment.documents.map(doc => (
                       <div
                         className="col-6"
-                        key={doc.value.documentDescription}
+                        key={doc.value.documentMeat}
                         style={{ display: 'flex', paddingLeft: 0, alignItems: 'center' }}
                       >
                         <div style={{ marginRight: 5 }}>
@@ -110,13 +110,13 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                         </div>
                         <Checkbox
                           style={{ marginBottom: 3 }}
-                          label={doc.value.documentDescription}
+                          label={doc.value.documentMeat}
                           value={formState[doc.field]}
                           onChange={() => dispatch({
                             type: 'change',
                             payload: {
-                              field: doc.value.documentDescription,
-                              value: !formState[doc.value.documentDescription]
+                              field: doc.value.documentMeat,
+                              value: !formState[doc.value.documentMeat]
                             }
                           })
                           }

@@ -39,21 +39,20 @@ const ShipmentDetailPage = ({
           return res.concat([]);
         }, [])
         .map(({ key, value }) => ({
-          id: key.id,
+          id: value.eventId || key.id,
           date: value.timestamp,
           action: EVENTS_MAP[value.action],
           user: value.creator
         }))
       : []
   );
-
   const updateEvents = (notification) => {
     const newEvents = events.concat([
       {
-        id: notification.data.key.id,
+        id: notification.data.value.eventId || notification.data.key.id,
         date: notification.data.value.timestamp,
         action: EVENTS_MAP[notification.type],
-        user: notification.data.value.owner
+        user: notification.data.value.creator
       }
     ]);
     setEvents(newEvents);
@@ -77,9 +76,18 @@ const ShipmentDetailPage = ({
 
       updateEvents(notification);
     }
+
     if (notification.type === 'uploadDocument') {
       if (notification.data.value.contractID === shipment.contractID) {
         setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
+
+        updateEvents(notification);
+      }
+    }
+
+    if (notification.type === 'confirmShipment' || notification.type === 'confirmDelivery') {
+      if (notification.data.value.contractID === shipment.contractID) {
+        updateEvents(notification);
       }
     }
   };
