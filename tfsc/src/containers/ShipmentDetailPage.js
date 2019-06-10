@@ -243,7 +243,7 @@ const ShipmentDetailPage = ({
                         }`}
                         target="_blank"
                       >
-                        {doc.value.documentDescription}
+                        {doc.value.documentMeat}
                       </a>
                       {doc.new ? (
                         <div

@@ -180,9 +180,9 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                           formState.description,
                           // dialogIsOpen.item.dueDate.toString(), // Delivery Date
                           hash.hash,
-                          hash.type
+                          hash.type,
+                          'Packing List'
                         ]
-                        // Packing List
                       });
                       setFiles([]);
                       dispatch({ type: 'reset', payload: initialState });

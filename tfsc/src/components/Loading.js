@@ -3,7 +3,7 @@ import { Spinner } from '@blueprintjs/core';
 
 const Loading = () => (
   <div style={{ display: 'flex', justifyContent: 'center', height: '45vh' }}>
-    <Spinner large intent="primary" size={80} />
+    <Spinner large size={80} />
   </div>
 );
 

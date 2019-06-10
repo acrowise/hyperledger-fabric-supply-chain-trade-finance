@@ -20,7 +20,6 @@ const documentTypes = {
 const upload = (file) => {
   const promise = new Promise((resolve, reject) => {
     const reader = new FileReader();
-    console.log('file.type', file.type);
     const fileType = documentTypes[file.type];
     if (fileType === undefined) {
       resolve(undefined);

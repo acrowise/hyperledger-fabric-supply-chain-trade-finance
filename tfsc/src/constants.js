@@ -1,6 +1,6 @@
-const CHANNEL = 'common';
 const SUPPLY_CHAIN_CHAINCODE = 'supply-chain-chaincode';
 const TRADE_FINANCE_CHAINCODE = 'trade-finance-chaincode';
+const STATUS_UNKNOWN = 'Unknown';
 
 const actors = [
   { role: 'Buyer', description: 'an organization which orders and purchases goods' },
@@ -29,19 +29,19 @@ const actors = [
 
 const STATUSES = {
   ORDER: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'New',
     2: 'Accepted',
     3: 'Cancelled'
   },
   CONTRACT: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Signed',
     2: 'Processed',
     3: 'Completed'
   },
   INVOICE: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Issued',
     2: 'Signed',
     3: 'For Sale',
@@ -49,23 +49,23 @@ const STATUSES = {
     5: 'Removed'
   },
   SHIPMENT: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Requested',
     2: 'Confirmed',
     3: 'Delivered'
   },
   PROOF: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Generated',
     2: 'Validated'
   },
   REPORT: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Accepted',
     2: 'Declined'
   },
   BID: {
-    0: 'Unknown',
+    0: STATUS_UNKNOWN,
     1: 'Issued',
     2: 'Accepted',
     3: 'Cancelled',
@@ -258,201 +258,166 @@ const METHODS_MAP = [
   {
     ccMethod: 'placeOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'updateOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'cancelOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'acceptOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'bank']
   },
   {
     ccMethod: 'requestShipment',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter']
   },
   {
     ccMethod: 'confirmShipment',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter']
   },
   {
     ccMethod: 'confirmDelivery',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter']
   },
   {
     ccMethod: 'uploadDocument',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
-    actors: ['buyer', 'supplier', 'transporter', 'auditor_1', 'auditor_2']
+    actors: ['buyer', 'supplier', 'transporter']
   },
   {
     ccMethod: 'generateProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'auditor_1', 'auditor_2']
   },
   {
     ccMethod: 'verifyProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'auditor_1', 'auditor_2']
   },
   {
     ccMethod: 'updateProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'auditor_1', 'auditor_2']
   },
   {
     ccMethod: 'submitReport',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'acceptInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'rejectInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'listOrders',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'listContracts',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'listProofs',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'listProofsByOwner',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'listReports',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'listShipments',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'getDocument',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'getEventPayload',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'getByQuery',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    channel: CHANNEL
+    chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
     ccMethod: 'registerInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'transporter', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'placeInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'removeInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'acceptInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'rejectInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['buyer', 'supplier', 'factor_1', 'factor_2', 'bank']
   },
   {
     ccMethod: 'placeBid',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['supplier', 'factor_1', 'factor_2']
   },
   {
     ccMethod: 'updateBid',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['supplier', 'factor_1', 'factor_2']
   },
   {
     ccMethod: 'cancelBid',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['supplier', 'factor_1', 'factor_2']
   },
   {
     ccMethod: 'acceptBid',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL,
     actors: ['supplier', 'factor_1', 'factor_2']
   },
   {
     ccMethod: 'listInvoices',
-    chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL
+    chaincode: TRADE_FINANCE_CHAINCODE
   },
   {
     ccMethod: 'listBidsForInvoice',
-    chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL
+    chaincode: TRADE_FINANCE_CHAINCODE
   },
   {
     ccMethod: 'listBids',
-    chaincode: TRADE_FINANCE_CHAINCODE,
-    channel: CHANNEL
+    chaincode: TRADE_FINANCE_CHAINCODE
   }
-];
+].map(i => Object.assign(i, { channel: 'common' }));
 
 const NOTIFICATIONS_TAB = {
   placeOrder: 'orders',

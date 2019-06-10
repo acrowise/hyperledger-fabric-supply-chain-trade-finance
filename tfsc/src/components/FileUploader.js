@@ -48,9 +48,8 @@ function FileUploader({
       ipfs.addDocument(acceptedFiles[0]).then(
         (document) => {
           if (!document) {
-            console.log('no document');
+            console.error('no document');
           } else {
-            console.log('ipfs document added', document);
             setHash(document);
           }
         },

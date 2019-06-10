@@ -62,7 +62,7 @@ const OrderForm = ({ dialog, setDialog }) => {
           state: null
         });
         reset();
-      }, 1500);
+      }, 500);
     }
   }
 
@@ -224,8 +224,8 @@ const OrderForm = ({ dialog, setDialog }) => {
 };
 
 OrderForm.propTypes = {
-  dialogIsOpen: PropTypes.bool,
-  setDialogOpenState: PropTypes.func
+  dialog: PropTypes.object,
+  setDialog: PropTypes.func
 };
 
 export default OrderForm;

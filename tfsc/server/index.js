@@ -96,7 +96,9 @@ const listenSocket = () => {
     const event = JSON.parse(message);
     if (event && event.payload) {
       try {
-        JSON.parse(event.payload.EventName).forEach(async (item) => {
+        const events = JSON.parse(event.payload.EventName);
+
+        events.forEach(async (item) => {
           const payload = item.id.split('.');
           const chaincode = payload[1];
           const eventName = payload[2];
@@ -116,14 +118,19 @@ const listenSocket = () => {
 
             console.log(res.data.result);
 
-            clients.forEach(c => emitEvent(
-              c,
-              {
-                key: { id: res.data.result.value.entityID },
-                value: res.data.result.value.other
+            setTimeout(
+              () => {
+                clients.forEach(c => emitEvent(
+                  c,
+                  {
+                    key: { id: res.data.result.value.entityID },
+                    value: res.data.result.value.other
+                  },
+                  eventName
+                ));
               },
-              eventName
-            ));
+              eventName === 'uploadDocument' ? 1250 : 0
+            );
 
             setTimeout(() => {
               if (eventName === 'acceptOrder') {

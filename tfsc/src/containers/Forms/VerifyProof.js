@@ -149,9 +149,10 @@ const ValidateProof = ({
                         args: [
                           proof.id,
                           '1',
-                          'verifyProof', // FIXME: add description
+                          '', // FIXME: add description
                           hash.hash,
-                          hash.type
+                          hash.type,
+                          `${role.toUpperCase()} Report`
                         ]
                       });
                       setDialogOpenState(false);

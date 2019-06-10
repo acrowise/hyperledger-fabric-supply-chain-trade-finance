@@ -66,8 +66,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                 } else {
                   confirmDelivery({
                     fcn: 'confirmDelivery',
-                    args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type]
-                    // 'Delivery Acceptance Form'
+                    args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type, 'Delivery Acceptance Form']
                   });
                   setFileRequired(false);
                   setFiles([]);

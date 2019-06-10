@@ -41,8 +41,24 @@ const notifications = (state = [], message, tab) => {
         const itemToUpdate = newState.find(
           i => i.value.contract.key.id === notification.data.value.contractID
         );
-        itemToUpdate.value.contract.value.documents.push(notification.data.value);
-        // TODO: add item to timeline
+        itemToUpdate.value.contract.value.documents.push(notification.data);
+
+        if (!itemToUpdate.value.timeline.documentsUploaded) {
+          itemToUpdate.value.timeline.documentsUploaded = [];
+        }
+
+        itemToUpdate.value.timeline.documentsUploaded.push({
+          key: { id: notification.data.key.id },
+          value: {
+            action: 'uploadDocument',
+            creator: notification.data.value.consignor,
+            entityID: notification.data.key.id,
+            entityType: 'Shipment',
+            other: notification.data.value,
+            timestamp: notification.data.value.timestamp
+          }
+        });
+
         return { result: newState };
       }
       case 'acceptBid': {
@@ -58,21 +74,39 @@ const notifications = (state = [], message, tab) => {
         });
         return { result: newState };
       }
-      case 'confirmDelivery':
       case 'requestShipment': {
         return {
           result: state.concat(
             Object.assign({}, notification.data, {
               value: Object.assign({}, notification.data.value, {
+                timeline: {
+                  shipmentRequested: [
+                    {
+                      key: { id: notification.data.key.id },
+                      value: {
+                        action: 'requestShipment',
+                        creator: notification.data.value.consignor,
+                        entityID: notification.data.key.id,
+                        entityType: 'Shipment',
+                        other: {},
+                        timestamp: notification.data.value.timestamp
+                      }
+                    }
+                  ]
+                },
                 contract: {
                   key: { id: notification.data.value.contractID },
-                  value: { documents: [] }
+                  value: {
+                    documents: []
+                  }
+                  // TODO: add item to timeline }
                 }
               })
             })
           )
         };
       }
+      case 'confirmDelivery':
       case 'confirmShipment': {
         const newState = state.concat([]);
         const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);

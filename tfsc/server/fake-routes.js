@@ -213,7 +213,6 @@ module.exports = (router, clients) => {
   });
 
   router.post('/editOrder', (req, res) => {
-    console.log(req.body);
     const orders = db.get('orders').value();
     const order = orders.find(i => i.key.id === req.body.id);
 

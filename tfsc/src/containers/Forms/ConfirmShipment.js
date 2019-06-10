@@ -108,8 +108,7 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     } else {
                       confirmShipment({
                         fcn: 'confirmShipment',
-                        args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type]
-                        // Bill of Lading
+                        args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type, 'Bill of Lading']
                       });
                       setFileRequired(false);
                       setFiles([]);
