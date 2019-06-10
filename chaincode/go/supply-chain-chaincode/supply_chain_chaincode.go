@@ -99,6 +99,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.listProofs(stub, args)
 	} else if function == "listProofsByOwner" {
 		return cc.listProofsByOwner(stub, args)
+	} else if function == "listProofsByShipment" {
+		return cc.listProofsByShipment(stub, args)
 	} else if function == "listReports" {
 		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
@@ -1680,8 +1682,6 @@ func (cc *SupplyChainChaincode) listProofs(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(resultBytes)
 }
 
-//0
-//Owner
 func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// check role == Auditor
 	// list all proofs for Auditor's name
@@ -1714,6 +1714,61 @@ func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterfa
 
 	proofs := []Proof{}
 	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, filterByOwner)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(proofsBytes, &proofs); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(proofs)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
+//0
+//Owner
+func (cc *SupplyChainChaincode) listProofsByShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Auditor, Supplier, Buyer}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to get proofs by owner")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	shipmentID := args[0]
+	shipment := Shipment{}
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &shipment, shipmentIndex) {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesnt exist", compositeKey))
+	}
+
+	filterByShipment := func(data LedgerData) bool {
+		entity, ok := data.(*Proof)
+		if ok && entity.Value.Owner == shipmentID {
+			return true
+		}
+
+		return false
+	}
+
+	proofs := []Proof{}
+	proofsBytes, err := Query(stub, proofIndex, []string{}, CreateProof, filterByShipment)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
