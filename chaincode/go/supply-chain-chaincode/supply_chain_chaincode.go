@@ -886,6 +886,20 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	//checking proofs on valid
+	proofs, err := findProofsByShipment(stub, shipmentToUpdate.Key.ID)
+	if err != nil {
+		message := fmt.Sprintf("cannot find proofs by shipment: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	for _, proof := range proofs {
+		if proof.Value.State != stateProofValidated {
+			message := fmt.Sprintf("cannot confirm delivery with current state: %s of proof: %s", strconv.Itoa(proof.Value.State), proof.Key.ID)
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+	}
 
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentDelivered
