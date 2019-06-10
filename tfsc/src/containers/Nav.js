@@ -65,7 +65,7 @@ const Nav = ({ role, logout }) => {
                       className="bp3-minimal header-notifications-btn"
                       style={{ textTransform: 'capitalize' }}
                       onClick={() => {
-                        setShowNotifications(true);
+                        setShowNotifications(notifications.length !== 0);
                       }}
                     >
                       Notifications

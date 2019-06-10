@@ -105,7 +105,7 @@ $header-height: 65px;
   margin-top: 6px;
 }
 
-.bp3-navbar-group .bp3-button{
+.bp3-navbar-group .bp3-button {
   font-weight: $fw-normal;
 }
 
@@ -150,6 +150,8 @@ $header-height: 65px;
 .header-notifications {
   width: 200px;
   padding: 10px 0;
+  max-height: 345px;
+  overflow: auto;
 }
 
 .header-notifications-item {
@@ -173,10 +175,9 @@ $header-height: 65px;
   background: transparent;
 }
 
-.header-notifications-btn .bp3-button-text{
+.header-notifications-btn .bp3-button-text {
   display: flex;
 }
-
 
 .role-item-txt {
   margin-top: 5px;
@@ -246,7 +247,7 @@ $header-height: 65px;
   flex: 2;
 }
 
-.dashboard-header-col-btn{
+.dashboard-header-col-btn {
   padding-left: 30px;
 }
 
@@ -323,15 +324,16 @@ $header-height: 65px;
   border-radius: 20px;
   font-family: $ff-primary;
 }
-.bp3-button.bp3-large, .bp3-large .bp3-button {
+.bp3-button.bp3-large,
+.bp3-large .bp3-button {
   font-size: $fs-normal;
 }
 
 .bp3-intent-danger,
 .btn-default {
-  background-color: transparent!important;
-  border: 2px solid #D3DAE0!important;
-  color: #687585!important;
+  background-color: transparent !important;
+  border: 2px solid #d3dae0 !important;
+  color: #687585 !important;
   &:hover {
     background-color: transparent;
   }
@@ -452,7 +454,7 @@ $header-height: 65px;
   border-radius: 1px;
   border: 1px solid $color-border;
   box-shadow: none;
-  font: $fw-normal $fs-normal $ff-primary!important;
+  font: $fw-normal $fs-normal $ff-primary !important;
 }
 
 .bp3-input:disabled {
@@ -473,7 +475,7 @@ $header-height: 65px;
 }
 
 .textarea.bp3-input {
-  height: 56px!important;
+  height: 56px !important;
   font: $fw-normal $fs-normal $ff-primary;
   resize: none;
 }
@@ -481,7 +483,7 @@ $header-height: 65px;
 .filter-range {
   display: flex;
   flex-direction: row;
-  margin: 5px
+  margin: 5px;
 }
 
 .filter-range-item {
@@ -492,5 +494,5 @@ $header-height: 65px;
 }
 
 .bp3-spinner .bp3-spinner-head {
-  stroke: #69d7bc
+  stroke: #69d7bc;
 }
