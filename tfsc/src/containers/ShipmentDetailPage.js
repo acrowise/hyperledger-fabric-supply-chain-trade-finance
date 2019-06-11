@@ -22,7 +22,7 @@ import { EVENTS_MAP } from '../constants';
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
-  const [proofs, loadingProofs, setData] = get('listProofs'); // ?id=${shipment.id} FIXME:
+  const [proofs, loadingProofs, setData] = get('listProofsByShipment', [shipment.id]);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);

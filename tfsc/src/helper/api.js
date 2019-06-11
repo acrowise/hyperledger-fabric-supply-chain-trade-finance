@@ -15,7 +15,7 @@ export const post = method => () => {
   }));
 };
 
-const buildUrl = ({ channel, chaincode, ccMethod }) => {
+const buildUrl = ({ channel, chaincode, ccMethod }, args) => {
   let url = '/api/channels';
   if (channel) {
     url += `/${channel}`;
@@ -26,11 +26,14 @@ const buildUrl = ({ channel, chaincode, ccMethod }) => {
   if (ccMethod) {
     url += `?peer=${state.org}/peer0&fcn=${ccMethod}`;
   }
+  if (args) {
+    url += `&args=${args.join('&args=')}`;
+  }
   return url;
 };
 
-export const get = (method) => {
+export const get = (method, args) => {
   const params = METHODS_MAP.find(i => i.ccMethod === method);
 
-  return useGet(mockApi ? `/${params.ccMethod}` : buildUrl(params));
+  return useGet(mockApi ? `/${params.ccMethod}` : buildUrl(params, args));
 };

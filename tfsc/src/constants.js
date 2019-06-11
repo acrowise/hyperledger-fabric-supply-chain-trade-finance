@@ -337,6 +337,10 @@ const METHODS_MAP = [
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
+    ccMethod: 'listProofsByShipment',
+    chaincode: SUPPLY_CHAIN_CHAINCODE
+  },
+  {
     ccMethod: 'listProofsByOwner',
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },

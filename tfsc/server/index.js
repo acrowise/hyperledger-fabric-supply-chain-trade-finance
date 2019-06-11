@@ -117,6 +117,8 @@ const listenSocket = () => {
                 3
               );
 
+              console.log(`getEventPayload ${eventName}`, res.data.result);
+
               setTimeout(
                 () => {
                   clients.forEach(c => emitEvent(
