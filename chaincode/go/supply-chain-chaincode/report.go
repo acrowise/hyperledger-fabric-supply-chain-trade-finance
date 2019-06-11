@@ -41,6 +41,7 @@ type ReportKey struct {
 }
 
 type ReportValue struct {
+	Owner         string `json:"owner"`
 	Description   string `json:"description"`
 	ShipmentID    string `json:"shipmentID"`
 	ProofID       string `json:"proofID"`
@@ -51,6 +52,7 @@ type ReportValue struct {
 }
 
 type ReportValueAdditional struct {
+	Owner         string     `json:"owner"`
 	Description   string     `json:"description"`
 	ShipmentID    string     `json:"shipmentID"`
 	ProofID       string     `json:"proofID"`

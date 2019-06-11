@@ -56,14 +56,14 @@ Deploy docker containers of all member organizations to one host, for developmen
 
 After all containers are up, web interfaces will be at:
 
-- org1 [http://localhost:3001](http://localhost:3001/)
-- org2 [http://localhost:3002](http://localhost:3002/)
-- org3 [http://localhost:3003](http://localhost:3003/)
-- org4 [http://localhost:3004](http://localhost:3004/)
-- org5 [http://localhost:3005](http://localhost:3005/)
-- org6 [http://localhost:3006](http://localhost:3006/)
-- org7 [http://localhost:3007](http://localhost:3007/)
-- org8 [http://localhost:3008](http://localhost:3008/)
+- org1 [http://localhost:3001](http://localhost:3001/) Buyer
+- org2 [http://localhost:3002](http://localhost:3002/) Supplier
+- org3 [http://localhost:3003](http://localhost:3003/) Auditor 1
+- org4 [http://localhost:3004](http://localhost:3004/) Auditor 2
+- org5 [http://localhost:3005](http://localhost:3005/) Factor 1
+- org6 [http://localhost:3006](http://localhost:3006/) Factor 2  
+- org7 [http://localhost:3007](http://localhost:3007/) Transporter
+- org8 [http://localhost:3008](http://localhost:3008/) Bank
 
 - Blockchain explorer [http://localhost:8080](http://localhost:8080/)
 

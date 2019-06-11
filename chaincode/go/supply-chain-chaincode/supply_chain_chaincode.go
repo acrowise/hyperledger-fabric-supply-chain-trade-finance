@@ -1334,6 +1334,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			Logger.Error(message)
 			return shim.Error(message)
 		}
+		report.Value.Owner = proof.Value.Owner
 		report.Value.ShipmentID = proof.Value.ShipmentID
 		report.Value.State = reportState
 		report.Value.Description = args[2]
@@ -1512,8 +1513,8 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1
-//ID	Description
+//0			1				2				3					4				5
+//ReportID	ReportState		Description		DocumentHash 		DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1524,52 +1525,57 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 		return shim.Error(message)
 	}
 
-	// getting contract for checking permissions
-	proof := Proof{}
-	proofID := args[0]
-	if err := proof.FillFromCompositeKeyParts([]string{proofID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	if !ExistsIn(stub, &proof, proofIndex) {
-		compositeKey, _ := proof.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("proof with the key %s doesnt exist", compositeKey))
-	}
-
-	if err := LoadFrom(stub, &proof, contractIndex); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	//filling from arguments
 	report := Report{}
-	if err := report.FillFromArguments(stub, args); err != nil {
-		message := fmt.Sprintf("cannot fill a report from arguments: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//generating new report ID and making Key
-	reportID := uuid.Must(uuid.NewV4()).String()
+	reportID := args[0]
 	if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &report, reportIndex) {
+		compositeKey, _ := report.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("report with the key %s doesnt exist", compositeKey))
+	}
+
+	if err := LoadFrom(stub, &report, reportIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//checking owner
+	creator, err := GetMSPID(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if report.Value.Owner != creator {
+		message := fmt.Sprintf("each auditor can update only his own report")
+		Logger.Error(message)
 		return shim.Error(message)
 	}
 
-	if ExistsIn(stub, &report, reportIndex) {
-		compositeKey, _ := report.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("report with the key %s already exist", compositeKey))
+	// setting new values
+	reportState, err := strconv.Atoi(args[1])
+	if err != nil {
+		message := fmt.Sprintf("report State is invalid: %s (must be int", args[1])
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if !Contains(reportStateLegal, reportState) {
+		message := fmt.Sprintf("report State is invalid: %d (must be from 0 to %d)", reportState, len(reportStateLegal))
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	report.Value.State = reportState
+
+	if reportDescription := args[2]; reportDescription != "" {
+		report.Value.Description = reportDescription
 	}
 
-	//setting automatic values
-	report.Value.State = stateReportAccepted
-	report.Value.Description = args[1]
-	report.Value.Timestamp = time.Now().UTC().Unix()
-	report.Value.UpdatedDate = report.Value.Timestamp
+	report.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(report); err == nil {
@@ -1582,16 +1588,48 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 		return pb.Response{Status: 500, Message: message}
 	}
 
+	// uploading document
+	documentHash := args[3]
+	documentType := args[4]
+	documentMeta := args[5]
+	document := Document{}
+	if documentHash != "" && documentType != "" {
+		// find contractID
+		err, contractID := findContractIDByEntity(stub, TypeShipment, report.Value.ShipmentID)
+		if err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+
+		documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
+		err, document = processingUploadDocument(stub, documentFields, Contract{})
+		if err != nil {
+			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+	}
+
 	//emitting Event
 	events := Events{}
 
-	//event = updateReport
+	//event1 = updateReport
 	eventValue := EventValue{}
 	eventValue.EntityType = reportIndex
 	eventValue.EntityID = report.Key.ID
 	eventValue.Other = report.Value
 	eventValue.Action = eventUpdateReport
 	events.Values = append(events.Values, eventValue)
+
+	if documentHash != "" && documentType != "" {
+		//event2 = uploadDocument
+		eventValue.EntityType = documentIndex
+		eventValue.EntityID = document.Key.ID
+		eventValue.Other = document.Value
+		eventValue.Action = eventUploadDocument
+		events.Values = append(events.Values, eventValue)
+	}
 
 	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
@@ -2466,6 +2504,7 @@ func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Repor
 		entry := ReportAdditional{
 			Key: report.Key,
 			Value: ReportValueAdditional{
+				Owner:         report.Value.Owner,
 				Description:   report.Value.Description,
 				ProofID:       report.Value.ProofID,
 				ConsignorName: report.Value.ConsignorName,
