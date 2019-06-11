@@ -82,7 +82,7 @@ const tabs = actor => [
   },
   {
     name: 'Proofs',
-    actors: ['ggcb', 'uscts', 'auditor'],
+    actors: ['ggcb', 'uscts'],
     panel: (
       <Filter tab="proofs">
         <Proofs actor={actor} />
@@ -91,7 +91,7 @@ const tabs = actor => [
   },
   {
     name: 'Reports',
-    actors: ['ggcb', 'uscts', 'auditor'],
+    actors: ['ggcb', 'uscts'],
     panel: (
       <Filter tab="reports">
         <Reports role={actor.role} />

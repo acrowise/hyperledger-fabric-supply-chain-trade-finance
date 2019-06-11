@@ -427,7 +427,7 @@ const NOTIFICATIONS_TAB = {
   placeOrder: 'orders',
   acceptOrder: 'orders',
   cancelOrder: 'orders',
-  editOrder: 'orders',
+  updateOrder: 'orders',
 
   requestShipment: 'shipments',
   confirmShipment: 'shipments',
@@ -460,7 +460,7 @@ const EVENTS_MAP = {
   placeOrder: 'Order Created',
   acceptOrder: 'Order Accepted',
   cancelOrder: 'Order Cancelled',
-  editOrder: 'Order Updated',
+  updateOrder: 'Order Updated',
   requestShipment: 'Shipment Requested',
   confirmShipment: 'Shipment Confirmed',
   confirmDelivery: 'Shipment Delivered',

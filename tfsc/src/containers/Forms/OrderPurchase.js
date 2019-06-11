@@ -45,7 +45,7 @@ const OrderForm = ({ dialog, setDialog }) => {
     dispatch({ type: 'reset', payload: initialState });
   }, [dialog.state]);
 
-  const [newOrder, placeOrder, reset] = post(`${isEdit ? 'edit' : 'place'}Order`)();
+  const [newOrder, placeOrder, reset] = post(`${isEdit ? 'update' : 'place'}Order`)();
 
   const errors = {
     productName: formState.productName.length === 0,
@@ -189,12 +189,12 @@ const OrderForm = ({ dialog, setDialog }) => {
                   const hasErrors = Object.keys(errors).find(i => errors[i] === true);
                   if (!hasErrors) {
                     placeOrder({
-                      fcn: `${isEdit ? 'edit' : 'place'}Order`,
+                      fcn: `${isEdit ? 'update' : 'place'}Order`,
                       args: [
                         isEdit ? formState.id : '0',
                         formState.productName,
-                        formState.quantity,
-                        formState.price,
+                        formState.quantity.toString(),
+                        formState.price.toString(),
                         formState.destination,
                         formState.dueDate.getTime().toString(),
                         formState.paymentDate.getTime().toString(),

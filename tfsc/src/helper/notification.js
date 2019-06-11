@@ -14,7 +14,7 @@ const notifications = (state = [], message, tab) => {
       case 'placeInvoice':
       case 'acceptOrder':
       case 'cancelOrder':
-      case 'editOrder':
+      case 'updateOrder':
       case 'cancelBid':
       case 'updateBid':
       case 'acceptInvoice':

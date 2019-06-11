@@ -48,7 +48,11 @@ const ValidateProof = ({
     }
   });
 
-  const handleOverlayClose = () => setDialogOpenState(false);
+  const handleOverlayClose = () => {
+    setDialogOpenState(false);
+    setHash(null);
+    setFiles([]);
+  };
 
   return (
     <Overlay usePortal isOpen={dialogIsOpen} onClose={handleOverlayClose}>
@@ -190,7 +194,8 @@ const ValidateProof = ({
                           '2',
                           'verifyProof-prohibited', // FIXME: add description
                           hash.hash,
-                          hash.type
+                          hash.type,
+                          `${role.toUpperCase()} Report`
                         ]
                       });
                       setDialogOpenState(false);

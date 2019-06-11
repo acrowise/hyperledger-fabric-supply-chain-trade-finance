@@ -212,7 +212,7 @@ module.exports = (router, clients) => {
     res.end('ok');
   });
 
-  router.post('/editOrder', (req, res) => {
+  router.post('/updateOrder', (req, res) => {
     const orders = db.get('orders').value();
     const order = orders.find(i => i.key.id === req.body.id);
 
@@ -228,7 +228,7 @@ module.exports = (router, clients) => {
 
     db.set('orders', orders).write();
 
-    clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'editOrder' })));
+    clients.forEach(c => c.emit('notification', JSON.stringify({ data: order, type: 'updateOrder' })));
     res.end('ok');
   });
 
