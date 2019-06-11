@@ -30,13 +30,17 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
     dueDate: false,
     paymentDate: false,
     reviewer: null,
+    'Bill of Lading': false,
+    'Packing List': false,
+    'CMSP Report': false,
+    'DMSP Report': false,
     touched: {
       reviewer: false
     }
   };
 
   if (shipment.documents) {
-    shipment.documents.forEach(doc => (initialState[doc.value.documentDescription] = false));
+    shipment.documents.forEach(doc => (initialState[doc.value.documentMeat] = false));
   }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
@@ -182,20 +186,30 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
               onClick={() => {
                 const hasErrors = Object.keys(errors).find(i => errors[i] === true);
                 if (!hasErrors) {
+                  const attributes = contractFields.map(i => ({
+                    AttributeName: i,
+                    AttributeValue: shipment.contract.value[i].toString(),
+                    AttributeDisclosure: formState[i] ? 1 : 0
+                  }));
+                  if (formState.contractId) {
+                    attributes.push({
+                      AttributeName: 'contractId',
+                      AttributeValue: shipment.contract.key.id,
+                      AttributeDisclosure: 1
+                    });
+                  }
+                  shipment.documents.forEach((document) => {
+                    if (formState[document.value.documentMeat]) {
+                      attributes.push({
+                        AttributeName: document.value.documentMeat,
+                        AttributeValue: document.value.documentHash,
+                        AttributeDisclosure: 1
+                      });
+                    }
+                  });
                   generateProof({
                     fcn: 'generateProof',
-                    args: [
-                      '0',
-                      JSON.stringify(
-                        contractFields.map(i => ({
-                          AttributeName: i,
-                          AttributeValue: shipment.contract.value[i].toString(),
-                          AttributeDisclosure: formState[i] ? 1 : 0
-                        }))
-                      ),
-                      formState.reviewer.id,
-                      shipment.id
-                    ]
+                    args: ['0', JSON.stringify(attributes), formState.reviewer.id, shipment.id]
                   });
                   setDialogOpenState(false);
                   dispatch({ type: 'reset', payload: initialState });

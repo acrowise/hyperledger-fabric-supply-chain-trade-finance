@@ -18,7 +18,7 @@ const ActionCompleted = ({ res, action, result }) => {
   return (
     <div className="action-completed">
       {res.pending ? (
-        <Spinner large intent="primary" />
+        <Spinner large />
       ) : (
         <>
           {getIcon}

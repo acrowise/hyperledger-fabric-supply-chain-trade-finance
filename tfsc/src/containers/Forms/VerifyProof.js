@@ -36,6 +36,18 @@ const ValidateProof = ({
     }
   });
 
+  const documentsToVerify = [];
+  const documentsTypes = ['Bill of Lading', 'Packing List', 'CMSP Report', 'DMSP Report'];
+
+  Object.keys(requestedInputs).forEach((input) => {
+    if (documentsTypes.includes(input)) {
+      documentsToVerify.push({
+        hash: requestedInputs[input],
+        type: input
+      });
+    }
+  });
+
   const handleOverlayClose = () => setDialogOpenState(false);
 
   return (
@@ -85,18 +97,18 @@ const ValidateProof = ({
                   }
                   return <></>;
                 })}
-                {/* {requestedDocs.map((d, i) => (
+                {documentsToVerify.map((d, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
                     <Icon name="proof-document" />
                     <a
                       style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                      href={`/getDocument?contractId=${d.contractId}&name=${d.name}`}
+                      href={`/getDocument?hash=${d.hash}&type=1`} // FIXME: type
                       target="_blank"
                     >
                       {d.type}
                     </a>
                   </div>
-                ))} */}
+                ))}
                 <br />
               </div>
               <div className="col-6">
@@ -149,7 +161,7 @@ const ValidateProof = ({
                         args: [
                           proof.id,
                           '1',
-                          '', // FIXME: add description
+                          'proof-verified', // FIXME: add description
                           hash.hash,
                           hash.type,
                           `${role.toUpperCase()} Report`
