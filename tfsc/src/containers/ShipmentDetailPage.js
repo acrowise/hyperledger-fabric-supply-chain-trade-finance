@@ -40,7 +40,7 @@ const ShipmentDetailPage = ({
         }, [])
         .map(({ key, value }) => ({
           id: value.eventId || key.id,
-          date: value.timestamp,
+          date: value.timestamp * 1000,
           action: EVENTS_MAP[value.action],
           user: value.creator
         }))

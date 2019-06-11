@@ -1795,7 +1795,7 @@ func (cc *SupplyChainChaincode) listProofsByShipment(stub shim.ChaincodeStubInte
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	if err, result := checkAccessForUnit([][]string{Auditor, Supplier, Buyer}, stub); err != nil || !result {
+	if err, result := checkAccessForUnit([][]string{Auditor, Supplier, Buyer, TransportAgency}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to get proofs by owner")
 		Logger.Error(message)
 		return shim.Error(message)

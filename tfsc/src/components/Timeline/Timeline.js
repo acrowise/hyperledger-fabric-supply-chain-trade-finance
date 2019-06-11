@@ -34,7 +34,7 @@ const Timeline = ({ shipment, events }) => {
     <div className="timeline-wrap">
       <div className="timeline">
         <div className="timeline-start">
-          <div className="timeline-start-text">{format(shipment.timestamp, 'DD MMM YYYY')}</div>
+          <div className="timeline-start-text">{format(shipment.timestamp * 1000, 'DD MMM YYYY')}</div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipFrom}</div>
           </div>
