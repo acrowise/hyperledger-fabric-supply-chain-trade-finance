@@ -19,6 +19,8 @@ import Icons from '../components/Icon/Icon';
 
 import { EVENTS_MAP } from '../constants';
 
+const fromUnixTime = timestamp => timestamp * 1000;
+
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
@@ -40,7 +42,7 @@ const ShipmentDetailPage = ({
         }, [])
         .map(({ key, value }) => ({
           id: value.eventId || key.id,
-          date: value.timestamp * 1000,
+          date: fromUnixTime(value.timestamp),
           action: EVENTS_MAP[value.action],
           user: value.creator
         }))
@@ -50,7 +52,7 @@ const ShipmentDetailPage = ({
     const newEvents = events.concat([
       {
         id: notification.data.value.eventId || notification.data.key.id,
-        date: notification.data.value.timestamp,
+        date: fromUnixTime(notification.data.value.timestamp),
         action: EVENTS_MAP[notification.type],
         user: notification.data.value.creator
       }
