@@ -15,7 +15,7 @@ import notifications from '../helper/notification';
 import Loading from '../components/Loading';
 
 const Reports = ({
-  role, filter, search, dataForFilter, setDataForFilter, filterOptions
+  actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [data, loading, setData] = get('listReports');
@@ -29,9 +29,8 @@ const Reports = ({
 
   // FIXME:
   if (!loading && filteredData && filteredData.length > 0) {
-    filteredData = filteredData
-      .map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }))
-      // .filter(i => i.factor.toLowerCase() === role);
+    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.REPORT[i.value.state] }));
+    // .filter(i => i.factor.toLowerCase() === role);
 
     if (dataForFilter.length === 0 && filteredData.length !== 0) {
       setDataForFilter(filteredData);
@@ -54,13 +53,13 @@ const Reports = ({
         dialogIsOpen={vpDialogIsOpen}
         setDialogOpenState={setVpDialogOpenState}
         proof={selectedProof}
-        role={role}
+        role={actor.role}
         type="update"
       />
       <Table
         fields={TABLE_MAP.REPORTS}
         data={filteredData}
-        actions={item => (role === 'ggcb' || role === 'uscts' ? (
+        actions={item => (item.owner === actor.id ? (
             <div>
               <Button
                 onClick={() => {

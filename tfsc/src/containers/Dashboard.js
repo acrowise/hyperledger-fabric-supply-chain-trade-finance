@@ -94,7 +94,7 @@ const tabs = actor => [
     actors: ['ggcb', 'uscts'],
     panel: (
       <Filter tab="reports">
-        <Reports role={actor.role} />
+        <Reports actor={actor} />
       </Filter>
     )
   },
