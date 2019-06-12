@@ -27,7 +27,7 @@ const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
   const [proofs, loadingProofs, setProofsData] = get('listProofsByShipment', [shipment.id]);
-  const [reports, loadingReports, setReportsData] = get('listReports', [shipment.id]);
+  const [reports, loadingReports, setReportsData] = get('listReportsByShipment', [shipment.id]);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);

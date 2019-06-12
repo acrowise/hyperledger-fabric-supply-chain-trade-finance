@@ -496,3 +496,10 @@ $header-height: 65px;
 .bp3-spinner .bp3-spinner-head {
   stroke: #69d7bc;
 }
+
+.loading-overlay-container {
+  display: flex;
+  width: 100vw;
+  justify-content: center;
+  padding-top: 15vh;
+}

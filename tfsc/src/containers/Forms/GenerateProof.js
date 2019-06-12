@@ -103,19 +103,16 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                   ))}
                   {shipment
                     && shipment.documents
-                    && shipment.documents.map(doc => (
+                    && shipment.documents.map((doc, i) => (
                       <div
                         className="col-6"
-                        key={doc.value.documentMeat}
+                        key={i}
                         style={{ display: 'flex', paddingLeft: 0, alignItems: 'center' }}
                       >
-                        <div style={{ marginRight: 5 }}>
-                          <Icons name="proof-document" />
-                        </div>
                         <Checkbox
                           style={{ marginBottom: 3 }}
-                          label={doc.value.documentMeat}
-                          value={formState[doc.field]}
+                          value={formState[doc.value.documentMeat]}
+                          checked={formState[doc.value.documentMeat]}
                           onChange={() => dispatch({
                             type: 'change',
                             payload: {
@@ -125,6 +122,29 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                           })
                           }
                         />
+                        <div
+                          style={{
+                            cursor: 'pointer',
+                            marginRight: 5,
+                            display: 'flex',
+                            paddingLeft: 0,
+                            alignItems: 'center'
+                          }}
+                          onClick={() => {
+                            dispatch({
+                              type: 'change',
+                              payload: {
+                                field: doc.value.documentMeat,
+                                value: !formState[doc.value.documentMeat]
+                              }
+                            });
+                          }}
+                        >
+                          <div style={{ marginRight: 5 }}>
+                            <Icons name="proof-document" />
+                          </div>
+                          {doc.value.documentMeat}
+                        </div>
                       </div>
                     ))}
                 </div>

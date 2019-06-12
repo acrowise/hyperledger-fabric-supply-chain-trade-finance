@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
-import { Button } from '@blueprintjs/core';
+import { Button, Overlay, Card } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 
 import { post, get } from '../helper/api';
@@ -12,6 +12,7 @@ import { TABLE_MAP, STATUSES } from '../constants';
 
 import OrderPurchaseForm from './Forms/OrderPurchase';
 import Loading from '../components/Loading';
+import ActionCompleted from '../components/ActionCompleted/ActionCompleted';
 
 import notifications from '../helper/notification';
 
@@ -19,14 +20,11 @@ const Orders = ({
   actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = get('listOrders');
-  const [, acceptOrder] = post('acceptOrder')();
-  const [, cancelOrder] = post('cancelOrder')();
-  const [, guarenteeOrder] = post('guarenteeOrder')();
+  const [reqAccept, acceptOrder] = post('acceptOrder')();
+  const [reqCancel, cancelOrder] = post('cancelOrder')();
+  const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
 
-  const [dialog, setDialog] = useState({
-    state: null,
-    isOpen: false
-  });
+  const [dialog, setDialog] = useState({ state: null, isOpen: false });
 
   useSocket('notification', (message) => {
     setData(notifications(data.result.concat([]), message, 'orders'));
@@ -53,7 +51,15 @@ const Orders = ({
   return loading ? (
     <Loading />
   ) : (
-    <div>
+    <>
+      <Overlay usePortal isOpen={reqAccept.pending || reqCancel.pending}>
+        <div className="loading-overlay-container">
+          <Card className="modal" style={{ width: '720px' }}>
+            <ActionCompleted res={reqAccept} action="Order" result="Accepted" />
+            <ActionCompleted res={reqCancel} action="Order" result="Cancelled" />
+          </Card>
+        </div>
+      </Overlay>
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={TABLE_MAP.ORDERS}
@@ -132,7 +138,7 @@ const Orders = ({
           </>
         )}
       />
-    </div>
+    </>
   );
 };
 

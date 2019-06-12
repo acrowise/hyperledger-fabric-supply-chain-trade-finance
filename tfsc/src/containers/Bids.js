@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 import { useSocket } from 'use-socketio';
-import { Button } from '@blueprintjs/core';
+import { Button, Overlay, Card } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 
 import { post, get } from '../helper/api';
@@ -13,13 +13,14 @@ import { filterData } from '../helper/utils';
 import BidForm from './Forms/Bid';
 import Loading from '../components/Loading';
 import notifications from '../helper/notification';
+import ActionCompleted from '../components/ActionCompleted/ActionCompleted';
 
 const Bids = ({
   actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
   const [data, loading, setData] = get('listBids');
-  const [, acceptBid] = post('acceptBid')();
-  const [, cancelBid] = post('cancelBid')();
+  const [reqAccept, acceptBid] = post('acceptBid')();
+  const [reqCancel, cancelBid] = post('cancelBid')();
 
   useSocket('notification', (message) => {
     setData(notifications(data.result, message, 'bids'));
@@ -51,7 +52,16 @@ const Bids = ({
   return loading ? (
     <Loading />
   ) : (
-    <div>
+    <>
+      <Overlay usePortal isOpen={reqAccept.pending || reqCancel.pending}>
+        <div className="loading-overlay-container">
+          <Card className="modal" style={{ width: '720px' }}>
+            <ActionCompleted res={reqAccept} action="Bid" result="Accepted" />
+            <ActionCompleted res={reqCancel} action="Bid" result="Cancelled" />
+          </Card>
+        </div>
+      </Overlay>
+
       <BidForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={
@@ -124,7 +134,7 @@ const Bids = ({
           </>
         )}
       />
-    </div>
+    </>
   );
 };
 

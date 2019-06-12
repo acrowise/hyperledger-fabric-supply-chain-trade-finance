@@ -209,9 +209,9 @@ const html = require('./html');
 const renderer = async (req, res) => {
   const data = {
     ipfs_port: IPFS_PORT,
-    role: ACTORS[ROLE].role,
+    role: ACTORS[ROLE],
     org: ORG,
-    id: ACTORS[ROLE].id
+    id: `${ORG}MSP`
   };
   return res.send(html(data));
 };

@@ -349,6 +349,10 @@ const METHODS_MAP = [
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
+    ccMethod: 'listReportsByShipment',
+    chaincode: SUPPLY_CHAIN_CHAINCODE
+  },
+  {
     ccMethod: 'listShipments',
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },

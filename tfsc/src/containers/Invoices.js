@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button } from '@blueprintjs/core';
+import { Button, Overlay, Card } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import BidForm from './Forms/Bid';
@@ -12,6 +12,7 @@ import notifications from '../helper/notification';
 
 import Table from '../components/Table/Table';
 import Loading from '../components/Loading';
+import ActionCompleted from '../components/ActionCompleted/ActionCompleted';
 
 const Invoices = ({
   actor, filter, search, dataForFilter, setDataForFilter, filterOptions
@@ -25,8 +26,8 @@ const Invoices = ({
 
   // const [, acceptInvoice] = post('acceptInvoice')();
 
-  const [, placeForTradeInvoice] = post('placeInvoice')();
-  const [, removeInvoice] = post('removeInvoice')();
+  const [reqPlace, placeForTradeInvoice] = post('placeInvoice')();
+  const [reqRemove, removeInvoice] = post('removeInvoice')();
 
   useSocket('notification', (message) => {
     const notification = JSON.parse(message);
@@ -76,6 +77,14 @@ const Invoices = ({
     <Loading />
   ) : (
     <>
+      <Overlay usePortal isOpen={reqPlace.pending || reqRemove.pending}>
+        <div className="loading-overlay-container">
+          <Card className="modal" style={{ width: '720px' }}>
+            <ActionCompleted res={reqPlace} action="Bid" result="Accepted" />
+            <ActionCompleted res={reqRemove} action="Bid" result="Cancelled" />
+          </Card>
+        </div>
+      </Overlay>
       <BidForm dialog={bidDialog} setDialog={setBidDialog} />
       <Table
         fields={TABLE_MAP.INVOICES}
