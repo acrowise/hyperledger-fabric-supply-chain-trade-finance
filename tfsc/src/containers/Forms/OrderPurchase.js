@@ -134,7 +134,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                           )
                         }
                         value={formState.dueDate}
-                        formatDate={date => format(date, 'MM/dd/yyyy')}
+                        formatDate={date => format(date, 'MM/DD/YYYY')}
                         onChange={(date) => {
                           dispatch({
                             type: 'change',
@@ -154,7 +154,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                       <DateInput
                         minDate={new Date()}
                         value={formState.paymentDate}
-                        formatDate={date => format(date, 'MM/dd/yyyy')}
+                        formatDate={date => format(date, 'MM/DD/YYYY')}
                         onChange={(date) => {
                           dispatch({
                             type: 'change',

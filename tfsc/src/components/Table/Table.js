@@ -39,7 +39,7 @@ const Table = ({
                 //   value = capitalize(value);
                 // }
                 if (dates.includes(j)) {
-                  value = format(value, 'dd MMM yyyy');
+                  value = format(value, 'DD MMM YYYY');
                 }
                 if (ids.includes(j)) {
                   value = cropId(value);

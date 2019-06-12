@@ -97,7 +97,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                       new Date().getDate()
                     )
                   }
-                  formatDate={date => format(date, 'MM/dd/yyyy')}
+                  formatDate={date => format(date, 'MM/DD/YYYY')}
                   onChange={(date) => {
                     setFilter({ from: date.getTime() });
                   }}
@@ -117,7 +117,7 @@ const FilterBy = ({ type, data, setFilter }) => {
                       new Date().getDate()
                     )
                   }
-                  formatDate={date => format(date, 'MM/dd/yyyy')}
+                  formatDate={date => format(date, 'MM/DD/YYYY')}
                   onChange={(date) => {
                     setFilter({ to: date.getTime() });
                   }}

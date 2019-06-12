@@ -88,7 +88,7 @@ const ValidateProof = ({
                         <FormGroup className="form-group-horizontal" label={proofField.label}>
                           <InputGroup
                             disabled
-                            value={format(parseInt(requestedInputs[field], 10), 'dd MMM yyyy')}
+                            value={format(parseInt(requestedInputs[field], 10), 'DD MMM YYYY')}
                           />
                         </FormGroup>
                       );

@@ -30,7 +30,7 @@ const CollapsiblePanel = ({ history }) => {
                     <td className="history-table-bullet">
                       <Icon icon="symbol-circle" />
                     </td>
-                    <td>{format(item.date, 'dd MMM yyyy')}</td>
+                    <td>{format(item.date, 'DD MMM YYYY')}</td>
                     <td>{item.id}</td>
                     <td>{item.action}</td>
                     {/* <td>{item.user}</td> */}

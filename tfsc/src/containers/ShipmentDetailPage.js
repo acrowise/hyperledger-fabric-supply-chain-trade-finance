@@ -169,7 +169,7 @@ const ShipmentDetailPage = ({
                 <tr>
                   <td>{shipment.shipFrom}</td>
                   <td>{shipment.shipTo}</td>
-                  <td>{format(shipment.deliveryDate, 'dd MMM yyyy')}</td>
+                  <td>{format(shipment.deliveryDate, 'DD MMM YYYY')}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
                 </tr>
