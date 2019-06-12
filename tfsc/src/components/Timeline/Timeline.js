@@ -34,14 +34,14 @@ const Timeline = ({ shipment, events }) => {
     <div className="timeline-wrap">
       <div className="timeline">
         <div className="timeline-start">
-          <div className="timeline-start-text">{format(shipment.timestamp * 1000, 'DD MMM YYYY')}</div>
+          <div className="timeline-start-text">{format(shipment.timestamp * 1000, 'dd MMM yyy')}</div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipFrom}</div>
           </div>
         </div>
         <div style={isDelivered ? { backgroundColor: '#69D7BC' } : {}} className="timeline-finish">
           <div className="timeline-finish-text">
-            {isDelivered ? format(isDelivered.date, 'DD MMM YYYY') : ''}
+            {isDelivered ? format(isDelivered.date, 'dd MMM yyyy') : ''}
           </div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipTo}</div>
@@ -61,7 +61,7 @@ const Timeline = ({ shipment, events }) => {
                 <TimelineItem
                   id={event.id}
                   key={event.id}
-                  date={format(event.date, 'DD MMM YYYY')}
+                  date={format(event.date, 'dd MMM yyyy')}
                   timelineItemClickHandler={setSelected}
                   isSelected={event.id === selectedId}
                 />

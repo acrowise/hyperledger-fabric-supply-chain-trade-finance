@@ -10,6 +10,7 @@ import { cropId } from '../helper/utils';
 import GenerateProofForm from './Forms/GenerateProof';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
 import ProofDetail from '../components/ProofDetail/ProofDetail';
+import ReportDetail from '../components/ReportDetail/ReportDetail';
 import Panel from '../components/CollapsiblePanel';
 import Timeline from '../components/Timeline/Timeline';
 import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
@@ -125,6 +126,11 @@ const ShipmentDetailPage = ({
         setDialogOpenState={setProofDialogOpenState}
         proof={proof}
       />
+      <ReportDetail
+        dialogIsOpen={reportDialogIsOpen}
+        setDialogOpenState={setReportDialogOpenState}
+        report={report}
+      />
       <div
         style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}
         onClick={() => {
@@ -163,7 +169,7 @@ const ShipmentDetailPage = ({
                 <tr>
                   <td>{shipment.shipFrom}</td>
                   <td>{shipment.shipTo}</td>
-                  <td>{format(shipment.deliveryDate, 'DD MMM YYYY')}</td>
+                  <td>{format(shipment.deliveryDate, 'dd MMM yyyy')}</td>
                   <td>{shipment.transport}</td>
                   <td>{shipment.state}</td>
                 </tr>
@@ -264,7 +270,7 @@ const ShipmentDetailPage = ({
                 <Panel
                   data={reports.result}
                   type="report"
-                  setDialogOpenState={setProofDialogOpenState}
+                  setDialogOpenState={setReportDialogOpenState}
                   setItem={setReport}
                 />
               )}

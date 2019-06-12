@@ -3,7 +3,7 @@ const ipfsClient = require('ipfs-http-client');
 const IPFS_PORT = window.__STATE__ ? window.__STATE__.ipfs_port : '7001'; // eslint-disable-line no-underscore-dangle
 
 const ipfs = ipfsClient({
-  host: 'localhost',
+  host: window.location.hostname,
   port: IPFS_PORT
 });
 
@@ -44,12 +44,12 @@ const addDocument = (file) => {
       } else {
         const testBuffer = Buffer.from(result.file);
         const fileType = result.type;
-        ipfs.add(testBuffer, (err, result) => {
+        ipfs.add(testBuffer, (err, res) => {
           if (err) {
             reject(err);
           }
           resolve({
-            hash: result[0].hash,
+            hash: res[0].hash,
             type: fileType
           });
         });
