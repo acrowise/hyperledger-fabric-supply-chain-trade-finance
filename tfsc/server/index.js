@@ -20,14 +20,14 @@ const {
 } = require('../src/constants');
 
 const ACTORS = {
-  buyer: { role: 'buyer', id: 'aMSP' },
-  supplier: { role: 'supplier', id: 'bMSP' },
-  auditor_1: { role: 'ggcb', id: 'cMSP' },
-  auditor_2: { role: 'uscts', id: 'dMSP' },
-  factor_1: { role: 'factor 1', id: 'eMSP' },
-  factor_2: { role: 'factor 2', id: 'fMSP' },
-  transporter: { role: 'transporter', id: 'gMSP' },
-  bank: { role: 'bank', id: 'hMSP' }
+  buyer: 'buyer',
+  supplier: 'supplier',
+  auditor_1: 'ggcb',
+  auditor_2: 'uscts',
+  factor_1: 'factor 1',
+  factor_2: 'factor 2',
+  transporter: 'transporter',
+  bank: 'bank'
 };
 
 const ipfs = ipfsClient({
@@ -168,9 +168,9 @@ router.post('/login', async (_, res) => res.json({
   jwt: jwt.sign(
     {
       ipfs_port: IPFS_PORT,
-      role: ACTORS[ROLE].role,
+      role: ACTORS[ROLE],
       org: ORG,
-      id: ACTORS[ROLE].id
+      id: `${ORG}MSP`
     },
     JWT_SECRET
   )
