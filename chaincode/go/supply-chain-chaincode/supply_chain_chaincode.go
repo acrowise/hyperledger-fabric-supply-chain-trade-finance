@@ -102,8 +102,9 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	} else if function == "listProofsByShipment" {
 		return cc.listProofsByShipment(stub, args)
 	} else if function == "listReports" {
-		// List all acceptance details for the contract
 		return cc.listReports(stub, args)
+	} else if function == "listReportsByShipment" {
+		return cc.listReportsByShipment(stub, args)
 	} else if function == "listShipments" {
 		return cc.listShipments(stub, args)
 	} else if function == "getDocument" {
@@ -1790,7 +1791,7 @@ func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterfa
 }
 
 //0
-//Owner
+//ShipmentID
 func (cc *SupplyChainChaincode) listProofsByShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1851,6 +1852,59 @@ func (cc *SupplyChainChaincode) listReports(stub shim.ChaincodeStubInterface, ar
 
 	reports := []Report{}
 	reportsBytes, err := Query(stub, reportIndex, []string{}, CreateReport, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(reportsBytes, &reports); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := joinByReportsAndDocuments(stub, reports)
+	if err != nil {
+		message := fmt.Sprintf("cannot join by report and contract: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
+//0
+//ShipmentID
+func (cc *SupplyChainChaincode) listReportsByShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	shipmentID := args[0]
+	shipment := Shipment{}
+	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	if !ExistsIn(stub, &shipment, shipmentIndex) {
+		compositeKey, _ := shipment.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("shipment with the key %s doesnt exist", compositeKey))
+	}
+
+	filterByShipment := func(data LedgerData) bool {
+		entity, ok := data.(*Report)
+		if ok && entity.Value.ShipmentID == shipmentID {
+			return true
+		}
+
+		return false
+	}
+
+	reports := []Report{}
+	reportsBytes, err := Query(stub, reportIndex, []string{}, CreateReport, filterByShipment)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
