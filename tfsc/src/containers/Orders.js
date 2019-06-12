@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSocket } from 'use-socketio';
-import { Button, Overlay, Card } from '@blueprintjs/core';
+import { Button } from '@blueprintjs/core';
 import PropTypes from 'prop-types';
 
 import { post, get } from '../helper/api';
@@ -12,7 +12,8 @@ import { TABLE_MAP, STATUSES } from '../constants';
 
 import OrderPurchaseForm from './Forms/OrderPurchase';
 import Loading from '../components/Loading';
-import ActionCompleted from '../components/ActionCompleted/ActionCompleted';
+
+import LoadingOverlay from '../components/LoadingOverlay';
 
 import notifications from '../helper/notification';
 
@@ -52,14 +53,8 @@ const Orders = ({
     <Loading />
   ) : (
     <>
-      <Overlay usePortal isOpen={reqAccept.pending || reqCancel.pending}>
-        <div className="loading-overlay-container">
-          <Card className="modal" style={{ width: '720px' }}>
-            <ActionCompleted res={reqAccept} action="Order" result="Accepted" />
-            <ActionCompleted res={reqCancel} action="Order" result="Cancelled" />
-          </Card>
-        </div>
-      </Overlay>
+      <LoadingOverlay req={reqAccept} action="Order" result="Accepted" />
+      <LoadingOverlay req={reqCancel} action="Order" result="Cancelled" />
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={TABLE_MAP.ORDERS}
