@@ -171,11 +171,11 @@ const INPUTS = {
 
 const REVIEWERS = [
   {
-    id: 'cMSP',
+    id: 'Auditor-1',
     title: 'Government Goods Control Bureau'
   },
   {
-    id: 'dMSP',
+    id: 'Auditor-2',
     title: 'US Commercial Trade Service'
   }
 ];
