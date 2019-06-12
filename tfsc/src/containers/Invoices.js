@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Button, Overlay, Card } from '@blueprintjs/core';
+import { Button } from '@blueprintjs/core';
 
 import { useSocket } from 'use-socketio';
 import BidForm from './Forms/Bid';
@@ -12,19 +12,15 @@ import notifications from '../helper/notification';
 
 import Table from '../components/Table/Table';
 import Loading from '../components/Loading';
-import ActionCompleted from '../components/ActionCompleted/ActionCompleted';
+import LoadingOverlay from '../components/LoadingOverlay';
 
 const Invoices = ({
   actor, filter, search, dataForFilter, setDataForFilter, filterOptions
 }) => {
-  const [bidDialog, setBidDialog] = useState({
-    isOpen: false
-  });
+  const [bidDialog, setBidDialog] = useState({ isOpen: false });
 
   const [invoices, invoicesLoading, setData] = get('listInvoices');
   const [bids, bidsLoading, setBids] = get('listBids');
-
-  // const [, acceptInvoice] = post('acceptInvoice')();
 
   const [reqPlace, placeForTradeInvoice] = post('placeInvoice')();
   const [reqRemove, removeInvoice] = post('removeInvoice')();
@@ -58,7 +54,10 @@ const Invoices = ({
         }));
     });
 
-    filteredData = filteredData.map(i => Object.assign({}, i.value, { id: i.key.id, state: STATUSES.INVOICE[i.value.state] }));
+    filteredData = filteredData.map(i => Object.assign({}, i.value, {
+      id: i.key.id,
+      state: STATUSES.INVOICE[i.value.state]
+    }));
 
     if (dataForFilter.length === 0) {
       setDataForFilter(filteredData);
@@ -77,14 +76,8 @@ const Invoices = ({
     <Loading />
   ) : (
     <>
-      <Overlay usePortal isOpen={reqPlace.pending || reqRemove.pending}>
-        <div className="loading-overlay-container">
-          <Card className="modal" style={{ width: '720px' }}>
-            <ActionCompleted res={reqPlace} action="Bid" result="Accepted" />
-            <ActionCompleted res={reqRemove} action="Bid" result="Cancelled" />
-          </Card>
-        </div>
-      </Overlay>
+      <LoadingOverlay req={reqPlace} action="Bid" result="Accepted" />
+      <LoadingOverlay req={reqRemove} action="Bid" result="Cancelled" />
       <BidForm dialog={bidDialog} setDialog={setBidDialog} />
       <Table
         fields={TABLE_MAP.INVOICES}

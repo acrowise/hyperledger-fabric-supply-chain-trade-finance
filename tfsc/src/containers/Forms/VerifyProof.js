@@ -17,12 +17,14 @@ import { INPUTS } from '../../constants';
 
 import { formReducer } from '../../reducers';
 
+import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
+
 const ValidateProof = ({
   dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
   const [files, setFiles] = useState([]);
   const [hash, setHash] = useState(null);
-  const [, verifyProof] = post('verifyProof')();
+  const [verifyProofRes, verifyProof, resetVerifyProofRes] = post('verifyProof')();
 
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -32,6 +34,15 @@ const ValidateProof = ({
 
   if (!proof || !proof.dataForVerification) {
     return <></>;
+  }
+
+  if (!verifyProofRes.pending) {
+    if (verifyProofRes.complete) {
+      setTimeout(() => {
+        setDialogOpenState(false);
+        resetVerifyProofRes();
+      }, 1500);
+    }
   }
 
   const requestedInputs = {};
@@ -71,152 +82,158 @@ const ValidateProof = ({
         }}
       >
         <Card className="modal" style={{ width: '720px' }}>
-          <div className="modal-header">
-            {type === 'update'
-              ? 'Update Report'
-              : `Verify ${role === 'uscts' ? 'Commercial Trade' : 'Goods'}`}
-          </div>
-          <div className="modal-body">
-            <div className="row">
-              <div className="col-6">
-                {Object.keys(requestedInputs).map((field) => {
-                  if (field === 'contractId') {
-                    return (
-                      <FormGroup className="form-group-horizontal" label="Contract ID">
-                        <InputGroup disabled value={cropId(requestedInputs[field])} />
-                      </FormGroup>
-                    );
-                  }
-                  const proofField = INPUTS.GENERATE_PROOF.find(i => i.field === field);
-                  if (proofField) {
-                    if (field === 'dueDate' || field === 'paymentDate') {
-                      return (
-                        <FormGroup className="form-group-horizontal" label={proofField.label}>
-                          <InputGroup
-                            disabled
-                            value={format(parseInt(requestedInputs[field], 10), 'DD MMM YYYY')}
-                          />
-                        </FormGroup>
-                      );
-                    }
-                    return (
-                      <FormGroup className="form-group-horizontal" label={proofField.label}>
-                        <InputGroup disabled value={requestedInputs[field]} />
-                      </FormGroup>
-                    );
-                  }
-                  return <></>;
-                })}
-                {documentsToVerify.map((d, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
-                    <Icon name="proof-document" />
-                    <a
-                      style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                      href={`/getDocument?hash=${d.hash}&type=1`} // FIXME: type
-                      target="_blank"
-                    >
-                      {d.type}
-                    </a>
-                  </div>
-                ))}
-                <br />
+          {verifyProofRes.pending || verifyProofRes.complete || verifyProofRes.data ? (
+            <ActionCompleted res={verifyProofRes} action="Proof" result="Generated" />
+          ) : (
+            <>
+              <div className="modal-header">
+                {type === 'update'
+                  ? 'Update Report'
+                  : `Verify ${role === 'uscts' ? 'Commercial Trade' : 'Goods'}`}
               </div>
-              <div className="col-6">
-                <FormGroup className="form-group-horizontal" label="Shipment number">
-                  <InputGroup disabled value={cropId(proof.shipmentID)} />
-                </FormGroup>
-                <Label>Add report</Label>
-                <FileUploader
-                  files={files}
-                  setFiles={setFiles}
-                  hash={hash}
-                  setHash={setHash}
-                  error={fileRequired}
-                />
-                <Label>
-                  Description
-                  <TextArea
-                    value={formState.description}
-                    growVertically={true}
-                    onChange={({ target: { value } }) => dispatch({
-                      type: 'change',
-                      payload: {
-                        field: 'description',
-                        value
+              <div className="modal-body">
+                <div className="row">
+                  <div className="col-6">
+                    {Object.keys(requestedInputs).map((field) => {
+                      if (field === 'contractId') {
+                        return (
+                          <FormGroup className="form-group-horizontal" label="Contract ID">
+                            <InputGroup disabled value={cropId(requestedInputs[field])} />
+                          </FormGroup>
+                        );
                       }
-                    })
-                    }
-                  />
-                </Label>
+                      const proofField = INPUTS.GENERATE_PROOF.find(i => i.field === field);
+                      if (proofField) {
+                        if (field === 'dueDate' || field === 'paymentDate') {
+                          return (
+                            <FormGroup className="form-group-horizontal" label={proofField.label}>
+                              <InputGroup
+                                disabled
+                                value={format(parseInt(requestedInputs[field], 10), 'DD MMM YYYY')}
+                              />
+                            </FormGroup>
+                          );
+                        }
+                        return (
+                          <FormGroup className="form-group-horizontal" label={proofField.label}>
+                            <InputGroup disabled value={requestedInputs[field]} />
+                          </FormGroup>
+                        );
+                      }
+                      return <></>;
+                    })}
+                    {documentsToVerify.map((d, i) => (
+                      <div key={i} style={{ display: 'flex', flexDirection: 'row', margin: '5px' }}>
+                        <Icon name="proof-document" />
+                        <a
+                          style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
+                          href={`/getDocument?hash=${d.hash}&type=1`} // FIXME: type
+                          target="_blank"
+                        >
+                          {d.type}
+                        </a>
+                      </div>
+                    ))}
+                    <br />
+                  </div>
+                  <div className="col-6">
+                    <FormGroup className="form-group-horizontal" label="Shipment number">
+                      <InputGroup disabled value={cropId(proof.shipmentID)} />
+                    </FormGroup>
+                    <Label>Add report</Label>
+                    <FileUploader
+                      files={files}
+                      setFiles={setFiles}
+                      hash={hash}
+                      setHash={setHash}
+                      error={fileRequired}
+                    />
+                    <Label>
+                      Description
+                      <TextArea
+                        value={formState.description}
+                        growVertically={true}
+                        onChange={({ target: { value } }) => dispatch({
+                          type: 'change',
+                          payload: {
+                            field: 'description',
+                            value
+                          }
+                        })
+                        }
+                      />
+                    </Label>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="modal-footer">
-            {type === 'update' ? (
-              <Button large intent="primary" className="btn-modal" onClick={handleOverlayClose}>
-                Update Report
-              </Button>
-            ) : (
-              <>
-                <Button
-                  large
-                  intent="primary"
-                  className="btn-modal"
-                  onClick={() => {
-                    if (files.length === 0) {
-                      setFileRequired(true);
-                    } else {
-                      verifyProof({
-                        fcn: 'verifyProof',
-                        args: [
-                          proof.id,
-                          '1',
-                          formState.description,
-                          hash.hash,
-                          hash.type,
-                          `${role.toUpperCase()} Report`
-                        ]
-                      });
-                      setDialogOpenState(false);
-                      setFileRequired(false);
-                      setHash(null);
-                      dispatch({ type: 'reset', payload: initialState });
-                    }
-                  }}
-                >
-                  {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}
-                </Button>
-                <Button
-                  large
-                  intent="none"
-                  className="btn-modal btn-default"
-                  onClick={() => {
-                    if (files.length === 0) {
-                      setFileRequired(true);
-                    } else {
-                      verifyProof({
-                        fcn: 'verifyProof',
-                        args: [
-                          proof.id,
-                          '2',
-                          formState.description, // FIXME: add description
-                          hash.hash,
-                          hash.type,
-                          `${role.toUpperCase()} Report`
-                        ]
-                      });
-                      setDialogOpenState(false);
-                      setFileRequired(false);
-                      setHash(null);
-                      dispatch({ type: 'reset', payload: initialState });
-                    }
-                  }}
-                >
-                  {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
-                </Button>
-              </>
-            )}
-          </div>
+              <div className="modal-footer">
+                {type === 'update' ? (
+                  <Button large intent="primary" className="btn-modal" onClick={handleOverlayClose}>
+                    Update Report
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      large
+                      intent="primary"
+                      className="btn-modal"
+                      onClick={() => {
+                        if (files.length === 0) {
+                          setFileRequired(true);
+                        } else {
+                          verifyProof({
+                            fcn: 'verifyProof',
+                            args: [
+                              proof.id,
+                              '1',
+                              formState.description,
+                              hash.hash,
+                              hash.type,
+                              `${role.toUpperCase()} Report`
+                            ]
+                          });
+                          // setDialogOpenState(false);
+                          setFileRequired(false);
+                          setHash(null);
+                          dispatch({ type: 'reset', payload: initialState });
+                        }
+                      }}
+                    >
+                      {role === 'uscts' ? 'Trade permitted' : 'Goods approved'}
+                    </Button>
+                    <Button
+                      large
+                      intent="none"
+                      className="btn-modal btn-default"
+                      onClick={() => {
+                        if (files.length === 0) {
+                          setFileRequired(true);
+                        } else {
+                          verifyProof({
+                            fcn: 'verifyProof',
+                            args: [
+                              proof.id,
+                              '2',
+                              formState.description, // FIXME: add description
+                              hash.hash,
+                              hash.type,
+                              `${role.toUpperCase()} Report`
+                            ]
+                          });
+                          // setDialogOpenState(false);
+                          setFileRequired(false);
+                          setHash(null);
+                          dispatch({ type: 'reset', payload: initialState });
+                        }
+                      }}
+                    >
+                      {role === 'uscts' ? 'Trade ' : 'Goods'} prohibited
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </Card>
       </div>
     </Overlay>
