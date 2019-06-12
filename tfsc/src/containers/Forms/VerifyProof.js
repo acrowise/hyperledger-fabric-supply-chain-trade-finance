@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
 import PropTypes from 'prop-types';
 
 import {
@@ -15,6 +15,8 @@ import Icon from '../../components/Icon/Icon';
 
 import { INPUTS } from '../../constants';
 
+import { formReducer } from '../../reducers';
+
 const ValidateProof = ({
   dialogIsOpen, setDialogOpenState, proof, role, type
 }) => {
@@ -23,6 +25,10 @@ const ValidateProof = ({
   const [, verifyProof] = post('verifyProof')();
 
   const [fileRequired, setFileRequired] = useState(false);
+
+  const initialState = { description: '' };
+
+  const [formState, dispatch] = useReducer(formReducer, initialState);
 
   if (!proof || !proof.dataForVerification) {
     return <></>;
@@ -130,16 +136,16 @@ const ValidateProof = ({
                 <Label>
                   Description
                   <TextArea
-                    value={proof.description}
+                    value={formState.description}
                     growVertically={true}
-                    // onChange={({ target: { value } }) => dispatch({
-                    //   type: 'change',
-                    //   payload: {
-                    //     field: 'description',
-                    //     value
-                    //   }
-                    // })
-                    // }
+                    onChange={({ target: { value } }) => dispatch({
+                      type: 'change',
+                      payload: {
+                        field: 'description',
+                        value
+                      }
+                    })
+                    }
                   />
                 </Label>
               </div>
@@ -165,7 +171,7 @@ const ValidateProof = ({
                         args: [
                           proof.id,
                           '1',
-                          'proof-verified', // FIXME: add description
+                          formState.description,
                           hash.hash,
                           hash.type,
                           `${role.toUpperCase()} Report`
@@ -174,6 +180,7 @@ const ValidateProof = ({
                       setDialogOpenState(false);
                       setFileRequired(false);
                       setHash(null);
+                      dispatch({ type: 'reset', payload: initialState });
                     }
                   }}
                 >
@@ -192,7 +199,7 @@ const ValidateProof = ({
                         args: [
                           proof.id,
                           '2',
-                          'verifyProof-prohibited', // FIXME: add description
+                          formState.description, // FIXME: add description
                           hash.hash,
                           hash.type,
                           `${role.toUpperCase()} Report`
@@ -201,6 +208,7 @@ const ValidateProof = ({
                       setDialogOpenState(false);
                       setFileRequired(false);
                       setHash(null);
+                      dispatch({ type: 'reset', payload: initialState });
                     }
                   }}
                 >

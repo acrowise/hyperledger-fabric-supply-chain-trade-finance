@@ -79,8 +79,6 @@ const Bids = ({
                     acceptBid({
                       fcn: 'acceptBid',
                       args: [item.id, '0', '0', '0']
-                      // id: item.id, // FIXME:
-                      // user: role
                     });
                   }}
                   style={{ marginRight: '5px' }}
@@ -120,8 +118,6 @@ const Bids = ({
                     cancelBid({
                       fcn: 'cancelBid',
                       args: [item.id, '0', '0', '0']
-                      // id: item.id, // FIXME:
-                      // user: role
                     });
                   }}
                 >

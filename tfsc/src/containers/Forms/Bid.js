@@ -91,9 +91,8 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
                         formState.rate,
                         dialog.state.actorId,
                         formState.invoiceId
-                      ],
-                      id: formState.id
-                    }); // FIXME:  'f' === factor-id
+                      ]
+                    });
                     setDialog({
                       isOpen: false,
                       state: null
