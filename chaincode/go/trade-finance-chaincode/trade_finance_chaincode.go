@@ -134,13 +134,13 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	}
 
 	//setting automatic values
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	invoice.Value.Owner = creator
 	invoice.Value.State = stateInvoiceIssued
@@ -219,13 +219,13 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if invoice.Value.Owner != creator {
 		message := fmt.Sprintf("only invoice owner can place an invoice")
@@ -319,13 +319,13 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if invoice.Value.Owner != creator {
 		message := fmt.Sprintf("only invoice owner can remove an invoice")
@@ -409,13 +409,13 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if invoice.Value.Debtor != creator {
 		message := fmt.Sprintf("only invoice debtor can accept an invoice")
@@ -504,13 +504,13 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if invoice.Value.Owner != creator {
 		message := fmt.Sprintf("only invoice debtor can reject an invoice")
@@ -603,13 +603,13 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	}
 
 	//setting automatic values
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	bid.Value.FactorID = creator
 	bid.Value.State = stateBidIssued
@@ -694,13 +694,13 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if bidToUpdate.Value.FactorID != creator {
 		message := fmt.Sprintf("each factor can edit only his bid")
@@ -1181,12 +1181,13 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 		}
 		event.Value = value
 
-		creator, err := GetMSPID(stub)
+		creator, err := GetCreatorOrganizationalUnit(stub)
 		if err != nil {
-			message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+			message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 			Logger.Error(message)
 			return errors.New(message)
 		}
+		Logger.Debug("OrganizationalUnit: " + creator)
 
 		config := Config{}
 		if err := LoadFrom(stub, &config, configIndex); err != nil {

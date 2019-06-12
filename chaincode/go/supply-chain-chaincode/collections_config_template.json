@@ -1,0 +1,9 @@
+[
+  {
+    "name": "ORG1-ORG2-ORG3-ORG4-ORG5-ORG6-ORG7-Contract",
+    "policy": "OR('ORG1MSP.member','ORG2MSP.member','ORG3MSP.member','ORG4MSP.member','ORG5MSP.member','ORG6MSP.member','ORG7MSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 7,
+    "blockToLive": 0
+  }
+]

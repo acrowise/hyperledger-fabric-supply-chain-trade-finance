@@ -13,6 +13,7 @@ artifactsTemplatesFolder="artifacts-templates"
 
 : ${DOMAIN:="example.com"}
 : ${IP_ORDERER:="127.0.0.1"}
+
 : ${ORG1:="a"} #Buyer
 : ${ORG2:="b"} #Supplier
 : ${ORG3:="c"} #First auditor
@@ -20,16 +21,16 @@ artifactsTemplatesFolder="artifacts-templates"
 : ${ORG5:="e"} #First factor
 : ${ORG6:="f"} #Second factor
 : ${ORG7:="g"} #Transporter
-: ${ORG8:="h"} #Reserved
+: ${ORG8:="h"} #Bank
 
-: ${BUYER:="buyer"}
-: ${SUPPLIER:="supplier"}
-: ${AUDITOR_ONE:="auditor_1"}
-: ${AUDITOR_TWO:="auditor_2"}
-: ${FACTOR_ONE:="factor_1"}
-: ${FACTOR_TWO:="factor_2"}
-: ${TRANSPORTER:="transporter"}
-: ${BANK:="bank"}
+: ${BUYER:="Buyer"}
+: ${SUPPLIER:="Supplier"}
+: ${AUDITOR_ONE:="Auditor-1"}
+: ${AUDITOR_TWO:="Auditor-2"}
+: ${FACTOR_ONE:="Factor-1"}
+: ${FACTOR_TWO:="Factor-2"}
+: ${TRANSPORTER:="Transporter"}
+: ${BANK:="Bank"}
 
 : ${ORGANIZATIONS_ORG_TMPL:="organizations_org"}
 : ${PEERS_PEER_TMPL:="peers_peer"}
@@ -90,6 +91,8 @@ fi
 : ${TRADE_FINANCE_POLICY=$(printf "OR(\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\',\'%sMSP.peer\')" $ORG1 $ORG2 $ORG3 $ORG4 $ORG5 $ORG6 $ORG7)}
 
 : ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT $CHAINCODE_TRADE_FINANCE_NAME)}
+: ${CHAINCODE_TRADE_FINANCE_INIT=$(printf '{"Args":["init","%s","%s"]}' $TRADE_FINANCE_COLLECTION_CONFIG_CONTENT $CHAINCODE_TRADE_FINANCE_NAME)}
+: ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT $CHAINCODE_SUPPLY_CHAIN_NAME)}
 : ${CHAINCODE_SUPPLY_CHAIN_INIT=$(printf '{"Args":["init","%s","%s"]}' $SUPPLY_CHAIN_COLLECTION_CONFIG_CONTENT $CHAINCODE_SUPPLY_CHAIN_NAME)}
 
 #Set default State Database
@@ -837,6 +840,18 @@ elif [ "${MODE}" == "clean" ]; then
 elif [ "${MODE}" == "generate" ]; then
   clean
   removeArtifacts
+
+  for cc in $CHAINCODE_SUPPLY_CHAIN_NAME  $CHAINCODE_TRADE_FINANCE_NAME
+  do
+    sed -e "s/ORG1/$ORG1/g" \
+        -e "s/ORG2/$ORG2/g" \
+        -e "s/ORG3/$ORG3/g" \
+        -e "s/ORG4/$ORG4/g" \
+        -e "s/ORG5/$ORG5/g" \
+        -e "s/ORG6/$ORG6/g" \
+        -e "s/ORG7/$ORG7/g" \
+        chaincode/go/$cc/collections_config_template.json > chaincode/go/$cc/collections_config.json
+  done
 
   [[ -d $GENERATED_ARTIFACTS_FOLDER ]] || mkdir $GENERATED_ARTIFACTS_FOLDER
   [[ -d $GENERATED_DOCKER_COMPOSE_FOLDER ]] || mkdir $GENERATED_DOCKER_COMPOSE_FOLDER

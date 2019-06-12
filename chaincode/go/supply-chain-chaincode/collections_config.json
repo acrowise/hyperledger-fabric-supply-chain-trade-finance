@@ -1,9 +1,0 @@
-[
-  {
-    "name": "a-b-c-d-e-f-g-Contract",
-    "policy": "OR('aMSP.member','bMSP.member','cMSP.member','dMSP.member','eMSP.member','fMSP.member','gMSP.member')",
-    "requiredPeerCount": 0,
-    "maxPeerCount": 7,
-    "blockToLive": 0
-  }
-]

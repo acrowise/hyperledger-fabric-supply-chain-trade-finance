@@ -16,11 +16,11 @@ const (
 
 // OrganizationalUnit constants
 var (
-	Buyer           = []string{"buyer"}
-	Supplier        = []string{"supplier"}
-	Auditor         = []string{"auditor_1", "auditor_2"}
-	Factor          = []string{"factor_1", "factor_2"}
-	TransportAgency = []string{"transporter"}
+	Buyer           = []string{"Buyer"}
+	Supplier        = []string{"Supplier"}
+	Auditor         = []string{"Auditor-1", "Auditor-2"}
+	Factor          = []string{"Factor-1", "Factor-2"}
+	TransportAgency = []string{"Transporter"}
 )
 
 // Type entity with documents

@@ -164,13 +164,13 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	}
 
 	//setting automatic values
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	order.Value.State = stateOrderNew
 	order.Value.Timestamp = time.Now().UTC().Unix()
@@ -255,13 +255,13 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//additional checking
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if orderToUpdate.Value.BuyerID != creator {
 		message := fmt.Sprintf("each buyer can edit only his order")
@@ -354,13 +354,13 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if orderToUpdate.Value.BuyerID != creator {
 		message := fmt.Sprintf("each buyer can cancel only his order")
@@ -453,13 +453,13 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	//setting new values
 	orderToUpdate.Value.State = stateOrderAccepted
@@ -605,12 +605,13 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if contract.Value.ConsignorName != creator {
 		message := fmt.Sprintf("each supplier can request shipment only for their contract")
@@ -868,12 +869,13 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if contract.Value.ConsigneeName != creator {
 		message := fmt.Sprintf("each buyer can confirm delivery only for their contract")
@@ -1182,12 +1184,13 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if shipment.Value.Consignor != creator {
 		message := fmt.Sprintf("each supplier can generate proof only for their shipment")
@@ -1272,13 +1275,13 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//checking owner
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Creator: " + creator)
+	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if proof.Value.Owner != creator {
 		message := fmt.Sprintf("You're not owner of this proof")
@@ -1474,6 +1477,20 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
+	if creator != proof.Value.ConsignorName {
+		message := fmt.Sprintf("each supplier can update only his own proof", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	// setting automatic values
 	proof.Value.State = stateProofUpdated
 	proof.Value.Timestamp = time.Now().UTC().Unix()
@@ -1546,12 +1563,14 @@ func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, a
 	}
 
 	//checking owner
-	creator, err := GetMSPID(stub)
+	creator, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
 	if report.Value.Owner != creator {
 		message := fmt.Sprintf("each auditor can update only his own report")
 		Logger.Error(message)
@@ -1752,13 +1771,13 @@ func (cc *SupplyChainChaincode) listProofsByOwner(stub shim.ChaincodeStubInterfa
 	}
 
 	//get owner
-	owner, err := GetMSPID(stub)
+	owner, err := GetCreatorOrganizationalUnit(stub)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("Owner: " + owner)
+	Logger.Debug("OrganizationalUnit: " + owner)
 
 	filterByOwner := func(data LedgerData) bool {
 		entity, ok := data.(*Proof)
@@ -2606,12 +2625,13 @@ func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
 		}
 		event.Value = value
 
-		creator, err := GetMSPID(stub)
+		creator, err := GetCreatorOrganizationalUnit(stub)
 		if err != nil {
-			message := fmt.Sprintf("cannot obtain creator's MSPID: %s", err.Error())
+			message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
 			Logger.Error(message)
 			return errors.New(message)
 		}
+		Logger.Debug("OrganizationalUnit: " + creator)
 
 		config := Config{}
 		if err := LoadFrom(stub, &config, configIndex); err != nil {
