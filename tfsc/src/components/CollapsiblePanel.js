@@ -1,42 +1,41 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Icon } from '@blueprintjs/core';
-import ProofDetail from './ProofDetail/ProofDetail';
+// import ProofDetail from './ProofDetail/ProofDetail';
 
-const Proofs = ({ data }) => {
+import { capitalize } from '../helper/utils';
+
+const CollapsiblePanel = ({
+  data, setDialogOpenState, setItem, type
+}) => {
   const [expanded, setExpanded] = useState(true);
-  const [dialogIsOpen, setDialogOpenState] = useState(false);
-  const [selectedProof, setSelectedProof] = useState({});
 
   return (
     <div className="sidebar-panel">
-      <ProofDetail
-        dialogIsOpen={dialogIsOpen}
-        setDialogOpenState={setDialogOpenState}
-        proof={selectedProof}
-      />
       <div
         onClick={() => {
           setExpanded(!expanded);
         }}
         className="sidebar-panel-header"
       >
-        <h4>Proofs</h4>
+        <h4>{`${capitalize(type)}s`}</h4>
         <Icon icon={expanded ? 'caret-up' : 'caret-down'} />
       </div>
       {expanded ? (
         <div className="sidebar-panel-body">
-          {data.map(proof => (
+          {data.map(item => (
             <div
               onClick={() => {
                 setDialogOpenState(true);
-                setSelectedProof(proof);
+                setItem(item);
               }}
-              key={proof.key.id}
+              key={item.key.id}
               style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
             >
-              <p>Proof: {proof.value.owner.toUpperCase()}</p>
-              {proof.new ? (
+              <p>
+                {capitalize(type)}: {item.value.owner.toUpperCase()}
+              </p>
+              {item.new ? (
                 <div
                   style={{
                     marginLeft: '3px',
@@ -60,8 +59,12 @@ const Proofs = ({ data }) => {
   );
 };
 
-Proofs.propTypes = {
+CollapsiblePanel.propTypes = {
+  type: PropTypes.string,
+  setDialogOpenState: PropTypes.func,
+  dialogIsOpen: PropTypes.bool,
+  setItem: PropTypes.func,
   data: PropTypes.array
 };
 
-export default Proofs;
+export default CollapsiblePanel;

@@ -9,7 +9,8 @@ import { cropId } from '../helper/utils';
 
 import GenerateProofForm from './Forms/GenerateProof';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
-import Proofs from '../components/Proofs';
+import ProofDetail from '../components/ProofDetail/ProofDetail';
+import Panel from '../components/CollapsiblePanel';
 import Timeline from '../components/Timeline/Timeline';
 import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 
@@ -24,11 +25,17 @@ const fromUnixTime = timestamp => timestamp * 1000;
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
-  const [proofs, loadingProofs, setData] = get('listProofsByShipment', [shipment.id]);
+  const [proofs, loadingProofs, setProofsData] = get('listProofsByShipment', [shipment.id]);
+  const [reports, loadingReports, setReportsData] = get('listReports', [shipment.id]);
 
   const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
+  const [proofDialogIsOpen, setProofDialogOpenState] = useState(false);
+  const [reportDialogIsOpen, setReportDialogOpenState] = useState(false);
+
+  const [proof, setProof] = useState(null);
+  const [report, setReport] = useState(null);
 
   const [docs, setDocs] = useState(shipment.documents);
   const [events, setEvents] = useState(
@@ -65,7 +72,7 @@ const ShipmentDetailPage = ({
 
     if (notification.type === 'generateProof') {
       const newState = proofs.result.concat(Object.assign({}, notification.data, { new: true }));
-      setData({ result: newState });
+      setProofsData({ result: newState });
 
       updateEvents(notification);
     }
@@ -74,7 +81,7 @@ const ShipmentDetailPage = ({
       const newState = proofs.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex].value = notification.data.value;
-      setData({ result: newState });
+      setProofsData({ result: newState });
 
       updateEvents(notification);
     }
@@ -112,6 +119,11 @@ const ShipmentDetailPage = ({
         dialogIsOpen={cdDialogIsOpen}
         setDialogOpenState={setCdDialogOpenState}
         shipment={shipment}
+      />
+      <ProofDetail
+        dialogIsOpen={proofDialogIsOpen}
+        setDialogOpenState={setProofDialogOpenState}
+        proof={proof}
       />
       <div
         style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}
@@ -230,7 +242,33 @@ const ShipmentDetailPage = ({
           )}
 
           {proofs && proofs.result && proofs.result.length > 0 && (
-            <div>{loadingProofs ? <div>Loading...</div> : <Proofs data={proofs.result} />}</div>
+            <div>
+              {loadingProofs ? (
+                <div>Loading...</div>
+              ) : (
+                <Panel
+                  data={proofs.result}
+                  type="proof"
+                  setDialogOpenState={setProofDialogOpenState}
+                  setItem={setProof}
+                />
+              )}
+            </div>
+          )}
+
+          {reports && reports.result && reports.result.length > 0 && (
+            <div>
+              {loadingReports ? (
+                <div>Loading...</div>
+              ) : (
+                <Panel
+                  data={reports.result}
+                  type="report"
+                  setDialogOpenState={setProofDialogOpenState}
+                  setItem={setReport}
+                />
+              )}
+            </div>
           )}
 
           {docs && docs.length !== 0 ? (

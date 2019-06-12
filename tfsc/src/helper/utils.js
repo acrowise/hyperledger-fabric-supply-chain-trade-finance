@@ -2,6 +2,8 @@ export const cropId = id => (id ? id.slice(0, 7).toUpperCase() : '');
 
 const range = ['dueDate', 'paymentDate', 'totalDue', 'rate', 'amount'];
 
+export const capitalize = str => str[0].toUpperCase() + str.substring(1);
+
 export const filterData = ({
   type, status, search, filterOptions, tableData
 }) => {

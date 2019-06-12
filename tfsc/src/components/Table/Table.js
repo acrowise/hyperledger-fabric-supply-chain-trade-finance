@@ -6,8 +6,6 @@ import './table.scss';
 
 import { cropId } from '../../helper/utils';
 
-// const capitalize = str => str[0].toUpperCase() + str.substring(1);
-
 const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofId', 'proofID']; // FIXME:
 const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
 const amount = ['price', 'totalDue'];

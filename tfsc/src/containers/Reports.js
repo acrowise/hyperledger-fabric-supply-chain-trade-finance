@@ -19,7 +19,7 @@ const Reports = ({
 }) => {
   const [vpDialogIsOpen, setVpDialogOpenState] = useState(false);
   const [data, loading, setData] = get('listReports');
-  const [selectedProof, setSelectedProof] = useState({});
+  const [selectedReport, setSelectedReport] = useState({});
 
   useSocket('notification', (message) => {
     setData(notifications(data.result, message, 'reports'));
@@ -52,7 +52,7 @@ const Reports = ({
       <VerifyProof
         dialogIsOpen={vpDialogIsOpen}
         setDialogOpenState={setVpDialogOpenState}
-        proof={selectedProof}
+        proof={selectedReport}
         role={actor.role}
         type="update"
       />
@@ -63,7 +63,7 @@ const Reports = ({
             <div>
               <Button
                 onClick={() => {
-                  // setSelectedProof(item);
+                  // setSelectedReport(item);
                   // setVpDialogOpenState(true);
                 }}
                 style={{ marginRight: '5px' }}
