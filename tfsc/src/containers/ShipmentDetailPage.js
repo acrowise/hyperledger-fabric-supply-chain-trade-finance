@@ -79,7 +79,7 @@ const ShipmentDetailPage = ({
       updateEvents(notification);
     }
 
-    if (notification.type === 'verifyProof') {
+    if (notification.type === 'verifyProof' || notification.type === 'updateProof') {
       const newState = proofs.result.concat([]);
       const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
       newState[itemToUpdateIndex].value = notification.data.value;
@@ -98,6 +98,16 @@ const ShipmentDetailPage = ({
 
     if (notification.type === 'confirmShipment' || notification.type === 'confirmDelivery') {
       if (notification.data.value.contractID === shipment.contractID) {
+        updateEvents(notification);
+      }
+    }
+
+    if (notification.type === 'submitReport') {
+      if (notification.data.value.shipmentID === shipment.id) {
+        setReportsData({
+          result: reports.result.concat(Object.assign({}, notification.data, { new: true }))
+        });
+
         updateEvents(notification);
       }
     }

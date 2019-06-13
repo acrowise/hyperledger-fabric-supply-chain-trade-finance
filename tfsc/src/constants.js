@@ -314,7 +314,8 @@ const METHODS_MAP = [
   },
   {
     ccMethod: 'submitReport',
-    chaincode: SUPPLY_CHAIN_CHAINCODE
+    chaincode: SUPPLY_CHAIN_CHAINCODE,
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
     ccMethod: 'acceptInvoice',
@@ -369,11 +370,6 @@ const METHODS_MAP = [
   {
     ccMethod: 'getByQuery',
     chaincode: SUPPLY_CHAIN_CHAINCODE
-  },
-  {
-    ccMethod: 'submitReport',
-    chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
     ccMethod: 'updateReport',
@@ -496,7 +492,6 @@ const EVENTS_MAP = {
   contractCompleted: 'Contract Completed',
   contractUpdated: 'Contract Updated',
   registerInvoice: 'Invoice Registered'
-  // submitReport: 'Report Submitted'
 };
 
 const FILTERS = {

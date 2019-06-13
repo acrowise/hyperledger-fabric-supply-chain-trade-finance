@@ -11,7 +11,11 @@ const notifications = (state = [], message, tab) => {
       case 'generateProof':
       case 'submitReport':
       case 'registerInvoice':
-        return { result: state.concat(notification.data) };
+        return {
+          result: state.concat(
+            state.find(i => i.key.id === notification.data.key.id) ? [] : notification.data
+          )
+        };
       case 'placeInvoice':
       case 'acceptOrder':
       case 'cancelOrder':

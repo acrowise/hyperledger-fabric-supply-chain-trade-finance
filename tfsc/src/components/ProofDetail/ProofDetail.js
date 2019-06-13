@@ -6,6 +6,13 @@ import './proofDetail.scss';
 import { STATUSES, REVIEWERS } from '../../constants';
 import { cropId } from '../../helper/utils';
 
+const colors = {
+  1: 'white',
+  2: '#D3F3E8',
+  3: 'white',
+  4: '#FF8A80'
+};
+
 const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (proof ? (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
@@ -38,7 +45,7 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (proof ? (
                   <th>Status</th>
                   <td
                     style={{
-                      backgroundColor: proof.value && proof.value.state === 2 ? '#D3F3E8' : 'white'
+                      backgroundColor: colors[proof.value.state]
                     }}
                   >
                     {proof.value ? STATUSES.PROOF[proof.value.state] : 'No data'}

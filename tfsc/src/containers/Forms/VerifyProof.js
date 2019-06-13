@@ -195,6 +195,7 @@ const ValidateProof = ({
                           // setDialogOpenState(false);
                           setFileRequired(false);
                           setHash(null);
+                          setFiles([]);
                           dispatch({ type: 'reset', payload: initialState });
                         }
                       }}
@@ -223,6 +224,7 @@ const ValidateProof = ({
                           // setDialogOpenState(false);
                           setFileRequired(false);
                           setHash(null);
+                          setFiles([]);
                           dispatch({ type: 'reset', payload: initialState });
                         }
                       }}
