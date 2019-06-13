@@ -86,7 +86,7 @@ func CreateProof() LedgerData {
 
 //argument order
 //0		1				2		3
-//ID	ArrayAttributes	Owner	ContractID
+//ID	ArrayAttributes	Owner	ShipmentID
 func (entity *Proof) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < proofBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", proofBasicArgumentsNumber))
