@@ -58,7 +58,8 @@ const STATUSES = {
     0: STATUS_UNKNOWN,
     1: 'Generated',
     2: 'Validated',
-    3: 'Updated'
+    3: 'Updated',
+    4: 'Declined'
   },
   REPORT: {
     0: STATUS_UNKNOWN,

@@ -27,6 +27,7 @@ const (
 	stateProofGenerated
 	stateProofValidated
 	stateProofUpdated
+	stateProofDeclined
 )
 
 var proofStateLegal = map[int][]int{
@@ -34,13 +35,15 @@ var proofStateLegal = map[int][]int{
 	stateProofGenerated: {},
 	stateProofValidated: {},
 	stateProofUpdated:   {},
+	stateProofDeclined:  {},
 }
 
 var proofStateMachine = map[int][]int{
 	stateProofUnknown:   {stateProofUnknown},
-	stateProofGenerated: {stateProofGenerated, stateProofValidated},
+	stateProofGenerated: {stateProofGenerated, stateProofValidated, stateReportDeclined},
 	stateProofValidated: {stateProofValidated},
-	stateProofUpdated:   {stateProofUpdated},
+	stateProofUpdated:   {stateProofUpdated, stateProofValidated, stateReportDeclined},
+	stateProofDeclined:  {stateProofDeclined, stateProofUpdated},
 }
 
 type ProofKey struct {
