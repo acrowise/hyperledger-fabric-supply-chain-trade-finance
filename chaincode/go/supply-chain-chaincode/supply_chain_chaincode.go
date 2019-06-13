@@ -1327,6 +1327,9 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	events := Events{}
+	eventValue := EventValue{}
+
 	reports := []Report{}
 
 	if proof.Value.State == stateProofGenerated {
@@ -1347,6 +1350,15 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.Timestamp = time.Now().UTC().Unix()
 		report.Value.UpdatedDate = report.Value.Timestamp
 		reports = append(reports, report)
+
+		//event = submitReport
+		for _, report := range reports {
+			eventValue.EntityType = reportIndex
+			eventValue.EntityID = report.Key.ID
+			eventValue.Other = report.Value
+			eventValue.Action = eventSubmitReport
+			events.Values = append(events.Values, eventValue)
+		}
 	} else {
 		// update exist report
 		reports, err = findReportByProofID(stub, proof.Key.ID)
@@ -1359,6 +1371,15 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			report.Value.State = reportState
 			report.Value.Description = args[2]
 			report.Value.UpdatedDate = time.Now().UTC().Unix()
+
+			//event = updateReport
+			for _, report := range reports {
+				eventValue.EntityType = reportIndex
+				eventValue.EntityID = report.Key.ID
+				eventValue.Other = report.Value
+				eventValue.Action = eventUpdateReport
+				events.Values = append(events.Values, eventValue)
+			}
 		}
 	}
 
@@ -1370,7 +1391,12 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		}
 	}
 
-	proof.Value.State = stateProofValidated
+	stateProofMap := map[int]int{
+		stateReportAccepted: stateProofValidated,
+		stateReportDeclined: stateProofDeclined,
+	}
+
+	proof.Value.State = stateProofMap[reportState]
 	proof.Value.UpdatedDate = time.Now().UTC().Unix()
 
 	// updating state in ledger
@@ -1406,27 +1432,16 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	//emitting Event
-	events := Events{}
 
-	//event1 = verifyProof
-	eventValue := EventValue{}
+	//event = verifyProof
 	eventValue.EntityType = proofIndex
 	eventValue.EntityID = proof.Key.ID
 	eventValue.Other = proof.Value
 	eventValue.Action = eventVerifyProof
 	events.Values = append(events.Values, eventValue)
 
-	//event2 = submitReport
-	for _, report := range reports {
-		eventValue.EntityType = reportIndex
-		eventValue.EntityID = report.Key.ID
-		eventValue.Other = report.Value
-		eventValue.Action = eventSubmitReport
-		events.Values = append(events.Values, eventValue)
-	}
-
 	if documentHash != "" && documentType != "" {
-		//event3 = uploadDocument
+		//event = uploadDocument
 		eventValue.EntityType = documentIndex
 		eventValue.EntityID = document.Key.ID
 		eventValue.Other = document.Value
