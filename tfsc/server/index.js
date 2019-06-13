@@ -170,7 +170,7 @@ router.post('/login', async (_, res) => res.json({
       ipfs_port: IPFS_PORT,
       role: ACTORS[ROLE],
       org: ORG,
-      id: `${ORG}MSP`
+      id: ROLE
     },
     JWT_SECRET
   )
@@ -211,7 +211,7 @@ const renderer = async (req, res) => {
     ipfs_port: IPFS_PORT,
     role: ACTORS[ROLE],
     org: ORG,
-    id: `${ORG}MSP`
+    id: ROLE
   };
   return res.send(html(data));
 };

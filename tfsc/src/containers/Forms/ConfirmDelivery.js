@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
 import PropTypes from 'prop-types';
 
 import {
@@ -10,6 +10,10 @@ import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
 import { post } from '../../helper/api';
 
+import { formReducer } from '../../reducers';
+
+const initialState = { description: '' };
+
 const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
   const [files, setFiles] = useState([]);
   const [hash, setHash] = useState(null);
@@ -17,11 +21,14 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
 
   const [fileRequired, setFileRequired] = useState(false);
 
+  const [formState, dispatch] = useReducer(formReducer, initialState);
+
   if (!confirmDeliveryRes.pending) {
     if (confirmDeliveryRes.complete) {
       setTimeout(() => {
         setDialogOpenState(false);
         resetConfirmDelivery();
+        dispatch({ type: 'reset', payload: initialState });
       }, 1500);
     }
   }
@@ -54,7 +61,19 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     error={fileRequired}
                   />
                   <FormGroup label="Description">
-                    <TextArea growVertically={true} large={true} />
+                    <TextArea
+                      growVertically={true}
+                      large={true}
+                      value={formState.description}
+                      onChange={({ target: { value } }) => dispatch({
+                        type: 'change',
+                        payload: {
+                          field: 'description',
+                          value
+                        }
+                      })
+                      }
+                    />
                   </FormGroup>
                 </Label>
               </div>
@@ -66,6 +85,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   onClick={() => {
                     setDialogOpenState(false);
                     setFileRequired(false);
+                    dispatch({ type: 'reset', payload: initialState });
                   }}
                 >
                   Cancel
@@ -86,7 +106,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                           '0',
                           '0',
                           '0',
-                          '0',
+                          formState.description,
                           hash.hash,
                           hash.type,
                           'Delivery Acceptance Form'
@@ -95,7 +115,6 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                       setFileRequired(false);
                       setFiles([]);
                       setHash(null);
-                      // setDialogOpenState(false);
                     }
                   }}
                 >

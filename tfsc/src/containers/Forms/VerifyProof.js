@@ -244,5 +244,8 @@ export default ValidateProof;
 
 ValidateProof.propTypes = {
   dialogIsOpen: PropTypes.bool,
-  setDialogOpenState: PropTypes.func
+  setDialogOpenState: PropTypes.func,
+  proof: PropTypes.object,
+  role: PropTypes.string,
+  type: PropTypes.string
 };
