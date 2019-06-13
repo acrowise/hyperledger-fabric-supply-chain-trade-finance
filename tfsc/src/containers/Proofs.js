@@ -58,7 +58,7 @@ const Proofs = ({
       <Table
         fields={TABLE_MAP.PROOFS}
         data={filteredData}
-        actions={item => (item.state === 'Generated' ? (
+        actions={item => (item.state === 'Generated' || item.state === 'Updated' ? (
             <div>
               <Button
                 onClick={() => {

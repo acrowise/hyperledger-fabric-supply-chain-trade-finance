@@ -57,7 +57,8 @@ const STATUSES = {
   PROOF: {
     0: STATUS_UNKNOWN,
     1: 'Generated',
-    2: 'Validated'
+    2: 'Validated',
+    3: 'Updated'
   },
   REPORT: {
     0: STATUS_UNKNOWN,
