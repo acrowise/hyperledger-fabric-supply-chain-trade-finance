@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { Icon, Button } from '@blueprintjs/core';
 import { useSocket } from 'use-socketio';
 import { format } from 'date-fns';
@@ -115,6 +116,7 @@ const ShipmentDetailPage = ({
         dialogIsOpen={gpDialogIsOpen}
         setDialogOpenState={setGpDialogOpenState}
         shipment={shipment}
+        docs={docs}
       />
       <ConfirmDeliveryForm
         dialogIsOpen={cdDialogIsOpen}
@@ -324,6 +326,13 @@ const ShipmentDetailPage = ({
       </div>
     </div>
   );
+};
+
+ShipmentDetailPage.propTypes = {
+  role: PropTypes.string,
+  shipment: PropTypes.object,
+  showShipmentDetail: PropTypes.func,
+  setContent: PropTypes.func
 };
 
 export default ShipmentDetailPage;

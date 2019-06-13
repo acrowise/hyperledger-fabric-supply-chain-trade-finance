@@ -25,7 +25,7 @@ export const usePost = (fn) => {
   });
   useEffect(() => {
     const post = () => {
-      retry(req, 3)
+      retry(req, 5)
         .then((resp) => {
           setRes({
             data: resp.data,

@@ -12,7 +12,9 @@ import Icons from '../../components/Icon/Icon';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
-const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
+const GenerateProof = ({
+  dialogIsOpen, setDialogOpenState, shipment, docs
+}) => {
   const contractFields = [
     'consignorName',
     'consigneeName',
@@ -41,8 +43,8 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
     }
   };
 
-  if (shipment.documents) {
-    shipment.documents.forEach(doc => (initialState[doc.value.documentMeat] = false));
+  if (docs.length > 0) {
+    docs.forEach(doc => (initialState[doc.value.documentMeat] = false));
   }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
@@ -116,9 +118,9 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                           }
                         />
                       ))}
-                      {shipment
-                        && shipment.documents
-                        && shipment.documents.map((doc, i) => (
+                      {docs
+                        && docs.length
+                        && docs.map((doc, i) => (
                           <div
                             className="col-6"
                             key={i}
@@ -233,7 +235,7 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
                           AttributeDisclosure: 1
                         });
                       }
-                      shipment.documents.forEach((document) => {
+                      docs.forEach((document) => {
                         if (formState[document.value.documentMeat]) {
                           attributes.push({
                             AttributeName: document.value.documentMeat,
@@ -268,11 +270,10 @@ const GenerateProof = ({ dialogIsOpen, setDialogOpenState, shipment }) => {
 };
 
 GenerateProof.propTypes = {
-  role: PropTypes.string,
-  invoiceId: PropTypes.string,
   dialogIsOpen: PropTypes.bool,
   setDialogOpenState: PropTypes.func,
-  shipment: PropTypes.object
+  shipment: PropTypes.object,
+  docs: PropTypes.array
 };
 
 export default GenerateProof;
