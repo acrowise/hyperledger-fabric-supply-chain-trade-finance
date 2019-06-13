@@ -5,6 +5,11 @@ import { Icon } from '@blueprintjs/core';
 
 import { capitalize } from '../helper/utils';
 
+const AUDITORS = {
+  'Auditor-1': 'ggcb',
+  'Auditor-2': 'uscts'
+};
+
 const CollapsiblePanel = ({
   data, setDialogOpenState, setItem, type
 }) => {
@@ -33,7 +38,7 @@ const CollapsiblePanel = ({
               style={{ display: 'flex', flexDirection: 'row', cursor: 'pointer' }}
             >
               <p>
-                {capitalize(type)}: {item.value.owner.toUpperCase()}
+                {capitalize(type)}: {AUDITORS[item.value.owner].toUpperCase()}
               </p>
               {item.new ? (
                 <div

@@ -9,7 +9,8 @@ const notifications = (state = [], message, tab) => {
       case 'placeOrder':
       case 'placeBid':
       case 'generateProof':
-      case 'reportGenerated':
+      case 'submitReport':
+      case 'registerInvoice':
         return { result: state.concat(notification.data) };
       case 'placeInvoice':
       case 'acceptOrder':

@@ -370,6 +370,16 @@ const METHODS_MAP = [
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
+    ccMethod: 'submitReport',
+    chaincode: SUPPLY_CHAIN_CHAINCODE,
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
+  },
+  {
+    ccMethod: 'updateReport',
+    chaincode: SUPPLY_CHAIN_CHAINCODE,
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
+  },
+  {
     ccMethod: 'registerInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     actors: ['Buyer', 'Supplier', 'Transporter', 'Factor-1', 'Factor-2', 'Bank']
@@ -454,7 +464,7 @@ const NOTIFICATIONS_TAB = {
   acceptBid: 'bids',
   cabcelBid: 'bids',
 
-  invoiceRegistered: 'invoices',
+  registerInvoice: 'Invoice Registered',
   removeInvoice: 'invoices',
 
   submitReport: 'reports'
@@ -483,7 +493,8 @@ const EVENTS_MAP = {
   submitReport: 'Report Created',
   removeInvoice: 'Invoice Removed',
   contractCompleted: 'Contract Completed',
-  contractUpdated: 'Contract Updated'
+  contractUpdated: 'Contract Updated',
+  registerInvoice: 'Invoice Registered'
   // submitReport: 'Report Submitted'
 };
 
@@ -506,7 +517,7 @@ const FILTERS = {
   },
   proofs: {
     filterBy: ['consignorName', 'shipmentID'],
-    statuses: ['Generated', 'Validated']
+    statuses: ['Generated', 'Validated', 'Updated']
   },
   reports: {
     filterBy: ['consignorName', 'shipmentID'],
