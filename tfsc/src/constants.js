@@ -278,37 +278,37 @@ const METHODS_MAP = [
   {
     ccMethod: 'requestShipment',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter']
+    actors: ['Buyer', 'Supplier', 'Transporter']
   },
   {
     ccMethod: 'confirmShipment',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter']
+    actors: ['Buyer', 'Supplier', 'Transporter']
   },
   {
     ccMethod: 'confirmDelivery',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter']
+    actors: ['Buyer', 'Supplier', 'Transporter']
   },
   {
     ccMethod: 'uploadDocument',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter']
+    actors: ['Buyer', 'Supplier', 'Transporter']
   },
   {
     ccMethod: 'generateProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Auditor-1', 'Auditor-2']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
     ccMethod: 'verifyProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Auditor-1', 'Auditor-2']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
     ccMethod: 'updateProof',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Auditor-1', 'Auditor-2']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
     ccMethod: 'submitReport',
@@ -317,12 +317,12 @@ const METHODS_MAP = [
   {
     ccMethod: 'acceptInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Factor-1', 'Factor-2', 'Bank']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Factor-1', 'Factor-2', 'Bank']
   },
   {
     ccMethod: 'rejectInvoice',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Factor-1', 'Factor-2', 'Bank']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Factor-1', 'Factor-2', 'Bank']
   },
   {
     ccMethod: 'listOrders',
@@ -371,7 +371,7 @@ const METHODS_MAP = [
   {
     ccMethod: 'registerInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
-    actors: ['Buyer', 'Supplier', 'transporter', 'Factor-1', 'Factor-2', 'Bank']
+    actors: ['Buyer', 'Supplier', 'Transporter', 'Factor-1', 'Factor-2', 'Bank']
   },
   {
     ccMethod: 'placeInvoice',

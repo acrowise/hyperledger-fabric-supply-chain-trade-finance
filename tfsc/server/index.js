@@ -20,14 +20,14 @@ const {
 } = require('../src/constants');
 
 const ACTORS = {
-  'Buyer': 'buyer',
-  'Supplier': 'supplier',
+  Buyer: 'buyer',
+  Supplier: 'supplier',
   'Auditor-1': 'ggcb',
   'Auditor-2': 'uscts',
   'Factor-1': 'factor 1',
   'Factor-2': 'factor 2',
-  'Transporter': 'transporter',
-  'Bank': 'bank'
+  Transporter: 'transporter',
+  Bank: 'bank'
 };
 
 const ipfs = ipfsClient({
