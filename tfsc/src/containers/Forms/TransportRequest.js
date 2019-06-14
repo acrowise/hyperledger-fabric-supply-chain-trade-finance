@@ -1,9 +1,9 @@
 import React, { useState, useReducer } from 'react';
 import PropTypes from 'prop-types';
-
 import {
   Button, Overlay, FormGroup, InputGroup, Card, TextArea, Label
 } from '@blueprintjs/core';
+import uuid from 'uuid/v4';
 
 import { post } from '../../helper/api';
 
@@ -172,7 +172,7 @@ const TransportRequestForm = ({ dialogIsOpen, setDialogOpenState }) => {
                       requestShipment({
                         fcn: 'requestShipment',
                         args: [
-                          '0',
+                          uuid(),
                           dialogIsOpen.item.id,
                           formState.shipFrom,
                           formState.shipTo,
