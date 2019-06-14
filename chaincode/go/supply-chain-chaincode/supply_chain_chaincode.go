@@ -1349,16 +1349,21 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.ConsignorName = proof.Value.ConsignorName
 		report.Value.Timestamp = time.Now().UTC().Unix()
 		report.Value.UpdatedDate = report.Value.Timestamp
-		reports = append(reports, report)
+
+		//updating state in ledger
+		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
 
 		//event = submitReport
-		for _, report := range reports {
-			eventValue.EntityType = reportIndex
-			eventValue.EntityID = report.Key.ID
-			eventValue.Other = report.Value
-			eventValue.Action = eventSubmitReport
-			events.Values = append(events.Values, eventValue)
-		}
+		eventValue.EntityType = reportIndex
+		eventValue.EntityID = report.Key.ID
+		eventValue.Other = report.Value
+		eventValue.Action = eventSubmitReport
+		events.Values = append(events.Values, eventValue)
+
 	} else {
 		// update exist report
 		reports, err = findReportByProofID(stub, proof.Key.ID)
@@ -1373,21 +1378,20 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			report.Value.UpdatedDate = time.Now().UTC().Unix()
 
 			//event = updateReport
-			for _, report := range reports {
-				eventValue.EntityType = reportIndex
-				eventValue.EntityID = report.Key.ID
-				eventValue.Other = report.Value
-				eventValue.Action = eventUpdateReport
-				events.Values = append(events.Values, eventValue)
-			}
-		}
-	}
+			eventValue.EntityType = reportIndex
+			eventValue.EntityID = report.Key.ID
+			eventValue.Other = report.Value
+			eventValue.Action = eventUpdateReport
+			events.Values = append(events.Values, eventValue)
 
-	for _, report := range reports {
-		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return pb.Response{Status: 500, Message: message}
+			//updating state in ledger
+			if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+				message := fmt.Sprintf("persistence error: %s", err.Error())
+				Logger.Error(message)
+				return pb.Response{Status: 500, Message: message}
+			}
+			Logger.Debug("Processed report")
+			fmt.Println(report)
 		}
 	}
 
