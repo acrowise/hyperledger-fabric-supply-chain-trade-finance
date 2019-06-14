@@ -50,12 +50,6 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))
 	}
 
-	if err := entity.FillFromCompositeKeyParts(args[:documentKeyFieldsNumber]); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message)
-	}
-
 	//checking entityType
 	allowedEntityTypes := map[int]bool{
 		TypeContract: true,

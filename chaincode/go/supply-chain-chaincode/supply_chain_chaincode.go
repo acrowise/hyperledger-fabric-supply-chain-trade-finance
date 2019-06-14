@@ -1047,6 +1047,14 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, c
 		return errors.New(message), Document{}
 	}
 
+	//generating new document ID and making Key
+	documentID := uuid.Must(uuid.NewV4()).String()
+	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
 	if ExistsIn(stub, &document, documentIndex) {
 		compositeKey, _ := document.ToCompositeKey(stub)
 		message := fmt.Sprintf("document with the key %s already exists", compositeKey)
