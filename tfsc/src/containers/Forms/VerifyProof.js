@@ -151,8 +151,8 @@ const ValidateProof = ({
                     <Label>
                       Description
                       <TextArea
+                        style={{ width: '240px' }}
                         value={formState.description}
-                        growVertically={true}
                         onChange={({ target: { value } }) => dispatch({
                           type: 'change',
                           payload: {

@@ -113,16 +113,7 @@ const Title = ({ title, notification }) => (
   <div className="dashboard-tabs-tab">
     <p>{title}</p>
     {NOTIFICATIONS_TAB[notification] === title.toLowerCase() ? (
-      <div
-        style={{
-          marginLeft: '5px',
-          marginBottom: '7px',
-          borderRadius: '100%',
-          height: '8px',
-          width: '8px',
-          backgroundColor: '#69D7BC'
-        }}
-      />
+      <div className="new-dot-notification" />
     ) : (
       <></>
     )}

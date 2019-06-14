@@ -317,27 +317,12 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/getDocument?hash=${doc.value.documentHash}&type=${
-                          doc.value.documentType
-                        }`}
+                        href={`/getDocument?hash=${doc.value.documentHash}&type=${doc.value.documentType}`}
                         target="_blank"
                       >
                         {doc.value.documentMeat}
                       </a>
-                      {doc.new ? (
-                        <div
-                          style={{
-                            marginLeft: '3px',
-                            marginBottom: '7px',
-                            borderRadius: '100%',
-                            height: '8px',
-                            width: '8px',
-                            backgroundColor: '#69D7BC'
-                          }}
-                        />
-                      ) : (
-                        <></>
-                      )}
+                      {doc.new ? <div className="new-dot-notification" /> : <></>}
                     </div>
                   ))}
               </div>

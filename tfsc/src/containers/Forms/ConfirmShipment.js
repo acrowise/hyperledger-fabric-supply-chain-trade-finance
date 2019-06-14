@@ -66,7 +66,6 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   <Label className="col-6">
                     Description
                     <TextArea
-                      growVertically={true}
                       large={true}
                       value={shipment.description}
                       disabled

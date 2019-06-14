@@ -62,7 +62,6 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   />
                   <FormGroup label="Description">
                     <TextArea
-                      growVertically={true}
                       large={true}
                       value={formState.description}
                       onChange={({ target: { value } }) => dispatch({
