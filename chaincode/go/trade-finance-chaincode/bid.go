@@ -91,6 +91,12 @@ func (entity *Bid) FillFromArguments(stub shim.ChaincodeStubInterface, args []st
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", bidBasicArgumentsNumber))
 	}
 
+	if err := entity.FillFromCompositeKeyParts(args[:bidKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
 	// checking rate
 	rate, err := strconv.ParseFloat(args[1], 32)
 	if err != nil {

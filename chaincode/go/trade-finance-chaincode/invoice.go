@@ -80,7 +80,9 @@ func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args 
 	}
 
 	if err := entity.FillFromCompositeKeyParts(args[:invoiceKeyFieldsNumber]); err != nil {
-		return err
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
 	}
 
 	//TODO: checking debtor by CA

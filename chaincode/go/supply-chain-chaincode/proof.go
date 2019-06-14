@@ -95,6 +95,12 @@ func (entity *Proof) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", proofBasicArgumentsNumber))
 	}
 
+	if err := entity.FillFromCompositeKeyParts(args[:proofKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
 	//checking owner
 	owner := args[2]
 	if owner == "" {
