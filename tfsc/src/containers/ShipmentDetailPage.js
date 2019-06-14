@@ -30,7 +30,9 @@ const ShipmentDetailPage = ({
   const [proofs, loadingProofs, setProofsData] = get('listProofsByShipment', [shipment.id]);
   const [reports, loadingReports, setReportsData] = get('listReportsByShipment', [shipment.id]);
 
-  const [gpDialogIsOpen, setGpDialogOpenState] = useState(false);
+  const [gpDialogIsOpen, setGpDialogOpenState] = useState({
+    isOpen: false
+  });
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
   const [proofDialogIsOpen, setProofDialogOpenState] = useState(false);
@@ -88,6 +90,15 @@ const ShipmentDetailPage = ({
       updateEvents(notification);
     }
 
+    if (notification.type === 'updateReport') {
+      const newState = reports.result.concat([]);
+      const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
+      newState[itemToUpdateIndex].value = notification.data.value;
+      setReportsData({ result: newState });
+
+      updateEvents(notification);
+    }
+
     if (notification.type === 'uploadDocument') {
       if (notification.data.value.contractID === shipment.contractID) {
         setDocs(docs.concat(Object.assign({}, notification.data, { new: true })));
@@ -137,6 +148,8 @@ const ShipmentDetailPage = ({
         dialogIsOpen={proofDialogIsOpen}
         setDialogOpenState={setProofDialogOpenState}
         proof={proof}
+        setGpDialogOpenState={setGpDialogOpenState}
+        role={role}
       />
       <ReportDetail
         dialogIsOpen={reportDialogIsOpen}
@@ -248,7 +261,7 @@ const ShipmentDetailPage = ({
           {shipment.state === 'Confirmed' && role === 'supplier' && (
             <Button
               onClick={(e) => {
-                setGpDialogOpenState(true);
+                setGpDialogOpenState({ isOpen: true });
                 e.stopPropagation();
               }}
               intent="primary"

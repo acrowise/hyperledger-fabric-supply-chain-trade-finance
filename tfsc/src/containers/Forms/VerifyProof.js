@@ -83,7 +83,7 @@ const ValidateProof = ({
       >
         <Card className="modal" style={{ width: '720px' }}>
           {verifyProofRes.pending || verifyProofRes.complete || verifyProofRes.data ? (
-            <ActionCompleted res={verifyProofRes} action="Proof" result="Generated" />
+            <ActionCompleted res={verifyProofRes} action="Proof" result="Verified" />
           ) : (
             <>
               <div className="modal-header">

@@ -448,6 +448,7 @@ const NOTIFICATIONS_TAB = {
 
   verifyProof: 'proofs',
   generateProof: 'proofs',
+  updateProof: 'proofs',
 
   contractCreated: 'contracts',
   contractUpdated: 'contracts',
@@ -491,7 +492,9 @@ const EVENTS_MAP = {
   removeInvoice: 'Invoice Removed',
   contractCompleted: 'Contract Completed',
   contractUpdated: 'Contract Updated',
-  registerInvoice: 'Invoice Registered'
+  registerInvoice: 'Invoice Registered',
+  updateProof: 'Proof Updated',
+  updateReport: 'Report Updated'
 };
 
 const FILTERS = {

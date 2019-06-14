@@ -69,7 +69,7 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
       >
         <Card className="modal" style={{ width: '400px' }}>
           {postRes.pending || postRes.complete || postRes.data ? (
-            <ActionCompleted res={postRes} action="Proof" result="Generated" />
+            <ActionCompleted res={postRes} action="Bid" result="Placed" />
           ) : (
             <>
               <div className="modal-header">Place Bid</div>

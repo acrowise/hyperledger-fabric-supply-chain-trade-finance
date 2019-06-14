@@ -13,7 +13,9 @@ const colors = {
   4: '#FF8A80'
 };
 
-const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (proof ? (
+const ProofDetail = ({
+  dialogIsOpen, setDialogOpenState, proof, setGpDialogOpenState, role
+}) => (proof ? (
     <Overlay usePortal isOpen={dialogIsOpen}>
       <div
         style={{
@@ -63,6 +65,23 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (proof ? (
                 setDialogOpenState(false);
               }}
             />
+            {proof.value.state === 4 && role === 'supplier' ? (
+              <Button
+                text="Update"
+                intent="primary"
+                className="btn-modal"
+                onClick={() => {
+                  setDialogOpenState(false);
+                  setGpDialogOpenState({
+                    isOpen: true,
+                    id: proof.key.id,
+                    owner: proof.value.owner
+                  });
+                }}
+              />
+            ) : (
+              <></>
+            )}
           </div>
         </Card>
       </div>
@@ -74,7 +93,9 @@ const ProofDetail = ({ dialogIsOpen, setDialogOpenState, proof }) => (proof ? (
 ProofDetail.propTypes = {
   dialogIsOpen: PropTypes.bool,
   setDialogOpenState: PropTypes.func,
-  proof: PropTypes.object
+  proof: PropTypes.object,
+  setGpDialogOpenState: PropTypes.func,
+  role: PropTypes.string
 };
 
 export default ProofDetail;

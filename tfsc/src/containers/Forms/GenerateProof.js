@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useReducer, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
   Button, Overlay, Checkbox, Card, MenuItem
@@ -9,6 +9,7 @@ import { post } from '../../helper/api';
 import { formReducer } from '../../reducers';
 import { INPUTS, REVIEWERS } from '../../constants';
 import Icons from '../../components/Icon/Icon';
+import { cropId } from '../../helper/utils';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
@@ -33,7 +34,9 @@ const GenerateProof = ({
     destination: false,
     dueDate: false,
     paymentDate: false,
-    reviewer: null,
+    reviewer: REVIEWERS.find(i => i.id === dialogIsOpen.owner)
+      ? REVIEWERS.find(i => i.id === dialogIsOpen.owner)
+      : null,
     'Bill of Lading': false,
     'Packing List': false,
     'CMSP Report': false,
@@ -48,12 +51,21 @@ const GenerateProof = ({
   }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
-  const [generateProofRes, generateProof, resetGenerateProof] = post('generateProof')();
+
+  const [generateProofRes, generateProof, resetGenerateProof] = post(
+    dialogIsOpen.id ? 'updateProof' : 'generateProof'
+  )();
+
+  useEffect(() => {
+    dispatch({ type: 'reset', payload: initialState });
+  }, [dialogIsOpen]);
 
   if (!generateProofRes.pending) {
     if (generateProofRes.complete) {
       setTimeout(() => {
-        setDialogOpenState(false);
+        setDialogOpenState({
+          isOpen: false
+        });
         resetGenerateProof();
       }, 1500);
     }
@@ -78,7 +90,7 @@ const GenerateProof = ({
   };
 
   return (
-    <Overlay usePortal isOpen={dialogIsOpen}>
+    <Overlay usePortal isOpen={dialogIsOpen.isOpen}>
       <div
         style={{
           display: 'flex',
@@ -92,7 +104,9 @@ const GenerateProof = ({
             <ActionCompleted res={generateProofRes} action="Proof" result="Generated" />
           ) : (
             <>
-              <div className="modal-header">Generate Proof</div>
+              <div className="modal-header">
+                {dialogIsOpen.id ? `Update Proof: ${cropId(dialogIsOpen.id)}` : 'Generate Proof '}
+              </div>
               <div
                 className="modal-body"
                 style={{
@@ -210,7 +224,9 @@ const GenerateProof = ({
                   intent="none"
                   className="btn-modal btn-default"
                   onClick={() => {
-                    setDialogOpenState(false);
+                    setDialogOpenState({
+                      isOpen: false
+                    });
                     dispatch({ type: 'reset', payload: initialState });
                   }}
                 >
@@ -245,8 +261,13 @@ const GenerateProof = ({
                         }
                       });
                       generateProof({
-                        fcn: 'generateProof',
-                        args: ['0', JSON.stringify(attributes), formState.reviewer.id, shipment.id]
+                        fcn: dialogIsOpen.id ? 'updateProof' : 'generateProof',
+                        args: [
+                          dialogIsOpen.id || '0',
+                          JSON.stringify(attributes),
+                          formState.reviewer.id,
+                          shipment.id
+                        ]
                       });
                       dispatch({ type: 'reset', payload: initialState });
                       // setDialogOpenState(false);

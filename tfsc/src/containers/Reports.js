@@ -59,23 +59,23 @@ const Reports = ({
       <Table
         fields={TABLE_MAP.REPORTS}
         data={filteredData}
-        actions={item => (item.owner === actor.id ? (
-            <div>
-              <Button
-                onClick={() => {
-                  // setSelectedReport(item);
-                  // setVpDialogOpenState(true);
-                }}
-                style={{ marginRight: '5px' }}
-                intent="primary"
-              >
-                Update Report
-              </Button>
-            </div>
-        ) : (
-            <></>
-        ))
-        }
+        // actions={item => (item.owner === actor.id ? (
+        //     <div>
+        //       <Button
+        //         onClick={() => {
+        //           // setSelectedReport(item);
+        //           // setVpDialogOpenState(true);
+        //         }}
+        //         style={{ marginRight: '5px' }}
+        //         intent="primary"
+        //       >
+        //         Update Report
+        //       </Button>
+        //     </div>
+        // ) : (
+        //     <></>
+        // ))
+        // }
       />
     </div>
   );
