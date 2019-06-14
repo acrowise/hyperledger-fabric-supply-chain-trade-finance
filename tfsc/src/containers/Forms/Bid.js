@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import {
   Button, Overlay, FormGroup, InputGroup, Card
 } from '@blueprintjs/core';
+import uuid from 'uuid/v4';
 
 import { post } from '../../helper/api';
 
@@ -104,7 +105,7 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
                         postAction({
                           fcn: `${dialog.state.action}Bid`,
                           args: [
-                            dialog.state.action === 'place' ? '0' : formState.id,
+                            dialog.state.action === 'place' ? uuid() : formState.id,
                             formState.rate,
                             dialog.state.actorId,
                             formState.invoiceId

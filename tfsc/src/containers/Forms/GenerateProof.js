@@ -4,6 +4,7 @@ import {
   Button, Overlay, Checkbox, Card, MenuItem
 } from '@blueprintjs/core';
 import { Select } from '@blueprintjs/select';
+import uuid from 'uuid/v4';
 
 import { post } from '../../helper/api';
 import { formReducer } from '../../reducers';
@@ -263,7 +264,7 @@ const GenerateProof = ({
                       generateProof({
                         fcn: dialogIsOpen.id ? 'updateProof' : 'generateProof',
                         args: [
-                          dialogIsOpen.id || '0',
+                          dialogIsOpen.id || uuid(),
                           JSON.stringify(attributes),
                           formState.reviewer.id,
                           shipment.id

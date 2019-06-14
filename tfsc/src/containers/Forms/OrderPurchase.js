@@ -4,6 +4,7 @@ import {
   Button, Overlay, FormGroup, InputGroup, Card, Label
 } from '@blueprintjs/core';
 import { DateInput } from '@blueprintjs/datetime';
+import uuid from 'uuid/v4';
 
 import { format } from 'date-fns';
 import { post } from '../../helper/api';
@@ -191,7 +192,7 @@ const OrderForm = ({ dialog, setDialog }) => {
                     placeOrder({
                       fcn: `${isEdit ? 'update' : 'place'}Order`,
                       args: [
-                        isEdit ? formState.id : '0',
+                        isEdit ? formState.id : uuid(),
                         formState.productName,
                         formState.quantity.toString(),
                         formState.price.toString(),
