@@ -25,6 +25,7 @@ const ValidateProof = ({
   const [files, setFiles] = useState([]);
   const [hash, setHash] = useState(null);
   const [verifyProofRes, verifyProof, resetVerifyProofRes] = post('verifyProof')();
+  const [actionText, setActionText] = useState('Verified');
 
   const [fileRequired, setFileRequired] = useState(false);
 
@@ -83,7 +84,7 @@ const ValidateProof = ({
       >
         <Card className="modal" style={{ width: '720px' }}>
           {verifyProofRes.pending || verifyProofRes.complete || verifyProofRes.data ? (
-            <ActionCompleted res={verifyProofRes} action="Proof" result="Verified" />
+            <ActionCompleted res={verifyProofRes} action="Proof" result={actionText} />
           ) : (
             <>
               <div className="modal-header">
@@ -210,6 +211,7 @@ const ValidateProof = ({
                         if (files.length === 0) {
                           setFileRequired(true);
                         } else {
+                          setActionText('Prohibited');
                           verifyProof({
                             fcn: 'verifyProof',
                             args: [
