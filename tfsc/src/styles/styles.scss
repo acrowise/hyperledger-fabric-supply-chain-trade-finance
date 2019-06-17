@@ -512,3 +512,18 @@ $header-height: 65px;
   width: 8px;
   background-color: "#69D7BC";
 }
+
+.nav-popover-logout {
+  width: 124px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.left-arrow-text {
+  margin-left: 10px;
+  color: #3FBEA5;
+  font-weight: bold;
+  cursor: pointer;
+}
