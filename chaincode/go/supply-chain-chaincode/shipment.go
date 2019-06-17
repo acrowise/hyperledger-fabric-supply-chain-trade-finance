@@ -102,6 +102,12 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", shipmentBasicArgumentsNumber))
 	}
 
+	if err := entity.FillFromCompositeKeyParts(args[:shipmentKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
 	//checking contract
 	contract := Contract{}
 	if err := contract.FillFromCompositeKeyParts([]string{args[1]}); err != nil {

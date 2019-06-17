@@ -87,8 +87,6 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.verifyProof(stub, args)
 	} else if function == "updateProof" {
 		return cc.updateProof(stub, args)
-	} else if function == "updateReport" {
-		return cc.updateReport(stub, args)
 	} else if function == "listOrders" {
 		// List all orders
 		return cc.listOrders(stub, args)
@@ -125,8 +123,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0		1			2			3		4			5		6
-//0		ProductName	Quantity	Price	Destination	DueDate	PaymentDate
+//0				1			2			3		4			5		6
+//OrderID		ProductName	Quantity	Price	Destination	DueDate	PaymentDate
 func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: <order fields>
 	// check role == Buyer
@@ -146,14 +144,6 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	order := Order{}
 	if err := order.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill an order from arguments: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//generating new order ID and making Key
-	orderID := uuid.Must(uuid.NewV4()).String()
-	if err := order.FillFromCompositeKeyParts([]string{orderID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -553,8 +543,8 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5			6				7				8
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	DocumentHash	DocumentType	DocumentMeta
+//0				1			2			3		4			5			6				7				8
+//ShipmentID	ContractID	ShipFrom	ShipTo	Transport	Description	DocumentHash	DocumentType	DocumentMeta
 func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -569,14 +559,6 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	shipment := Shipment{}
 	if err := shipment.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill a shipment from arguments: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	//generating new shipment ID and making Key
-	shipmentID := uuid.Must(uuid.NewV4()).String()
-	if err := shipment.FillFromCompositeKeyParts([]string{shipmentID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -1015,8 +997,8 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0		1			2			3				4					5				6
-//0		EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
+//0					1			2			3				4					5				6
+//DocumentID		EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1138,8 +1120,8 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, c
 	return nil, document
 }
 
-//0		1				2		3
-//ID	ArrayAttributes	Owner	ShipmentID
+//0			1				2		3
+//ProofID	ArrayAttributes	Owner	ShipmentID
 func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 
 	Notifier(stub, NoticeRuningType)
@@ -1349,16 +1331,21 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.ConsignorName = proof.Value.ConsignorName
 		report.Value.Timestamp = time.Now().UTC().Unix()
 		report.Value.UpdatedDate = report.Value.Timestamp
-		reports = append(reports, report)
+
+		//updating state in ledger
+		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
 
 		//event = submitReport
-		for _, report := range reports {
-			eventValue.EntityType = reportIndex
-			eventValue.EntityID = report.Key.ID
-			eventValue.Other = report.Value
-			eventValue.Action = eventSubmitReport
-			events.Values = append(events.Values, eventValue)
-		}
+		eventValue.EntityType = reportIndex
+		eventValue.EntityID = report.Key.ID
+		eventValue.Other = report.Value
+		eventValue.Action = eventSubmitReport
+		events.Values = append(events.Values, eventValue)
+
 	} else {
 		// update exist report
 		reports, err = findReportByProofID(stub, proof.Key.ID)
@@ -1373,21 +1360,20 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			report.Value.UpdatedDate = time.Now().UTC().Unix()
 
 			//event = updateReport
-			for _, report := range reports {
-				eventValue.EntityType = reportIndex
-				eventValue.EntityID = report.Key.ID
-				eventValue.Other = report.Value
-				eventValue.Action = eventUpdateReport
-				events.Values = append(events.Values, eventValue)
-			}
-		}
-	}
+			eventValue.EntityType = reportIndex
+			eventValue.EntityID = report.Key.ID
+			eventValue.Other = report.Value
+			eventValue.Action = eventUpdateReport
+			events.Values = append(events.Values, eventValue)
 
-	for _, report := range reports {
-		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return pb.Response{Status: 500, Message: message}
+			//updating state in ledger
+			if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
+				message := fmt.Sprintf("persistence error: %s", err.Error())
+				Logger.Error(message)
+				return pb.Response{Status: 500, Message: message}
+			}
+			Logger.Debug("Processed report")
+			fmt.Println(report)
 		}
 	}
 
@@ -1459,8 +1445,8 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1
-//ID	SnapShot
+//0			1				2		3
+//ProofID	ArrayAttributes	Owner	ShipmentID
 func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -1535,136 +1521,6 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	eventValue.Other = proof.Value
 	eventValue.Action = eventUpdateProof
 	events.Values = append(events.Values, eventValue)
-
-	if err := events.emitEvent(stub); err != nil {
-		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	Notifier(stub, NoticeSuccessType)
-	return shim.Success(nil)
-}
-
-//0			1				2				3					4				5
-//ReportID	ReportState		Description		DocumentHash 		DocumentType	DocumentMeta
-func (cc *SupplyChainChaincode) updateReport(stub shim.ChaincodeStubInterface, args []string) pb.Response {
-	Notifier(stub, NoticeRuningType)
-
-	//checking role
-	if err, result := checkAccessForUnit([][]string{Auditor}, stub); err != nil || !result {
-		message := fmt.Sprintf("this organizational unit is not allowed to submit a report")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	report := Report{}
-	reportID := args[0]
-	if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	if !ExistsIn(stub, &report, reportIndex) {
-		compositeKey, _ := report.ToCompositeKey(stub)
-		return shim.Error(fmt.Sprintf("report with the key %s doesnt exist", compositeKey))
-	}
-
-	if err := LoadFrom(stub, &report, reportIndex); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	//checking owner
-	creator, err := GetCreatorOrganizationalUnit(stub)
-	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	Logger.Debug("OrganizationalUnit: " + creator)
-
-	if report.Value.Owner != creator {
-		message := fmt.Sprintf("each auditor can update only his own report")
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-
-	// setting new values
-	reportState, err := strconv.Atoi(args[1])
-	if err != nil {
-		message := fmt.Sprintf("report State is invalid: %s (must be int", args[1])
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	if !Contains(reportStateLegal, reportState) {
-		message := fmt.Sprintf("report State is invalid: %d (must be from 0 to %d)", reportState, len(reportStateLegal))
-		Logger.Error(message)
-		return shim.Error(message)
-	}
-	report.Value.State = reportState
-
-	if reportDescription := args[2]; reportDescription != "" {
-		report.Value.Description = reportDescription
-	}
-
-	report.Value.UpdatedDate = time.Now().UTC().Unix()
-
-	//updating state in ledger
-	if bytes, err := json.Marshal(report); err == nil {
-		Logger.Debug("Shipment: " + string(bytes))
-	}
-
-	if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return pb.Response{Status: 500, Message: message}
-	}
-
-	// uploading document
-	documentHash := args[3]
-	documentType := args[4]
-	documentMeta := args[5]
-	document := Document{}
-	if documentHash != "" && documentType != "" {
-		// find contractID
-		err, contractID := findContractIDByEntity(stub, TypeShipment, report.Value.ShipmentID)
-		if err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
-		}
-
-		documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
-		err, document = processingUploadDocument(stub, documentFields, Contract{})
-		if err != nil {
-			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
-		}
-	}
-
-	//emitting Event
-	events := Events{}
-
-	//event1 = updateReport
-	eventValue := EventValue{}
-	eventValue.EntityType = reportIndex
-	eventValue.EntityID = report.Key.ID
-	eventValue.Other = report.Value
-	eventValue.Action = eventUpdateReport
-	events.Values = append(events.Values, eventValue)
-
-	if documentHash != "" && documentType != "" {
-		//event2 = uploadDocument
-		eventValue.EntityType = documentIndex
-		eventValue.EntityID = document.Key.ID
-		eventValue.Other = document.Value
-		eventValue.Action = eventUploadDocument
-		events.Values = append(events.Values, eventValue)
-	}
 
 	if err := events.emitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())

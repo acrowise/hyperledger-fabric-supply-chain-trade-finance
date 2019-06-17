@@ -74,6 +74,13 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	if len(args) < orderBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", orderBasicArgumentsNumber))
 	}
+
+	if err := entity.FillFromCompositeKeyParts(args[:orderKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
+	}
+
 	//checking productName
 	productName := args[1]
 	if productName == "" {
