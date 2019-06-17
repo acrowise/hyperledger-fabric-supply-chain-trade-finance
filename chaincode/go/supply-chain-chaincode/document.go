@@ -121,17 +121,6 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	}
 	entity.Value.ContractID = contractID
 
-	//checking Timestamp
-	timestamp, err := strconv.ParseInt(args[7], 10, 64)
-	if err != nil {
-		return errors.New(fmt.Sprintf("unable to parse the timestamp: %s", err.Error()))
-	}
-
-	if timestamp < 0 {
-		return errors.New("timestamp must be larger than zero")
-	}
-	entity.Value.Timestamp = timestamp
-
 	return nil
 }
 
