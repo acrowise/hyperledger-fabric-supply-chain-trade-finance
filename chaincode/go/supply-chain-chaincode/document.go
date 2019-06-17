@@ -15,7 +15,7 @@ const (
 
 const (
 	documentKeyFieldsNumber      = 1
-	documentBasicArgumentsNumber = 5
+	documentBasicArgumentsNumber = 6
 )
 
 type DocumentKey struct {
@@ -48,6 +48,12 @@ func CreateDocument() LedgerData {
 func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < documentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", documentBasicArgumentsNumber))
+	}
+
+	if err := entity.FillFromCompositeKeyParts(args[:documentKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message)
 	}
 
 	//checking entityType
@@ -114,6 +120,17 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 	entity.Value.ContractID = contractID
+
+	//checking Timestamp
+	timestamp, err := strconv.ParseInt(args[7], 10, 64)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to parse the timestamp: %s", err.Error()))
+	}
+
+	if timestamp < 0 {
+		return errors.New("timestamp must be larger than zero")
+	}
+	entity.Value.Timestamp = timestamp
 
 	return nil
 }

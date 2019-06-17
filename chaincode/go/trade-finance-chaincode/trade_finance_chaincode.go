@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/satori/go.uuid"
-	"time"
 )
 
 type TradeFinanceChaincode struct {
@@ -142,9 +140,17 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 	}
 	Logger.Debug("OrganizationalUnit: " + creator)
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	invoice.Value.Owner = creator
 	invoice.Value.State = stateInvoiceIssued
-	invoice.Value.Timestamp = time.Now().UTC().Unix()
+	invoice.Value.Timestamp = timestamp.Seconds
 	invoice.Value.UpdatedDate = invoice.Value.Timestamp
 
 	//updating state un ledger
@@ -169,7 +175,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -244,9 +250,17 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting automatic values
 	invoice.Value.State = stateInvoiceForSale
-	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -270,7 +284,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -333,9 +347,17 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting automatic values
 	invoice.Value.State = stateInvoiceRemoved
-	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -359,7 +381,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -429,9 +451,17 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting automatic values
 	invoice.Value.State = stateInvoiceSigned
-	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -455,7 +485,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -524,9 +554,17 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting automatic values
 	invoice.Value.State = stateInvoiceRejected
-	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -550,7 +588,7 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -603,9 +641,17 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	}
 	Logger.Debug("OrganizationalUnit: " + creator)
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	bid.Value.FactorID = creator
 	bid.Value.State = stateBidIssued
-	bid.Value.Timestamp = time.Now().UTC().Unix()
+	bid.Value.Timestamp = timestamp.Seconds
 	bid.Value.UpdatedDate = bid.Value.Timestamp
 
 	//updating state in ledger
@@ -630,7 +676,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, bid.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -658,12 +704,6 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 
 	//checking bid exist
 	bid := Bid{}
-
-	if err := bid.FillFromCompositeKeyParts(args[:bidKeyFieldsNumber]); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return shim.Error(message)
-	}
 
 	if err := bid.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill a bid from arguments: %s", err.Error())
@@ -700,10 +740,18 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	bidToUpdate.Value.Rate = bid.Value.Rate
 	bidToUpdate.Value.InvoiceID = bid.Value.InvoiceID
-	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	bidToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(bidToUpdate); err == nil {
@@ -727,7 +775,7 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -781,9 +829,17 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	bidToUpdate.Value.State = stateBidCanceled
-	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	bidToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(bidToUpdate); err == nil {
@@ -807,7 +863,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -866,9 +922,17 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	bidToUpdate.Value.State = stateBidAccepted
-	bidToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	bidToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//changing invoice state
 	invoice := Invoice{}
@@ -887,7 +951,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	invoice.Value.State = stateInvoiceSold
 	invoice.Value.Owner = bidToUpdate.Value.FactorID
 	invoice.Value.Beneficiary = bidToUpdate.Value.FactorID
-	invoice.Value.UpdatedDate = time.Now().UTC().Unix()
+	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
 		Logger.Debug("Invoice: " + string(bytes))
@@ -960,7 +1024,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	eventValue.Action = eventAcceptBid
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1156,73 +1220,6 @@ func (cc *TradeFinanceChaincode) getEventPayload(stub shim.ChaincodeStubInterfac
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(result)
-}
-
-func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
-
-	Logger.Debug("### emitEvent started ###")
-
-	for _, value := range events.Values {
-		eventAction := value.Action
-		eventID := uuid.Must(uuid.NewV4()).String()
-
-		event := Event{}
-		if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
-			message := fmt.Sprintf(err.Error())
-			return errors.New(message)
-		}
-		event.Value = value
-
-		creator, err := GetCreatorOrganizationalUnit(stub)
-		if err != nil {
-			message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-			Logger.Error(message)
-			return errors.New(message)
-		}
-		Logger.Debug("OrganizationalUnit: " + creator)
-
-		config := Config{}
-		if err := LoadFrom(stub, &config, configIndex); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-
-			return errors.New(message)
-		}
-
-		event.Value.Creator = creator
-		event.Value.Timestamp = time.Now().UTC().Unix()
-
-		bytes, err := json.Marshal(event)
-		if err != nil {
-			message := fmt.Sprintf("Error marshaling: %s", err.Error())
-			return errors.New(message)
-		}
-		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
-		events.Keys = append(events.Keys, EventKey{ID: eventName})
-
-		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return errors.New(message)
-		}
-
-		Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
-		Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
-	}
-
-	generalKey, err := json.Marshal(events.Keys)
-	if err != nil {
-		message := fmt.Sprintf("Error marshaling: %s", err.Error())
-		return errors.New(message)
-	}
-
-	if err := stub.SetEvent(string(generalKey), nil); err != nil {
-		message := fmt.Sprintf("Error setting event: %s", err.Error())
-		return errors.New(message)
-	}
-	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
-
-	Logger.Debug("### emitEvent success ###")
-	return nil
 }
 
 func checkAccessForUnit(allowedUnits [][]string, stub shim.ChaincodeStubInterface) (error, bool) {

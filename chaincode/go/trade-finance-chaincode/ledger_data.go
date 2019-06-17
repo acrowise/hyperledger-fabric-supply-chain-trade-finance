@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -9,6 +10,8 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/lib/cid"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
+	"github.com/satori/go.uuid"
+	"math/big"
 	"strings"
 )
 
@@ -298,6 +301,67 @@ func queryImpl(it shim.StateQueryIteratorInterface, createEntry FactoryMethod, s
 	return entries, nil
 }
 
+func getHistoryByEntity(stub shim.ChaincodeStubInterface, index string, entityID string,
+	createEntry FactoryMethod) ([]interface{}, error) {
+
+	entries := []interface{}{}
+
+	entity := createEntry()
+
+	if err := entity.FillFromCompositeKeyParts([]string{entityID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	if !ExistsIn(stub, entity, index) {
+		compositeKey, _ := entity.ToCompositeKey(stub)
+		message := fmt.Sprintf("entity with the key %s doesnt exist", compositeKey)
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	compositeKey, err := entity.ToCompositeKey(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot create composite key :%s", err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	it, err := stub.GetHistoryForKey(compositeKey)
+	if err != nil {
+		message := fmt.Sprintf("unable to get history for key %s: %s", compositeKey, err.Error())
+		Logger.Error(message)
+		return nil, errors.New(message)
+	}
+
+	for it.HasNext() {
+		response, err := it.Next()
+		if err != nil {
+			message := fmt.Sprintf("unable to get an element next to a history iterator: %s", err.Error())
+			return nil, errors.New(message)
+		}
+
+		ledgerDataLogger.Debug(fmt.Sprintf("Response: {%s, %s}", response.Timestamp.Seconds, string(response.Value)))
+
+		entry := struct {
+			TxID      string      `json:"txid"`
+			Timestamp int64       `json:"timestamp"`
+			Value     interface{} `json:"value"`
+		}{
+			TxID:      response.TxId,
+			Timestamp: response.Timestamp.Seconds,
+			Value:     response.Value,
+		}
+
+		entries = append(entries, entry)
+	}
+
+	defer it.Close()
+
+	return entries, nil
+}
+
 func getOrganization(certificate []byte) (string, error) {
 	data := certificate[strings.Index(string(certificate), "-----") : strings.LastIndex(string(certificate), "-----")+5]
 	block, _ := pem.Decode([]byte(data))
@@ -437,4 +501,172 @@ func GetCollectionName(stub shim.ChaincodeStubInterface, index string, participi
 	Logger.Debug(fmt.Sprintf("Got collection name: %s", collectionName))
 
 	return collectionName, nil
+}
+
+func IncUUID(currentStringID string) (string, error) {
+	var id uuid.UUID
+	var err error
+	var currentHexString string
+
+	//parse UUID from string
+	if id, err = uuid.FromString(currentStringID); err != nil {
+		return "", errors.New(fmt.Sprintf("unable to parse an ID from \"%s\"", currentStringID))
+	}
+
+	//build string of hex values
+	for _, i := range id {
+		if i <= 15 {
+			currentHexString = currentHexString + "0" + fmt.Sprintf("%x", i)
+		} else {
+			currentHexString = currentHexString + fmt.Sprintf("%x", i)
+		}
+	}
+
+	//convert hex to big int
+	currentBigIntValue, _ := new(big.Int).SetString(currentHexString, 16)
+
+	//increment current big int value
+	incrementedBigIntValue := currentBigIntValue.Add(currentBigIntValue, big.NewInt(1))
+
+	newHexString := fmt.Sprintf("%x", incrementedBigIntValue)
+
+	//make byte set from hex string
+	bs, err := hex.DecodeString(newHexString)
+	if err != nil {
+		panic(err)
+	}
+
+	//replace byte's values of UUID to new values
+	for k, _ := range bs {
+		id[k] = bs[k]
+	}
+
+	//check on UUID
+	if id.Version() != uuid.V4 {
+		return "", errors.New("wrong ID format; expected UUID version 4")
+	}
+
+	return id.String(), nil
+}
+
+func GenUUIDfromExist(stub shim.ChaincodeStubInterface, index string, baseID string, createEntry FactoryMethod) (string, error) {
+
+	var err error
+	entity := createEntry()
+
+	if err := entity.FillFromCompositeKeyParts([]string{baseID}); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return "", errors.New(message)
+	}
+
+	if !ExistsIn(stub, entity, index) {
+		return baseID, nil
+	}
+
+	baseID, err = IncUUID(baseID)
+	if err != nil {
+		message := fmt.Sprintf("cannot increment uuid: %s", err.Error())
+		Logger.Error(message)
+		return "", errors.New(message)
+	}
+
+	for ExistsIn(stub, entity, index) {
+
+		baseID, err = IncUUID(baseID)
+		if err != nil {
+			message := fmt.Sprintf("cannot increment uuid: %s", err.Error())
+			Logger.Error(message)
+			return "", errors.New(message)
+		}
+
+		if err := entity.FillFromCompositeKeyParts([]string{baseID}); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return "", errors.New(message)
+		}
+	}
+
+	return baseID, nil
+}
+
+func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string) error {
+
+	Logger.Debug("### emitEvent started ###")
+
+	for _, value := range events.Values {
+		eventAction := value.Action
+		var err error
+
+		baseID, err = GenUUIDfromExist(stub, eventIndex, baseID, CreateEvent)
+		if err != nil {
+			message := fmt.Sprintf(err.Error())
+			return errors.New(message)
+		}
+
+		event := Event{}
+		if err := event.FillFromCompositeKeyParts([]string{baseID}); err != nil {
+			message := fmt.Sprintf(err.Error())
+			return errors.New(message)
+		}
+		event.Value = value
+
+		creator, err := GetCreatorOrganizationalUnit(stub)
+		if err != nil {
+			message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+		Logger.Debug("OrganizationalUnit: " + creator)
+
+		config := Config{}
+		if err := LoadFrom(stub, &config, configIndex); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+
+			return errors.New(message)
+		}
+
+		//getting transaction Timestamp
+		timestamp, err := stub.GetTxTimestamp()
+		if err != nil {
+			message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		event.Value.Creator = creator
+		event.Value.Timestamp = timestamp.Seconds
+
+		bytes, err := json.Marshal(event)
+		if err != nil {
+			message := fmt.Sprintf("Error marshaling: %s", err.Error())
+			return errors.New(message)
+		}
+		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + baseID
+		events.Keys = append(events.Keys, EventKey{ID: eventName})
+
+		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
+			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return errors.New(message)
+		}
+
+		Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
+		Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
+	}
+
+	generalKey, err := json.Marshal(events.Keys)
+	if err != nil {
+		message := fmt.Sprintf("Error marshaling: %s", err.Error())
+		return errors.New(message)
+	}
+
+	if err := stub.SetEvent(string(generalKey), nil); err != nil {
+		message := fmt.Sprintf("Error setting event: %s", err.Error())
+		return errors.New(message)
+	}
+	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
+
+	Logger.Debug("### emitEvent success ###")
+	return nil
 }

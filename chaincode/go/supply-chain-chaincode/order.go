@@ -127,6 +127,14 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	}
 	entity.Value.PaymentDate = int64(paymentDate)
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to get transaction timestamp: %s", err.Error()))
+	}
+
+	entity.Value.Timestamp = timestamp.Seconds
+
 	//setting amount
 	entity.Value.Amount = price * float64(quantity)
 

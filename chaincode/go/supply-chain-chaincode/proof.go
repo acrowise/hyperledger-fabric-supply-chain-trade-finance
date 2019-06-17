@@ -10,6 +10,7 @@ import (
 	"github.com/hyperledger/fabric/idemix"
 	"github.com/satori/go.uuid"
 	"math/rand"
+	"strconv"
 )
 
 const (
@@ -107,6 +108,17 @@ func (entity *Proof) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 		return errors.New(fmt.Sprintf("proof Owner is invalid: %s (must be string)", args[2]))
 	}
 	entity.Value.Owner = owner
+
+	//checking Timestamp
+	timestamp, err := strconv.ParseInt(args[4], 10, 64)
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to parse the timestamp: %s", err.Error()))
+	}
+
+	if timestamp < 0 {
+		return errors.New("timestamp must be larger than zero")
+	}
+	entity.Value.Timestamp = timestamp
 
 	return nil
 }

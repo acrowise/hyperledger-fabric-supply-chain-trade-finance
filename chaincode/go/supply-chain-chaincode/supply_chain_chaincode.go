@@ -11,9 +11,7 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	pb "github.com/hyperledger/fabric/protos/peer"
-	"github.com/satori/go.uuid"
 	"strconv"
-	"time"
 )
 
 type SupplyChainChaincode struct {
@@ -163,7 +161,6 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	Logger.Debug("OrganizationalUnit: " + creator)
 
 	order.Value.State = stateOrderNew
-	order.Value.Timestamp = time.Now().UTC().Unix()
 	order.Value.UpdatedDate = order.Value.Timestamp
 	order.Value.BuyerID = creator
 
@@ -193,7 +190,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, order.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -203,8 +200,8 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 	return shim.Success(nil)
 }
 
-//0		1			2			3		4			5		6			7
-//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate	0
+//0		1			2			3		4			5		6
+//ID	ProductName	Quantity	Price	Destination	DueDate	PaymentDate
 func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -258,6 +255,13 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	//setting new values
 	orderToUpdate.Value.ProductName = order.Value.ProductName
@@ -265,7 +269,7 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 	orderToUpdate.Value.Price = order.Value.Price
 	orderToUpdate.Value.DueDate = order.Value.DueDate
 	orderToUpdate.Value.PaymentDate = order.Value.PaymentDate
-	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	orderToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//setting optional values
 	destination := args[4]
@@ -293,7 +297,7 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -303,8 +307,8 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1	2	3	4	5	6	7
-//ID	0	0	0	0	0	0	0
+//0		1	2	3	4	5	6
+//ID	0	0	0	0	0	0
 func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
@@ -357,10 +361,17 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 		Logger.Error(message)
 		return shim.Error(message)
 	}
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	//setting new values
 	orderToUpdate.Value.State = stateOrderCanceled
-	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	orderToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//updating state in ledger
 	if bytes, err := json.Marshal(orderToUpdate); err == nil {
@@ -384,7 +395,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -394,8 +405,8 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 	return shim.Success(nil)
 }
 
-//0		1	2	3	4	5	6	7
-//ID	0	0	0	0	0	0	0
+//0		1	2	3	4	5	6
+//ID	0	0	0	0	0	0
 func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: order id
 	// check role == Supplier
@@ -451,9 +462,17 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	}
 	Logger.Debug("OrganizationalUnit: " + creator)
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	orderToUpdate.Value.State = stateOrderAccepted
-	orderToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	orderToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//creating contract
 	contract := Contract{}
@@ -479,7 +498,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	contract.Value.DueDate = orderToUpdate.Value.DueDate
 	contract.Value.PaymentDate = orderToUpdate.Value.PaymentDate
 	contract.Value.State = stateContractSigned
-	contract.Value.Timestamp = time.Now().UTC().Unix()
+	contract.Value.Timestamp = timestamp.Seconds
 	contract.Value.UpdatedDate = contract.Value.Timestamp
 
 	if bytes, err := json.Marshal(contract); err == nil {
@@ -533,7 +552,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	eventValue.Action = eventAcceptOrder
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -606,7 +625,6 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	shipment.Value.Description = args[5]
 	shipment.Value.Consignor = contract.Value.ConsignorName
 	shipment.Value.DeliveryDate = contract.Value.DueDate
-	shipment.Value.Timestamp = time.Now().UTC().Unix()
 	shipment.Value.UpdatedDate = shipment.Value.Timestamp
 
 	//updating state in ledger
@@ -622,7 +640,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 
 	//updating contract state
 	contract.Value.State = stateContractProcessed
-	contract.Value.UpdatedDate = time.Now().UTC().Unix()
+	contract.Value.UpdatedDate = shipment.Value.Timestamp
 
 	if bytes, err := json.Marshal(contract); err == nil {
 		Logger.Debug("Contract: " + string(bytes))
@@ -641,7 +659,13 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, documentMeta, documentType, shipment.Value.ContractID}
+		documentID, err := GenUUIDfromExist(stub, documentIndex, shipment.Key.ID, CreateDocument)
+		if err != nil {
+			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+		documentFields := []string{documentID, strconv.Itoa(TypeShipment), shipment.Key.ID, documentHash, documentMeta, documentType, shipment.Value.ContractID}
 		err, document = processingUploadDocument(stub, documentFields, contract)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -674,7 +698,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, shipment.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -729,9 +753,17 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentConfirmed
-	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" {
 		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
@@ -754,8 +786,13 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
-		var err error
+		documentID, err := GenUUIDfromExist(stub, documentIndex, shipmentToUpdate.Key.ID, CreateDocument)
+		if err != nil {
+			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+		documentFields := []string{documentID, strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
 		err, document = processingUploadDocument(stub, documentFields, Contract{})
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -784,7 +821,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, shipmentToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -893,9 +930,17 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		}
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	//setting new values
 	shipmentToUpdate.Value.State = stateShipmentDelivered
-	shipmentToUpdate.Value.UpdatedDate = time.Now().UTC().Unix()
+	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" {
 		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
@@ -914,7 +959,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 
 	//updating contract state
 	contract.Value.State = stateContractCompleted
-	contract.Value.UpdatedDate = time.Now().UTC().Unix()
+	contract.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(contract); err == nil {
 		Logger.Debug("Contract: " + string(bytes))
@@ -933,7 +978,13 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	documentMeta := args[8]
 	document := Document{}
 	if documentHash != "" && documentType != "" {
-		documentFields := []string{"0", strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
+		documentID, err := GenUUIDfromExist(stub, documentIndex, shipmentToUpdate.Key.ID, CreateDocument)
+		if err != nil {
+			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			Logger.Error(message)
+			return pb.Response{Status: 500, Message: message}
+		}
+		documentFields := []string{documentID, strconv.Itoa(TypeShipment), shipmentToUpdate.Key.ID, documentHash, documentMeta, documentType, shipmentToUpdate.Value.ContractID}
 		err, document = processingUploadDocument(stub, documentFields, contract)
 		if err != nil {
 			message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -987,7 +1038,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, shipmentToUpdate.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -997,7 +1048,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	return shim.Success(nil)
 }
 
-//0					1			2			3				4					5				6
+//0					1			2			3				4				5				6
 //DocumentID		EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
 func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
@@ -1027,7 +1078,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	eventValue.Action = eventUploadDocument
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, document.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1037,20 +1088,14 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	return shim.Success(nil)
 }
 
+//0					1			2			3				4				5				6
+//DocumentID		EntityType	EntityID	DocumentHash 	DocumentMeta	DocumentType	ContractID
 func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, contract Contract) (error, Document) {
 
 	//checking document exist
 	document := Document{}
 	if err := document.FillFromArguments(stub, args); err != nil {
 		message := fmt.Sprintf("cannot fill an document from arguments: %s", err.Error())
-		Logger.Error(message)
-		return errors.New(message), Document{}
-	}
-
-	//generating new document ID and making Key
-	documentID := uuid.Must(uuid.NewV4()).String()
-	if err := document.FillFromCompositeKeyParts([]string{documentID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
 		return errors.New(message), Document{}
 	}
@@ -1076,11 +1121,19 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, c
 	//	return errors.New(message), Document{}
 	//}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+
 	//setting optional values
 	document.Value.DocumentMeta = args[4]
 
 	//setting automatic values
-	document.Value.Timestamp = time.Now().UTC().Unix()
+	document.Value.Timestamp = timestamp.Seconds
 	document.Value.UpdatedDate = document.Value.Timestamp
 
 	//updating state in ledger
@@ -1110,7 +1163,7 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, c
 		}
 	}
 	contract.Value.Documents = append(contract.Value.Documents, document.Key.ID)
-	contract.Value.UpdatedDate = time.Now().UTC().Unix()
+	contract.Value.UpdatedDate = timestamp.Seconds
 	if err := UpdateOrInsertIn(stub, &contract, contractIndex, []string{""}, ""); err != nil {
 		message := fmt.Sprintf("persistence error: %s", err.Error())
 		Logger.Error(message)
@@ -1180,12 +1233,19 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	// setting automatic values
-	proof.Key.ID = uuid.Must(uuid.NewV4()).String()
 	proof.Value.State = stateProofGenerated
 	proof.Value.ConsignorName = creator
 	proof.Value.ShipmentID = shipmentID
-	proof.Value.Timestamp = time.Now().UTC().Unix()
+	proof.Value.Timestamp = timestamp.Seconds
 	proof.Value.UpdatedDate = proof.Value.Timestamp
 
 	// parsing input json and generate Idemix crypto
@@ -1213,7 +1273,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	eventValue.Action = eventGenerateProof
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1296,6 +1356,14 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	// making report
 	reportState, err := strconv.Atoi(args[1])
 	if err != nil {
@@ -1317,9 +1385,14 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	if proof.Value.State == stateProofGenerated {
 		// making new report
 		report := Report{}
-		reportID := uuid.Must(uuid.NewV4()).String()
+		reportID, err := GenUUIDfromExist(stub, reportIndex, proof.Key.ID, CreateReport)
 		if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
+			Logger.Error(message)
+			return shim.Error(message)
+		}
+		if err != nil {
+			message := fmt.Sprintf("cannot increment uuid: %s", err.Error())
 			Logger.Error(message)
 			return shim.Error(message)
 		}
@@ -1329,7 +1402,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.Description = args[2]
 		report.Value.ProofID = proof.Key.ID
 		report.Value.ConsignorName = proof.Value.ConsignorName
-		report.Value.Timestamp = time.Now().UTC().Unix()
+		report.Value.Timestamp = timestamp.Seconds
 		report.Value.UpdatedDate = report.Value.Timestamp
 
 		//updating state in ledger
@@ -1357,7 +1430,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		for _, report := range reports {
 			report.Value.State = reportState
 			report.Value.Description = args[2]
-			report.Value.UpdatedDate = time.Now().UTC().Unix()
+			report.Value.UpdatedDate = timestamp.Seconds
 
 			//event = updateReport
 			eventValue.EntityType = reportIndex
@@ -1383,7 +1456,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	}
 
 	proof.Value.State = stateProofMap[reportState]
-	proof.Value.UpdatedDate = time.Now().UTC().Unix()
+	proof.Value.UpdatedDate = timestamp.Seconds
 
 	// updating state in ledger
 	if err := UpdateOrInsertIn(stub, &proof, proofIndex, []string{""}, ""); err != nil {
@@ -1407,7 +1480,13 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		}
 
 		for _, report := range reports {
-			documentFields := []string{"0", strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
+			documentID, err := GenUUIDfromExist(stub, documentIndex, proof.Key.ID, CreateDocument)
+			if err != nil {
+				message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+				Logger.Error(message)
+				return pb.Response{Status: 500, Message: message}
+			}
+			documentFields := []string{documentID, strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
 			err, document = processingUploadDocument(stub, documentFields, Contract{})
 			if err != nil {
 				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
@@ -1435,7 +1514,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1492,10 +1571,17 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 		return shim.Error(message)
 	}
 
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	// setting automatic values
 	proof.Value.State = stateProofUpdated
-	proof.Value.Timestamp = time.Now().UTC().Unix()
-	proof.Value.UpdatedDate = time.Now().UTC().Unix()
+	proof.Value.UpdatedDate = timestamp.Seconds
 
 	// parsing input json and generate Idemix crypto
 	if err := proof.GenerateIdemixCrypto(args[1]); err != nil {
@@ -1522,7 +1608,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	eventValue.Action = eventUpdateProof
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.emitEvent(stub); err != nil {
+	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -2479,73 +2565,6 @@ func joinByReportsAndDocuments(stub shim.ChaincodeStubInterface, reports []Repor
 
 	resultBytes, err := json.Marshal(result)
 	return resultBytes, nil
-}
-
-func (events *Events) emitEvent(stub shim.ChaincodeStubInterface) error {
-
-	Logger.Debug("### emitEvent started ###")
-
-	for _, value := range events.Values {
-		eventAction := value.Action
-		eventID := uuid.Must(uuid.NewV4()).String()
-
-		event := Event{}
-		if err := event.FillFromCompositeKeyParts([]string{eventID}); err != nil {
-			message := fmt.Sprintf(err.Error())
-			return errors.New(message)
-		}
-		event.Value = value
-
-		creator, err := GetCreatorOrganizationalUnit(stub)
-		if err != nil {
-			message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
-			Logger.Error(message)
-			return errors.New(message)
-		}
-		Logger.Debug("OrganizationalUnit: " + creator)
-
-		config := Config{}
-		if err := LoadFrom(stub, &config, configIndex); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-
-			return errors.New(message)
-		}
-
-		event.Value.Creator = creator
-		event.Value.Timestamp = time.Now().UTC().Unix()
-
-		bytes, err := json.Marshal(event)
-		if err != nil {
-			message := fmt.Sprintf("Error marshaling: %s", err.Error())
-			return errors.New(message)
-		}
-		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + eventID
-		events.Keys = append(events.Keys, EventKey{ID: eventName})
-
-		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return errors.New(message)
-		}
-
-		Logger.Info(fmt.Sprintf("Event set: %s without errors", string(bytes)))
-		Logger.Debug(fmt.Sprintf("Success: Event set: %s", string(bytes)))
-	}
-
-	generalKey, err := json.Marshal(events.Keys)
-	if err != nil {
-		message := fmt.Sprintf("Error marshaling: %s", err.Error())
-		return errors.New(message)
-	}
-
-	if err := stub.SetEvent(string(generalKey), nil); err != nil {
-		message := fmt.Sprintf("Error setting event: %s", err.Error())
-		return errors.New(message)
-	}
-	Logger.Debug(fmt.Sprintf("generalEventName: %s", string(generalKey)))
-
-	Logger.Debug("### emitEvent success ###")
-	return nil
 }
 
 func encode(publicKey *ecdsa.PublicKey) string {

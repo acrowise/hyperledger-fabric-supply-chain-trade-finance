@@ -14,7 +14,7 @@ const (
 
 const (
 	shipmentKeyFieldsNumber      = 1
-	shipmentBasicArgumentsNumber = 5
+	shipmentBasicArgumentsNumber = 8
 )
 
 //shipment state constants (from 0 to 4)
@@ -95,8 +95,8 @@ func CreateShipment() LedgerData {
 }
 
 //argument order
-//0		1			2			3		4			5			6
-//ID	ContractID	ShipFrom	ShipTo	Transport	Description	DeliveryDate
+//0				1			2			3		4			5			6				7				8
+//ShipmentID	ContractID	ShipFrom	ShipTo	Transport	Description	DocumentHash	DocumentType	DocumentMeta
 func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < shipmentBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", shipmentBasicArgumentsNumber))
@@ -145,6 +145,14 @@ func (entity *Shipment) FillFromArguments(stub shim.ChaincodeStubInterface, args
 		return errors.New(message)
 	}
 	entity.Value.Transport = transport
+
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		return errors.New(fmt.Sprintf("unable to get transaction timestamp: %s", err.Error()))
+	}
+
+	entity.Value.Timestamp = timestamp.Seconds
 
 	return nil
 }
