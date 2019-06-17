@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Icon, Button } from '@blueprintjs/core';
-import { useSocket } from 'use-socketio';
+
 import { format } from 'date-fns';
+import { useSocket } from 'use-socketio';
+import { Icon, Button } from '@blueprintjs/core';
 
 import { get } from '../helper/api';
-
 import { cropId } from '../helper/utils';
 
+import Icons from '../components/Icon/Icon';
+import Panel from '../components/CollapsiblePanel';
 import GenerateProofForm from './Forms/GenerateProof';
+import Timeline from '../components/Timeline/Timeline';
 import ConfirmDeliveryForm from './Forms/ConfirmDelivery';
 import ProofDetail from '../components/ProofDetail/ProofDetail';
 import ReportDetail from '../components/ReportDetail/ReportDetail';
-import Panel from '../components/CollapsiblePanel';
-import Timeline from '../components/Timeline/Timeline';
 import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
-
 import ConfirmShipmentForm from './Forms/ConfirmShipment';
-
-import Icons from '../components/Icon/Icon';
 
 import { EVENTS_MAP } from '../constants';
 
@@ -30,18 +28,15 @@ const ShipmentDetailPage = ({
   const [proofs, loadingProofs, setProofsData] = get('listProofsByShipment', [shipment.id]);
   const [reports, loadingReports, setReportsData] = get('listReportsByShipment', [shipment.id]);
 
-  const [gpDialogIsOpen, setGpDialogOpenState] = useState({
-    isOpen: false
-  });
+  const [proof, setProof] = useState(null);
+  const [report, setReport] = useState(null);
+  const [docs, setDocs] = useState(shipment.documents);
   const [cdDialogIsOpen, setCdDialogOpenState] = useState(false);
   const [csDialogIsOpen, setCsDialogOpenState] = useState(false);
   const [proofDialogIsOpen, setProofDialogOpenState] = useState(false);
   const [reportDialogIsOpen, setReportDialogOpenState] = useState(false);
+  const [gpDialogIsOpen, setGpDialogOpenState] = useState({ isOpen: false });
 
-  const [proof, setProof] = useState(null);
-  const [report, setReport] = useState(null);
-
-  const [docs, setDocs] = useState(shipment.documents);
   const [events, setEvents] = useState(
     shipment.timeline
       ? Object.keys(shipment.timeline)
@@ -60,15 +55,12 @@ const ShipmentDetailPage = ({
       : []
   );
   const updateEvents = (notification) => {
-    const newEvents = events.concat([
-      {
-        id: notification.data.value.eventId || notification.data.key.id,
-        date: fromUnixTime(notification.data.value.timestamp),
-        action: EVENTS_MAP[notification.type],
-        user: notification.data.value.creator
-      }
-    ]);
-    setEvents(newEvents);
+    setEvents(events.concat([{
+      id: notification.data.value.eventId || notification.data.key.id,
+      date: fromUnixTime(notification.data.value.timestamp),
+      action: EVENTS_MAP[notification.type],
+      user: notification.data.value.creator
+    }]));
   };
 
   const onNotification = (message) => {
@@ -164,14 +156,7 @@ const ShipmentDetailPage = ({
         }}
       >
         <Icons name="left-arrow" />
-        <p
-          style={{
-            marginLeft: '10px',
-            color: '#3FBEA5',
-            fontWeight: 'bold',
-            cursor: 'pointer'
-          }}
-        >
+        <p className="left-arrow-text">
           Return to Shipments
         </p>
       </div>
@@ -317,27 +302,12 @@ const ShipmentDetailPage = ({
                       <Icons name="proof-document" />
                       <a
                         style={{ marginLeft: '10px', marginTop: '2px', color: '#1B263C' }}
-                        href={`/getDocument?hash=${doc.value.documentHash}&type=${
-                          doc.value.documentType
-                        }`}
+                        href={`/getDocument?hash=${doc.value.documentHash}&type=${doc.value.documentType}`}
                         target="_blank"
                       >
                         {doc.value.documentMeat}
                       </a>
-                      {doc.new ? (
-                        <div
-                          style={{
-                            marginLeft: '3px',
-                            marginBottom: '7px',
-                            borderRadius: '100%',
-                            height: '8px',
-                            width: '8px',
-                            backgroundColor: '#69D7BC'
-                          }}
-                        />
-                      ) : (
-                        <></>
-                      )}
+                      {doc.new ? <div className="new-dot-notification" /> : <></>}
                     </div>
                   ))}
               </div>

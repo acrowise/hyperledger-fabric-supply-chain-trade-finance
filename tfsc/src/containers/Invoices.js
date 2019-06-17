@@ -84,25 +84,6 @@ const Invoices = ({
         data={filteredData}
         actions={item => (
           <div>
-            {/* {role === 'buyer' && item.state === 'Issued' ? (
-              <div className="nowrap">
-                <Button
-                  style={{ marginRight: '5px' }}
-                  intent="primary"
-                  onClick={() => {
-                    acceptInvoice({
-                      fcn: 'acceptInvoice',
-                      args: [item.id, '0', '0', '0', '0', '0', '0']
-                    });
-                  }}
-                >
-                  Sign
-                </Button>
-                <Button intent="danger">Reject</Button>
-              </div>
-            ) : (
-              <></>
-            )} */}
             {actor.role === 'supplier' && item.state === 'Signed' ? (
               <div>
                 <Button

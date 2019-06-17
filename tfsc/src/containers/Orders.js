@@ -23,7 +23,7 @@ const Orders = ({
   const [data, loading, setData] = get('listOrders');
   const [reqAccept, acceptOrder] = post('acceptOrder')();
   const [reqCancel, cancelOrder] = post('cancelOrder')();
-  const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
+  // const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
 
   const [dialog, setDialog] = useState({ state: null, isOpen: false });
 
@@ -61,7 +61,7 @@ const Orders = ({
         data={filteredData}
         actions={item => (
           <>
-            {actor.role === 'bank' && item.state === 'New' ? (
+            {/* {actor.role === 'bank' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   onClick={() => {
@@ -79,7 +79,7 @@ const Orders = ({
               </div>
             ) : (
               <></>
-            )}
+            )} */}
             {actor.role === 'supplier' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
@@ -138,7 +138,12 @@ const Orders = ({
 };
 
 Orders.propTypes = {
-  role: PropTypes.string
+  actor: PropTypes.object,
+  filter: PropTypes.string,
+  search: PropTypes.search,
+  dataForFilter: PropTypes.array,
+  setDataForFilter: PropTypes.func,
+  filterOptions: PropTypes.object
 };
 
 export default Orders;

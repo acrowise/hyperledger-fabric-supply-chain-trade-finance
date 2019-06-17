@@ -41,16 +41,7 @@ const CollapsiblePanel = ({
                 {capitalize(type)}: {AUDITORS[item.value.owner].toUpperCase()}
               </p>
               {item.new ? (
-                <div
-                  style={{
-                    marginLeft: '3px',
-                    marginBottom: '7px',
-                    borderRadius: '100%',
-                    height: '8px',
-                    width: '8px',
-                    backgroundColor: '#69D7BC'
-                  }}
-                />
+                <div className="new-dot-notification"/>
               ) : (
                 <></>
               )}

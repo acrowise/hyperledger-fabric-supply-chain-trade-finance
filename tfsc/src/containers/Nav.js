@@ -55,12 +55,7 @@ const Nav = ({ role, logout }) => {
                 isOpen={showNotifications}
                 content={<Notifications />}
                 target={
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center'
-                    }}
-                  >
+                  <div style={{ display: 'flex', alignItems: 'center' }}>
                     <Button
                       className="bp3-minimal header-notifications-btn"
                       style={{ textTransform: 'capitalize' }}
@@ -81,22 +76,13 @@ const Nav = ({ role, logout }) => {
             )}
 
             <Popover
-              // position="auto-end"
               minimal
               onClose={() => {
                 setShowLogOut(false);
               }}
               isOpen={showLogOut}
               content={
-                <div
-                  style={{
-                    width: '124px',
-                    height: '40px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                  }}
-                >
+                <div className=".nav-popover-logout">
                   <a
                     style={{ color: '#1B263C' }}
                     onClick={() => {
