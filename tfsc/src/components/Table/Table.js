@@ -6,7 +6,7 @@ import './table.scss';
 
 import { cropId } from '../../helper/utils';
 
-const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofId', 'proofID']; // FIXME:
+const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofID']; // FIXME:
 const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
 const amount = ['price', 'totalDue'];
 // const users = ['factor'];

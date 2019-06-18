@@ -244,7 +244,7 @@ const TABLE_MAP = {
   },
   REPORTS: {
     id: 'Report ID',
-    proofId: 'Proof ID',
+    proofID: 'Proof ID',
     consignorName: 'Consignor',
     shipmentID: 'Shipment ID',
     state: 'Status'

@@ -365,7 +365,7 @@ module.exports = (router, clients) => {
       value: {
         state: 1,
         shipmentId: req.body.shipmentId,
-        proofId: proof.key.id,
+        proofID: proof.key.id,
         description: req.body.description,
         contract,
         factor: req.body.user ? req.body.user.toUpperCase() : 'Auditor',
