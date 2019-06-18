@@ -1921,15 +1921,6 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 		return shim.Error(message)
 	}
 
-	for _, shipment := range shipments {
-		shipmentHistory, err := getHistoryByEntity(stub, shipmentIndex, shipment.Key.ID, CreateShipment)
-		if err != nil {
-			message := fmt.Sprintf("cannot get history for entity %s with ID: %s . Error: %s", shipmentIndex, shipment.Key.ID, err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
-		}
-	}
-
 	resultBytes, err := joinByShipmentsAndContractsAndDocumentsAndEvents(stub, shipments)
 	if err != nil {
 		message := fmt.Sprintf("cannot join by shipment and contract: %s", err.Error())
