@@ -55,7 +55,7 @@ const Timeline = ({ shipment, events }) => {
           {events
             && events
               .concat([])
-              .sort((a, b) => a.date - b.bate)
+              .sort((a, b) => a.date - b.date)
               .filter(i => i.action !== 'Document Uploaded' && i.action !== 'Proof generated')
               .map(event => (
                 <TimelineItem

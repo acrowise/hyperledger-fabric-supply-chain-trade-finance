@@ -22,6 +22,13 @@ import { EVENTS_MAP } from '../constants';
 
 const fromUnixTime = timestamp => timestamp * 1000;
 
+const reportStatuses = {
+  1: '',
+  2: 'Accepted',
+  3: '',
+  4: 'Declined'
+};
+
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
@@ -49,18 +56,25 @@ const ShipmentDetailPage = ({
         .map(({ key, value }) => ({
           id: value.eventId || key.id,
           date: fromUnixTime(value.timestamp),
-          action: EVENTS_MAP[value.action],
+          action:
+              value.action === 'verifyProof'
+                ? `Proof ${reportStatuses[value.other.state]}`
+                : EVENTS_MAP[value.action],
           user: value.creator
         }))
       : []
   );
   const updateEvents = (notification) => {
-    setEvents(events.concat([{
-      id: notification.data.value.eventId || notification.data.key.id,
-      date: fromUnixTime(notification.data.value.timestamp),
-      action: EVENTS_MAP[notification.type],
-      user: notification.data.value.creator
-    }]));
+    setEvents(
+      events.concat([
+        {
+          id: notification.data.value.eventId || notification.data.key.id,
+          date: fromUnixTime(notification.data.value.timestamp),
+          action: EVENTS_MAP[notification.type],
+          user: notification.data.value.creator
+        }
+      ])
+    );
   };
 
   const onNotification = (message) => {
@@ -156,9 +170,7 @@ const ShipmentDetailPage = ({
         }}
       >
         <Icons name="left-arrow" />
-        <p className="left-arrow-text">
-          Return to Shipments
-        </p>
+        <p className="left-arrow-text">Return to Shipments</p>
       </div>
 
       <div className="layout-container">
