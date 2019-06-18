@@ -1339,7 +1339,6 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	attributeValuesBytes := make([]*FP256BN.BIG, len(proof.Value.DataForVerification.AttributeValuesHash))
 
 	for i := range proof.Value.DataForVerification.AttributeValuesHash {
-		fmt.Println(FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValuesHash[i]))
 		attributeValuesBytes[i] = FP256BN.FromBytes(proof.Value.DataForVerification.AttributeValuesHash[i])
 	}
 	err = proof.Value.SnapShot.Ver(proof.Value.DataForVerification.Disclosure,
@@ -1405,6 +1404,8 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.Timestamp = timestamp.Seconds
 		report.Value.UpdatedDate = report.Value.Timestamp
 
+		reports = append(reports, report)
+
 		//updating state in ledger
 		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
@@ -1446,7 +1447,6 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 				return pb.Response{Status: 500, Message: message}
 			}
 			Logger.Debug("Processed report")
-			fmt.Println(report)
 		}
 	}
 
@@ -1928,8 +1928,6 @@ func (cc *SupplyChainChaincode) listShipments(stub shim.ChaincodeStubInterface, 
 			Logger.Error(message)
 			return shim.Error(message)
 		}
-		fmt.Println("######### Debug history ########")
-		fmt.Println(shipmentHistory)
 	}
 
 	resultBytes, err := joinByShipmentsAndContractsAndDocumentsAndEvents(stub, shipments)

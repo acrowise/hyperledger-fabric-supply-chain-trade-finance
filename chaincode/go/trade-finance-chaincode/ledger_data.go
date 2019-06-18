@@ -13,7 +13,6 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	"github.com/satori/go.uuid"
 	"math/big"
-	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -562,6 +561,8 @@ func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface, delta int) (string,
 		Logger.Debug(message)
 		return "", errors.New(message)
 	}
+	//getiing txID
+	txid := stub.GetTxID()
 
 	sec := timestamp.Seconds
 	nanosec := int64(timestamp.Nanos)
@@ -572,7 +573,7 @@ func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface, delta int) (string,
 
 	//getting hash from time
 	h := sha1.New()
-	h.Write([]byte(strconv.FormatInt(sec, 10)))
+	h.Write([]byte(txid))
 	sha := h.Sum(nil) // "sha" is uint8 type, encoded in base16
 	var clockSeq uint32
 
