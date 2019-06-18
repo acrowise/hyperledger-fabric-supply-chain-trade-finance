@@ -27,6 +27,11 @@ const actors = [
   { role: 'Bank', description: 'bank' }
 ];
 
+const AUDITORS = {
+  'Auditor-1': 'ggcb',
+  'Auditor-2': 'uscts'
+};
+
 const STATUSES = {
   ORDER: {
     0: STATUS_UNKNOWN,
@@ -539,5 +544,6 @@ module.exports = {
   TRADE_FINANCE_CHAINCODE,
   EVENTS_MAP,
   NOTIFICATIONS_TAB,
-  FILTERS
+  FILTERS,
+  AUDITORS
 };

@@ -18,7 +18,7 @@ import ReportDetail from '../components/ReportDetail/ReportDetail';
 import CollapsiblePanel from '../components/CollapsiblePanel/CollapsiblePanel';
 import ConfirmShipmentForm from './Forms/ConfirmShipment';
 
-import { EVENTS_MAP } from '../constants';
+import { EVENTS_MAP, AUDITORS } from '../constants';
 
 const fromUnixTime = timestamp => timestamp * 1000;
 
@@ -60,7 +60,7 @@ const ShipmentDetailPage = ({
               value.action === 'verifyProof'
                 ? `Proof ${reportStatuses[value.other.state]}`
                 : EVENTS_MAP[value.action],
-          user: value.creator
+          user: AUDITORS[value.creator] ? AUDITORS[value.creator].toUpperCase() : value.creator
         }))
       : []
   );

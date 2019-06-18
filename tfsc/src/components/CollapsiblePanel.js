@@ -4,15 +4,9 @@ import { Icon } from '@blueprintjs/core';
 // import ProofDetail from './ProofDetail/ProofDetail';
 
 import { capitalize } from '../helper/utils';
+import { AUDITORS } from '../constants';
 
-const AUDITORS = {
-  'Auditor-1': 'ggcb',
-  'Auditor-2': 'uscts'
-};
-
-const CollapsiblePanel = ({
-  data, setDialogOpenState, setItem, type
-}) => {
+const CollapsiblePanel = ({ data, setDialogOpenState, setItem, type }) => {
   const [expanded, setExpanded] = useState(true);
 
   return (
@@ -40,11 +34,7 @@ const CollapsiblePanel = ({
               <p>
                 {capitalize(type)}: {AUDITORS[item.value.owner].toUpperCase()}
               </p>
-              {item.new ? (
-                <div className="new-dot-notification"/>
-              ) : (
-                <></>
-              )}
+              {item.new ? <div className="new-dot-notification" /> : <></>}
             </div>
           ))}
         </div>

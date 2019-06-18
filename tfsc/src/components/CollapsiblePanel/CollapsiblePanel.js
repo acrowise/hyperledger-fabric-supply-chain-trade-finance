@@ -33,7 +33,7 @@ const CollapsiblePanel = ({ history }) => {
                     <td>{format(item.date, 'DD MMM YYYY')}</td>
                     <td>{item.id}</td>
                     <td>{item.action}</td>
-                    {/* <td>{item.user}</td> */}
+                    <td>{item.user}</td>
                   </tr>
                 ))}
             </tbody>
