@@ -659,9 +659,9 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentID, err := GenUUIDfromExist(stub, documentIndex, shipment.Key.ID, CreateDocument)
+		documentID, err := UUIDv4FromTXTimestamp(stub)
 		if err != nil {
-			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
 		}
@@ -786,9 +786,9 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentID, err := GenUUIDfromExist(stub, documentIndex, shipmentToUpdate.Key.ID, CreateDocument)
+		documentID, err := UUIDv4FromTXTimestamp(stub)
 		if err != nil {
-			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
 		}
@@ -978,9 +978,9 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	documentMeta := args[8]
 	document := Document{}
 	if documentHash != "" && documentType != "" {
-		documentID, err := GenUUIDfromExist(stub, documentIndex, shipmentToUpdate.Key.ID, CreateDocument)
+		documentID, err := UUIDv4FromTXTimestamp(stub)
 		if err != nil {
-			message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
 		}
@@ -1385,7 +1385,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	if proof.Value.State == stateProofGenerated {
 		// making new report
 		report := Report{}
-		reportID, err := GenUUIDfromExist(stub, reportIndex, proof.Key.ID, CreateReport)
+		reportID, err := UUIDv4FromTXTimestamp(stub)
 		if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -1480,9 +1480,9 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		}
 
 		for _, report := range reports {
-			documentID, err := GenUUIDfromExist(stub, documentIndex, proof.Key.ID, CreateDocument)
+			documentID, err := UUIDv4FromTXTimestamp(stub)
 			if err != nil {
-				message := fmt.Sprintf("cannot generate new uuid from existing: %s", err.Error())
+				message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 				Logger.Error(message)
 				return pb.Response{Status: 500, Message: message}
 			}
@@ -1566,7 +1566,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if creator != proof.Value.ConsignorName {
-		message := fmt.Sprintf("each supplier can update only his own proof", err.Error())
+		message := fmt.Sprintf("each supplier can update only his own proof")
 		Logger.Error(message)
 		return shim.Error(message)
 	}

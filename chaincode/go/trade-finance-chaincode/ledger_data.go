@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/sha1"
 	"crypto/x509"
 	"encoding/hex"
 	"encoding/json"
@@ -12,7 +13,10 @@ import (
 	"github.com/hyperledger/fabric/core/chaincode/shim/ext/statebased"
 	"github.com/satori/go.uuid"
 	"math/big"
+	"strconv"
 	"strings"
+	"sync/atomic"
+	"time"
 )
 
 var ledgerDataLogger = shim.NewLogger("LedgerData")
@@ -549,45 +553,46 @@ func IncUUID(currentStringID string) (string, error) {
 	return id.String(), nil
 }
 
-func GenUUIDfromExist(stub shim.ChaincodeStubInterface, index string, baseID string, createEntry FactoryMethod) (string, error) {
+func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface) (string, error) {
 
-	var err error
-	entity := createEntry()
-
-	if err := entity.FillFromCompositeKeyParts([]string{baseID}); err != nil {
-		message := fmt.Sprintf("persistence error: %s", err.Error())
-		Logger.Error(message)
-		return "", errors.New(message)
-	}
-
-	if !ExistsIn(stub, entity, index) {
-		return baseID, nil
-	}
-
-	baseID, err = IncUUID(baseID)
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
 	if err != nil {
-		message := fmt.Sprintf("cannot increment uuid: %s", err.Error())
-		Logger.Error(message)
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Debug(message)
 		return "", errors.New(message)
 	}
 
-	for ExistsIn(stub, entity, index) {
+	sec := timestamp.Seconds
+	nanosec := int64(timestamp.Nanos)
 
-		baseID, err = IncUUID(baseID)
-		if err != nil {
-			message := fmt.Sprintf("cannot increment uuid: %s", err.Error())
-			Logger.Error(message)
-			return "", errors.New(message)
-		}
+	aTime := time.Unix(sec, nanosec)
 
-		if err := entity.FillFromCompositeKeyParts([]string{baseID}); err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return "", errors.New(message)
-		}
-	}
+	var u uuid.UUID
 
-	return baseID, nil
+	//getting hash from time
+	h := sha1.New()
+	h.Write([]byte(strconv.FormatInt(sec, 10)))
+	sha := h.Sum(nil) // "sha" is uint8 type, encoded in base16
+	var clockSeq uint32
+
+	utcTime := aTime.In(time.UTC)
+	t := uint64(utcTime.Unix())*10000000 + uint64(utcTime.Nanosecond()/100)
+	u[0], u[1], u[2], u[3] = byte(t>>24), byte(t>>16), byte(t>>8), byte(t)
+	u[4], u[5] = byte(t>>40), byte(t>>32)
+	u[6], u[7] = byte(t>>56)&0x0F, byte(t>>48)
+
+	clock := atomic.AddUint32(&clockSeq, 1)
+	u[8] = byte(clock >> 8)
+	u[9] = byte(clock)
+
+	copy(u[10:], sha)
+
+	u[6] = (u[6] & 0x0f) | (byte(4) << 4) // set V4
+	u[8] &= 0x3F                          // clear variant
+	u[8] |= 0x80                          // set to IETF variant
+
+	return u.String(), nil
 }
 
 func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string) error {
@@ -598,7 +603,7 @@ func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string)
 		eventAction := value.Action
 		var err error
 
-		baseID, err = GenUUIDfromExist(stub, eventIndex, baseID, CreateEvent)
+		baseID, err = UUIDv4FromTXTimestamp(stub)
 		if err != nil {
 			message := fmt.Sprintf(err.Error())
 			return errors.New(message)
