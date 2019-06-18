@@ -29,6 +29,30 @@ const reportStatuses = {
   4: 'Declined'
 };
 
+const prepareEvent = (data, type) => {
+  const { key, value } = data;
+  let action = EVENTS_MAP[value.action || type];
+  if (value.action === 'verifyProof') {
+    action = `Proof ${reportStatuses[value.other.state]}`;
+  }
+
+  if (value.action === 'uploadDocument') {
+    action = `${value.other.documentMeat ? value.other.documentMeat : Document} Uploaded`;
+  }
+
+  let user = value.creator;
+  if (AUDITORS[user]) {
+    user = AUDITORS[user].toUpperCase();
+  }
+
+  return {
+    id: value.eventId || key.id,
+    date: fromUnixTime(value.timestamp),
+    action,
+    user
+  };
+};
+
 const ShipmentDetailPage = ({
   role, shipment, showShipmentDetail, setContent
 }) => {
@@ -53,30 +77,12 @@ const ShipmentDetailPage = ({
           }
           return res.concat([]);
         }, [])
-        .map(({ key, value }) => ({
-          id: value.eventId || key.id,
-          date: fromUnixTime(value.timestamp),
-          action:
-              value.action === 'verifyProof'
-                ? `Proof ${reportStatuses[value.other.state]}`
-                : EVENTS_MAP[value.action],
-          user: AUDITORS[value.creator] ? AUDITORS[value.creator].toUpperCase() : value.creator
-        }))
+        .map(event => prepareEvent(event))
       : []
   );
+
   const updateEvents = (notification) => {
-    setEvents(
-      events.concat([
-        {
-          id: notification.data.value.eventId || notification.data.key.id,
-          date: fromUnixTime(notification.data.value.timestamp),
-          action: EVENTS_MAP[notification.type],
-          user: AUDITORS[notification.data.value.creator]
-            ? AUDITORS[notification.data.value.creator].toUpperCase()
-            : notification.data.value.creator
-        }
-      ])
-    );
+    setEvents(events.concat([prepareEvent(notification.data, notification.type)]));
   };
 
   const onNotification = (message) => {
