@@ -29,7 +29,7 @@ const ConfirmDeliveryForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
         setDialogOpenState(false);
         resetConfirmDelivery();
         dispatch({ type: 'reset', payload: initialState });
-      }, 1500);
+      }, confirmDeliveryRes.error ? 5000 : 1500);
     }
   }
 

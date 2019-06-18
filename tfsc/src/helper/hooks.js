@@ -3,6 +3,12 @@ import axios from 'axios';
 
 const retry = (options, n) => axios(options).catch((error) => {
   if (n === 0) {
+    if (error.response) {
+      throw error.response.data;
+    }
+    if (error.message) {
+      throw error.message;
+    }
     throw error;
   }
   return retry(options, n - 1);
@@ -38,7 +44,7 @@ export const usePost = (fn) => {
           setRes({
             data: null,
             pending: false,
-            error: true,
+            error: e,
             complete: true
           });
         });

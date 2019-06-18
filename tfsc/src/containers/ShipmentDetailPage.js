@@ -71,7 +71,9 @@ const ShipmentDetailPage = ({
           id: notification.data.value.eventId || notification.data.key.id,
           date: fromUnixTime(notification.data.value.timestamp),
           action: EVENTS_MAP[notification.type],
-          user: notification.data.value.creator
+          user: AUDITORS[notification.data.value.creator]
+            ? AUDITORS[notification.data.value.creator].toUpperCase()
+            : notification.data.value.creator
         }
       ])
     );
