@@ -659,7 +659,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentID, err := UUIDv4FromTXTimestamp(stub)
+		documentID, err := UUIDv4FromTXTimestamp(stub, 1)
 		if err != nil {
 			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
@@ -786,7 +786,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	documentType := args[7]
 	documentMeta := args[8]
 	if documentHash != "" && documentType != "" {
-		documentID, err := UUIDv4FromTXTimestamp(stub)
+		documentID, err := UUIDv4FromTXTimestamp(stub, 1)
 		if err != nil {
 			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
@@ -978,7 +978,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	documentMeta := args[8]
 	document := Document{}
 	if documentHash != "" && documentType != "" {
-		documentID, err := UUIDv4FromTXTimestamp(stub)
+		documentID, err := UUIDv4FromTXTimestamp(stub, 1)
 		if err != nil {
 			message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 			Logger.Error(message)
@@ -1385,7 +1385,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	if proof.Value.State == stateProofGenerated {
 		// making new report
 		report := Report{}
-		reportID, err := UUIDv4FromTXTimestamp(stub)
+		reportID, err := UUIDv4FromTXTimestamp(stub, 1)
 		if err := report.FillFromCompositeKeyParts([]string{reportID}); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
@@ -1480,7 +1480,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		}
 
 		for _, report := range reports {
-			documentID, err := UUIDv4FromTXTimestamp(stub)
+			documentID, err := UUIDv4FromTXTimestamp(stub, 1)
 			if err != nil {
 				message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
 				Logger.Error(message)

@@ -553,7 +553,7 @@ func IncUUID(currentStringID string) (string, error) {
 	return id.String(), nil
 }
 
-func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface) (string, error) {
+func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface, delta int) (string, error) {
 
 	//getting transaction Timestamp
 	timestamp, err := stub.GetTxTimestamp()
@@ -582,7 +582,7 @@ func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface) (string, error) {
 	u[4], u[5] = byte(t>>40), byte(t>>32)
 	u[6], u[7] = byte(t>>56)&0x0F, byte(t>>48)
 
-	clock := atomic.AddUint32(&clockSeq, 1)
+	clock := atomic.AddUint32(&clockSeq, uint32(delta))
 	u[8] = byte(clock >> 8)
 	u[9] = byte(clock)
 
@@ -599,11 +599,11 @@ func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string)
 
 	Logger.Debug("### emitEvent started ###")
 
-	for _, value := range events.Values {
+	for i, value := range events.Values {
 		eventAction := value.Action
 		var err error
 
-		baseID, err = UUIDv4FromTXTimestamp(stub)
+		baseID, err = UUIDv4FromTXTimestamp(stub, i+1)
 		if err != nil {
 			message := fmt.Sprintf(err.Error())
 			return errors.New(message)
