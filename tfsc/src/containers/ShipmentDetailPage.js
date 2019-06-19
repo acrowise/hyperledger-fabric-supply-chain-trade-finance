@@ -32,12 +32,17 @@ const reportStatuses = {
 const prepareEvent = (data, type) => {
   const { key, value } = data;
   let action = EVENTS_MAP[value.action || type];
-  if (value.action === 'verifyProof') {
-    action = `Proof ${reportStatuses[value.other.state]}`;
+  if (value.action === 'verifyProof' || type === 'verifyProof') {
+    action = `Proof ${reportStatuses[value.other ? value.other.state : value.state]}`;
   }
 
-  if (value.action === 'uploadDocument') {
-    action = `${value.other.documentMeat ? value.other.documentMeat : Document} Uploaded`;
+  if (value.action === 'uploadDocument' || type === 'uploadDocument') {
+    if (value.documentMeat) {
+      action = `${value.documentMeat} Uploaded`;
+    }
+    if (value.other && value.other.documentMeat) {
+      action = `${value.other.documentMeat} Uploaded`;
+    }
   }
 
   let user = value.creator;

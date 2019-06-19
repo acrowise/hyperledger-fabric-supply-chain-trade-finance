@@ -9,6 +9,16 @@ import Table from '../Table/Table';
 
 import { TABLE_MAP } from '../../constants';
 
+const actionsToHide = [
+  'Proof Generated',
+  'Document Uploaded',
+  'Packing List Uploaded',
+  'Bill of Lading Uploaded',
+  'Delivery Acceptance Form Uploaded',
+  'USCTS Report Uploaded',
+  'GGCB Report Uploaded'
+];
+
 const TimelineItem = ({
   id, date, isSelected, timelineItemClickHandler
 }) => (
@@ -34,7 +44,9 @@ const Timeline = ({ shipment, events }) => {
     <div className="timeline-wrap">
       <div className="timeline">
         <div className="timeline-start">
-          <div className="timeline-start-text">{format(shipment.timestamp * 1000, 'DD MMM YYYY')}</div>
+          <div className="timeline-start-text">
+            {format(shipment.timestamp * 1000, 'DD MMM YYYY')}
+          </div>
           <div className="timeline-item-bottom-text">
             <div>{shipment.shipFrom}</div>
           </div>
@@ -56,7 +68,7 @@ const Timeline = ({ shipment, events }) => {
             && events
               .concat([])
               .sort((a, b) => a.date - b.date)
-              .filter(i => i.action !== 'Document Uploaded' && i.action !== 'Proof generated')
+              .filter(i => !actionsToHide.includes(i.action))
               .map(event => (
                 <TimelineItem
                   id={event.id}
