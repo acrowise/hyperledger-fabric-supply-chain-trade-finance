@@ -8,7 +8,7 @@ import { cropId } from '../../helper/utils';
 
 const ids = ['id', 'contractId', 'contractID', 'shipmentId', 'shipmentID', 'invoiceID', 'proofID']; // FIXME:
 const dates = ['dueDate', 'date', 'timestamp', 'paymentDate'];
-const amount = ['price', 'totalDue'];
+const amount = ['price', 'totalDue', 'amount'];
 // const users = ['factor'];
 
 const Table = ({
@@ -45,7 +45,11 @@ const Table = ({
                   value = cropId(value);
                 }
                 if (amount.includes(j) && value) {
-                  value = value.toLocaleString('en-us');
+                  const price = value.toLocaleString('en-us', {
+                    style: 'currency',
+                    currency: 'USD'
+                  });
+                  value = price.slice(1, price.length);
                 }
                 return (
                   <td

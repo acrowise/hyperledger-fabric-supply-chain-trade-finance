@@ -16,7 +16,7 @@ const Nav = ({ role, logout }) => {
   const [hasNewNotifications, setNewNotification] = useState(0);
 
   useSocket('notification', (message) => {
-    setNotifications(notifications.concat(JSON.parse(message)));
+    setNotifications([JSON.parse(message)].concat(notifications));
     setNewNotification(hasNewNotifications + 1);
   });
 
