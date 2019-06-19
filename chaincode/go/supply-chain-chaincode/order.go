@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
+	"math"
 	"strconv"
 )
 
@@ -136,7 +137,7 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	entity.Value.Timestamp = timestamp.Seconds
 
 	//setting amount
-	entity.Value.Amount = price * float64(quantity)
+	entity.Value.Amount = math.Round((price*float64(quantity))*100) / 100
 
 	return nil
 }
