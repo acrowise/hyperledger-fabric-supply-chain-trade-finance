@@ -49,7 +49,7 @@ type ContractValue struct {
 	ProductName   string   `json:"productName"`
 	ConsignorName string   `json:"consignorName"`
 	ConsigneeName string   `json:"consigneeName"`
-	TotalDue      float64  `json:"totalDue"`
+	TotalDue      float32  `json:"totalDue"`
 	Quantity      int      `json:"quantity"`
 	Destination   string   `json:"destination"`
 	DueDate       int64    `json:"dueDate"`
@@ -65,7 +65,7 @@ type ContractValueAdditional struct {
 	ProductName   string     `json:"productName"`
 	ConsignorName string     `json:"consignorName"`
 	ConsigneeName string     `json:"consigneeName"`
-	TotalDue      float64    `json:"totalDue"`
+	TotalDue      float32    `json:"totalDue"`
 	Quantity      int        `json:"quantity"`
 	Destination   string     `json:"destination"`
 	DueDate       int64      `json:"dueDate"`
@@ -122,7 +122,7 @@ func (entity *Contract) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	if totalDue < 0 {
 		return errors.New("totalDue must be larger than zero")
 	}
-	entity.Value.TotalDue = float64(totalDue)
+	entity.Value.TotalDue = float32(totalDue)
 
 	//checking quantity
 	quantity, err := strconv.Atoi(args[4])

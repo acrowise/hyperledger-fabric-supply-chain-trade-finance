@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/satori/go.uuid"
-	"math"
 	"strconv"
 )
 
@@ -49,7 +48,7 @@ type OrderValue struct {
 	ProductName string  `json:"productName"`
 	Quantity    int     `json:"quantity"`
 	Price       float32 `json:"price"`
-	Amount      float64 `json:"amount"`
+	Amount      float32 `json:"amount"`
 	Destination string  `json:"destination"`
 	DueDate     int64   `json:"dueDate"`
 	PaymentDate int64   `json:"paymentDate"`
@@ -137,7 +136,7 @@ func (entity *Order) FillFromArguments(stub shim.ChaincodeStubInterface, args []
 	entity.Value.Timestamp = timestamp.Seconds
 
 	//setting amount
-	entity.Value.Amount = math.Round((price*float64(quantity))*100) / 100
+	entity.Value.Amount = entity.Value.Price * float32(entity.Value.Quantity)
 
 	return nil
 }
