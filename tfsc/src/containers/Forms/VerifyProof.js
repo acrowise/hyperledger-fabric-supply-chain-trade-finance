@@ -182,6 +182,7 @@ const ValidateProof = ({
                         if (files.length === 0) {
                           setFileRequired(true);
                         } else {
+                          setActionText('Verified');
                           verifyProof({
                             fcn: 'verifyProof',
                             args: [
