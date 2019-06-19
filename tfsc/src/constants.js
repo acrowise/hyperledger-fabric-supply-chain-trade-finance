@@ -504,7 +504,7 @@ const EVENTS_MAP = {
 
 const FILTERS = {
   orders: {
-    filterBy: ['totalDue', 'destination', 'dueDate', 'paymentDate'],
+    filterBy: ['amount', 'destination', 'dueDate', 'paymentDate'],
     statuses: ['New', 'Accepted', 'Cancelled']
   },
   contracts: {

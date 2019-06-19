@@ -28,7 +28,7 @@ const getFilterType = (type) => {
       'owner',
       'shipmentID'
     ],
-    range: ['totalDue', 'rate']
+    range: ['totalDue', 'rate', 'amount']
   };
   let filter = null;
   Object.keys(types).forEach((t) => {
