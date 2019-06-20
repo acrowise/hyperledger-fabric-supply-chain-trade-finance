@@ -725,7 +725,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 
 	//setting automatic values
 	shipment.Value.State = stateShipmentRequested
-	shipment.Value.Description = args[5]
+	shipment.Value.Description = creator + ": " + args[5] + ". "
 	shipment.Value.Consignor = contract.Value.ConsignorName
 	shipment.Value.DeliveryDate = contract.Value.DueDate
 	shipment.Value.UpdatedDate = shipment.Value.Timestamp
@@ -850,6 +850,14 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	}
 
 	//additional checking
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
 	if shipmentToUpdate.Value.State != stateShipmentRequested {
 		message := fmt.Sprintf("unable confirm shipment with current state")
 		Logger.Error(message)
@@ -869,7 +877,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
-		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + creator + ": " + shippmentDesription + ". "
 	}
 
 	//updating state in ledger
@@ -1046,7 +1054,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
-		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + creator + ": " + shippmentDesription + ". "
 	}
 
 	//updating state in ledger
