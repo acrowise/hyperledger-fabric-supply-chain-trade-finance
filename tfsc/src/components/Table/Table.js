@@ -55,6 +55,9 @@ const Table = ({
                   });
                   value = price.slice(1, price.length);
                 }
+                if (j === 'guarantor' && (!value || value.length === 0)) {
+                  value = 'Not Guaranteed';
+                }
                 return (
                   <td
                     onClick={() => {
