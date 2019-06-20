@@ -23,7 +23,7 @@ const Orders = ({
   const [data, loading, setData] = get('listOrders');
   const [reqAccept, acceptOrder] = post('acceptOrder')();
   const [reqCancel, cancelOrder] = post('cancelOrder')();
-  // const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
+  const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
 
   const [dialog, setDialog] = useState({ state: null, isOpen: false });
 
@@ -55,13 +55,14 @@ const Orders = ({
     <>
       <LoadingOverlay req={reqAccept} action="Order" result="Accepted" />
       <LoadingOverlay req={reqCancel} action="Order" result="Cancelled" />
+      <LoadingOverlay req={reqGuarentee} action="Order" result="Guarenteed" />
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={TABLE_MAP.ORDERS}
         data={filteredData}
         actions={item => (
           <>
-            {/* {actor.role === 'bank' && item.state === 'New' ? (
+            {actor.role === 'bank' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button
                   onClick={() => {
@@ -79,7 +80,7 @@ const Orders = ({
               </div>
             ) : (
               <></>
-            )} */}
+            )}
             {actor.role === 'supplier' && item.state === 'New' ? (
               <div className="nowrap">
                 <Button

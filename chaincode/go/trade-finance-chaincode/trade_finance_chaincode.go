@@ -88,13 +88,15 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	} else if function == "listInvoices" {
 		// List all invoices
 		return cc.listInvoices(stub, args)
+	} else if function == "listInvoicesByGuarantor" {
+		return cc.listInvoicesByGuarantor(stub, args)
 	} else if function == "getEventPayload" {
 		return cc.getEventPayload(stub, args)
 	}
 	// (optional) add other query functions
 
-	fnList := "{placeInvoice, removeInvoice, placeBid, updateBid, cancelBid, acceptBid, " +
-		"listBids, listBidsForInvoice, listInvoices}"
+	fnList := "{registerInvoice, placeInvoice, rejectInvoice, placeBid, updateBid, cancelBid, acceptBid, " +
+		"listBids, listBidsForInvoice, listInvoices, listInvoicesByGuarantor, getEventPayload}"
 	message := fmt.Sprintf("invalid invoke function name: expected one of %s, got %s", fnList, function)
 	Logger.Debug(message)
 
@@ -1125,6 +1127,49 @@ func (cc *TradeFinanceChaincode) listInvoices(stub shim.ChaincodeStubInterface, 
 
 	invoices := []Invoice{}
 	invoicesBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, EmptyFilter)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	if err := json.Unmarshal(invoicesBytes, &invoices); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	resultBytes, err := json.Marshal(invoices)
+
+	Logger.Debug("Result: " + string(resultBytes))
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(resultBytes)
+}
+
+//0		1	2	3	4	5	6
+//0    0	0	0	0	0	0
+func (cc *TradeFinanceChaincode) listInvoicesByGuarantor(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
+	filterByGuarantor := func(data LedgerData) bool {
+		invoice, ok := data.(*Invoice)
+		if ok && invoice.Value.Guarantor == creator {
+			return true
+		}
+
+		return false
+	}
+
+	invoices := []Invoice{}
+	invoicesBytes, err := Query(stub, invoiceIndex, []string{}, CreateInvoice, filterByGuarantor)
 	if err != nil {
 		message := fmt.Sprintf("unable to perform method: %s", err.Error())
 		Logger.Error(message)
