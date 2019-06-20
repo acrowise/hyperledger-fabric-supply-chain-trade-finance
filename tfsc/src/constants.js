@@ -369,7 +369,7 @@ const METHODS_MAP = [
   },
   {
     ccMethod: 'listInvoicesByGuarantor',
-    chaincode: SUPPLY_CHAIN_CHAINCODE
+    chaincode: TRADE_FINANCE_CHAINCODE
   },
   {
     ccMethod: 'getDocument',
