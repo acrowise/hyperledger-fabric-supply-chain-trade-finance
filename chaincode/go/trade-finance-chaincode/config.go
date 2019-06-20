@@ -20,6 +20,7 @@ var (
 	Supplier        = []string{"Supplier"}
 	Auditor         = []string{"Auditor-1", "Auditor-2"}
 	Factor          = []string{"Factor-1", "Factor-2"}
+	Bank            = []string{"Bank"}
 	TransportAgency = []string{"Transporter"}
 )
 

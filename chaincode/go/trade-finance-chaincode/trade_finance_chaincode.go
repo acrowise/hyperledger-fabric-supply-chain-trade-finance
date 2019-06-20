@@ -101,8 +101,8 @@ func (cc *TradeFinanceChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Res
 	return pb.Response{Status: 400, Message: message}
 }
 
-//0				1		2			3			4
-//ContractID    Debtor	Beneficiary	TotalDue	DueDate
+//0				1		2			3			4		5
+//ContractID    Debtor	Beneficiary	TotalDue	DueDate	Guarantor
 func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: invoice fields
 	// check role == Supplier
@@ -1182,6 +1182,7 @@ func joinByBidsAndInvoices(stub shim.ChaincodeStubInterface, bids []Bid) ([]byte
 			entry.Value.Debtor = invoiceValue.Debtor
 			entry.Value.Beneficiary = invoiceValue.Beneficiary
 			entry.Value.PaymentDate = invoiceValue.PaymentDate
+			entry.Value.Guarantor = invoiceValue.Guarantor
 		}
 
 		result = append(result, entry)

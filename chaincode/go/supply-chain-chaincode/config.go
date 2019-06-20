@@ -20,6 +20,7 @@ var (
 	Supplier        = []string{"Supplier"}
 	Auditor         = []string{"Auditor-1", "Auditor-2"}
 	Factor          = []string{"Factor-1", "Factor-2"}
+	Bank            = []string{"Bank"}
 	TransportAgency = []string{"Transporter"}
 )
 
@@ -53,20 +54,21 @@ var allowedDocumentTypes = map[int]bool{
 
 // Type of events
 const (
-	eventPlaceOrder       = "placeOrder"
-	eventUpdateOrder      = "updateOrder"
-	eventCancelOrder      = "cancelOrder"
-	eventAcceptOrder      = "acceptOrder"
-	eventRequestShipment  = "requestShipment"
-	eventConfirmShipment  = "confirmShipment"
-	eventCotractCompleted = ""
-	eventConfirmDelivery  = "confirmDelivery"
-	eventUploadDocument   = "uploadDocument"
-	eventGenerateProof    = "generateProof"
-	eventVerifyProof      = "verifyProof"
-	eventUpdateProof      = "updateProof"
-	eventSubmitReport     = "submitReport"
-	eventUpdateReport     = "updateReport"
+	eventPlaceOrder        = "placeOrder"
+	eventUpdateOrder       = "updateOrder"
+	eventGuarenteeOrder    = "guarenteeOrder"
+	eventCancelOrder       = "cancelOrder"
+	eventAcceptOrder       = "acceptOrder"
+	eventRequestShipment   = "requestShipment"
+	eventConfirmShipment   = "confirmShipment"
+	eventContractCompleted = "contractCompleted"
+	eventConfirmDelivery   = "confirmDelivery"
+	eventUploadDocument    = "uploadDocument"
+	eventGenerateProof     = "generateProof"
+	eventVerifyProof       = "verifyProof"
+	eventUpdateProof       = "updateProof"
+	eventSubmitReport      = "submitReport"
+	eventUpdateReport      = "updateReport"
 )
 
 // Numerical constants

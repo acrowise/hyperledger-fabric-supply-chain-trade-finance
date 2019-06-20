@@ -76,6 +76,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.confirmShipment(stub, args)
 	} else if function == "confirmDelivery" {
 		return cc.confirmDelivery(stub, args)
+	} else if function == "guarenteeOrder" {
+		return cc.guarenteeOrder(stub, args)
 	} else if function == "uploadDocument" {
 		return cc.uploadDocument(stub, args)
 	} else if function == "generateProof" {
@@ -407,6 +409,105 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 //0		1	2	3	4	5	6
 //ID	0	0	0	0	0	0
+func (cc *SupplyChainChaincode) guarenteeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	Notifier(stub, NoticeRuningType)
+
+	//checking role
+	if err, result := checkAccessForUnit([][]string{Bank}, stub); err != nil || !result {
+		message := fmt.Sprintf("this organizational unit is not allowed to guarantee an order")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//checking order exist
+	order := Order{}
+	if err := order.FillFromCompositeKeyParts(args[:orderKeyFieldsNumber]); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	if !ExistsIn(stub, &order, orderIndex) {
+		compositeKey, _ := order.ToCompositeKey(stub)
+		return shim.Error(fmt.Sprintf("order with the key %s doesn't exist", compositeKey))
+	}
+
+	//loading current state from ledger
+	orderToUpdate := Order{}
+	orderToUpdate.Key = order.Key
+	if err := LoadFrom(stub, &orderToUpdate, orderIndex); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//additional checking
+	if orderToUpdate.Value.State != stateOrderNew {
+		message := fmt.Sprintf("unable cancel order with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
+	if orderToUpdate.Value.Guarantor != "" {
+		message := fmt.Sprintf("this order already has guarentee from : %s", orderToUpdate.Value.Guarantor)
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//getting transaction Timestamp
+	timestamp, err := stub.GetTxTimestamp()
+	if err != nil {
+		message := fmt.Sprintf("unable to get transaction timestamp: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	//setting new values
+	orderToUpdate.Value.Guarantor = creator
+	orderToUpdate.Value.UpdatedDate = timestamp.Seconds
+
+	//updating state in ledger
+	if bytes, err := json.Marshal(orderToUpdate); err == nil {
+		Logger.Debug("Order: " + string(bytes))
+	}
+
+	if err := UpdateOrInsertIn(stub, &orderToUpdate, orderIndex, []string{""}, ""); err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	//emitting Event
+	events := Events{}
+
+	eventValue := EventValue{}
+	eventValue.EntityType = orderIndex
+	eventValue.EntityID = orderToUpdate.Key.ID
+	eventValue.Other = orderToUpdate.Value
+	eventValue.Action = eventGuarenteeOrder
+
+	events.Values = append(events.Values, eventValue)
+
+	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
+		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
+		Logger.Error(message)
+		return pb.Response{Status: 500, Message: message}
+	}
+
+	Notifier(stub, NoticeSuccessType)
+	return shim.Success(nil)
+}
+
+//0		1	2	3	4	5	6
+//ID	0	0	0	0	0	0
 func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	// args: order id
 	// check role == Supplier
@@ -498,6 +599,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	contract.Value.DueDate = orderToUpdate.Value.DueDate
 	contract.Value.PaymentDate = orderToUpdate.Value.PaymentDate
 	contract.Value.State = stateContractSigned
+	contract.Value.Guarantor = orderToUpdate.Value.Guarantor
 	contract.Value.Timestamp = timestamp.Seconds
 	contract.Value.UpdatedDate = contract.Value.Timestamp
 
@@ -521,8 +623,9 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	invoiceBeneficiary := contract.Value.ConsignorName
 	invoiceTotalDue := fmt.Sprintf("%f", contract.Value.TotalDue)
 	invoicePaymentDate := fmt.Sprintf("%d", contract.Value.PaymentDate)
+	invoiceGuarantor := orderToUpdate.Value.Guarantor
 
-	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoicePaymentDate), []byte("0")}
+	argsByte := [][]byte{[]byte(fcnName), []byte(invoiceID), []byte(invoiceDebtor), []byte(invoiceBeneficiary), []byte(invoiceTotalDue), []byte(invoicePaymentDate), []byte(invoiceGuarantor)}
 
 	response := stub.InvokeChaincode(chaincodeName, argsByte, channelName)
 	if response.Status >= 400 {
@@ -765,7 +868,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.State = stateShipmentConfirmed
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
-	if shippmentDesription := args[5]; shippmentDesription != "" {
+	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
 		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
 	}
 
@@ -942,7 +1045,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.State = stateShipmentDelivered
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
-	if shippmentDesription := args[5]; shippmentDesription != "" {
+	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
 		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + " " + shippmentDesription
 	}
 
@@ -1026,7 +1129,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	eventValue.EntityType = contractIndex
 	eventValue.EntityID = contract.Key.ID
 	eventValue.Other = contract.Value
-	eventValue.Action = eventCotractCompleted
+	eventValue.Action = eventContractCompleted
 	events.Values = append(events.Values, eventValue)
 
 	if documentHash != "" && documentType != "" {
@@ -2332,6 +2435,7 @@ func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInt
 			entry.Value.Contract.Value.State = contractValue.State
 			entry.Value.Contract.Value.Timestamp = contractValue.Timestamp
 			entry.Value.Contract.Value.UpdatedDate = contractValue.UpdatedDate
+			entry.Value.Contract.Value.Guarantor = contractValue.Guarantor
 			// find document
 			for _, documentID := range contractValue.Documents {
 				if documentValue, ok := documentMap[DocumentKey{ID: documentID}]; ok {
@@ -2513,6 +2617,7 @@ func joinByContractsAndDocuments(stub shim.ChaincodeStubInterface, arrayContract
 				State:         contract.Value.State,
 				Timestamp:     contract.Value.Timestamp,
 				UpdatedDate:   contract.Value.UpdatedDate,
+				Guarantor:     contract.Value.Guarantor,
 			},
 		}
 

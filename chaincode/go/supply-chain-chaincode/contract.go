@@ -51,6 +51,7 @@ type ContractValue struct {
 	ConsigneeName string   `json:"consigneeName"`
 	TotalDue      float32  `json:"totalDue"`
 	Quantity      int      `json:"quantity"`
+	Guarantor     string   `json:"guarantor"`
 	Destination   string   `json:"destination"`
 	DueDate       int64    `json:"dueDate"`
 	PaymentDate   int64    `json:"paymentDate"`
@@ -68,6 +69,7 @@ type ContractValueAdditional struct {
 	TotalDue      float32    `json:"totalDue"`
 	Quantity      int        `json:"quantity"`
 	Destination   string     `json:"destination"`
+	Guarantor     string     `json:"guarantor"`
 	DueDate       int64      `json:"dueDate"`
 	PaymentDate   int64      `json:"paymentDate"`
 	Documents     []Document `json:"documents"`

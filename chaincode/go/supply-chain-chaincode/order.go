@@ -54,6 +54,7 @@ type OrderValue struct {
 	PaymentDate int64   `json:"paymentDate"`
 	BuyerID     string  `json:"buyerID"`
 	State       int     `json:"state"`
+	Guarantor   string  `json:"guarantor"`
 	Timestamp   int64   `json:"timestamp"`
 	UpdatedDate int64   `json:"updatedDate"`
 }

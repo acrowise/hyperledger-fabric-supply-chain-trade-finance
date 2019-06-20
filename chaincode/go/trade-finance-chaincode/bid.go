@@ -65,6 +65,7 @@ type BidValueAdditional struct {
 	Amount      float32 `json:"amount"`
 	Debtor      string  `json:"debtor"`
 	Beneficiary string  `json:"beneficiary"`
+	Guarantor   string  `json:"guarantor"`
 	PaymentDate int64   `json:"paymentDate"`
 	UpdatedDate int64   `json:"updatedDate"`
 }

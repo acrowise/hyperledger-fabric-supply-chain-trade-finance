@@ -15,7 +15,7 @@ const (
 
 const (
 	invoiceKeyFieldsNumber      = 1
-	invoiceBasicArgumentsNumber = 4
+	invoiceBasicArgumentsNumber = 5
 )
 
 // Invoice state constants (from 0 to 5)
@@ -57,6 +57,7 @@ type InvoiceValue struct {
 	TotalDue    float32 `json:"totalDue"`
 	PaymentDate int64   `json:"paymentDate"`
 	State       int     `json:"state"`
+	Guarantor   string  `json:"guarantor"`
 	Owner       string  `json:"owner"`
 	Timestamp   int64   `json:"timestamp"`
 	UpdatedDate int64   `json:"updatedDate"`
@@ -72,8 +73,8 @@ func CreateInvoice() LedgerData {
 }
 
 //argument order
-//0		1		2			3			4
-//ID	Debtor	Beneficiary	TotalDue	DueDate
+//0		1		2			3			4		5
+//ID	Debtor	Beneficiary	TotalDue	DueDate	Guarantor
 func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args []string) error {
 	if len(args) < invoiceBasicArgumentsNumber {
 		return errors.New(fmt.Sprintf("arguments array must contain at least %d items", invoiceBasicArgumentsNumber))
@@ -100,6 +101,10 @@ func (entity *Invoice) FillFromArguments(stub shim.ChaincodeStubInterface, args 
 		return errors.New(message)
 	}
 	entity.Value.Beneficiary = beneficiary
+
+	//TODO: checking guarantor by CA
+	guarantor := args[5]
+	entity.Value.Guarantor = guarantor
 
 	// checking totalDue
 	totalDue, err := strconv.ParseFloat(args[3], 32)
