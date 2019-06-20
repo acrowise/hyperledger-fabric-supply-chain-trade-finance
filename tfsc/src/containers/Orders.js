@@ -23,7 +23,7 @@ const Orders = ({
   const [data, loading, setData] = get('listOrders');
   const [reqAccept, acceptOrder] = post('acceptOrder')();
   const [reqCancel, cancelOrder] = post('cancelOrder')();
-  const [reqGuarentee, guarenteeOrder] = post('guarenteeOrder')();
+  const [reqguarantee, guaranteeOrder] = post('guaranteeOrder')();
 
   const [dialog, setDialog] = useState({ state: null, isOpen: false });
 
@@ -55,7 +55,7 @@ const Orders = ({
     <>
       <LoadingOverlay req={reqAccept} action="Order" result="Accepted" />
       <LoadingOverlay req={reqCancel} action="Order" result="Cancelled" />
-      <LoadingOverlay req={reqGuarentee} action="Order" result="Guarenteed" />
+      <LoadingOverlay req={reqguarantee} action="Order" result="guaranteed" />
       <OrderPurchaseForm dialog={dialog} setDialog={setDialog} />
       <Table
         fields={TABLE_MAP.ORDERS}
@@ -66,8 +66,8 @@ const Orders = ({
               <div className="nowrap">
                 <Button
                   onClick={() => {
-                    guarenteeOrder({
-                      fcn: 'guarenteeOrder',
+                    guaranteeOrder({
+                      fcn: 'guaranteeOrder',
                       args: [item.id, '0', '0', '0', '0', '0', '0', '0'],
                       peers: [`${actor.org}/peer0`]
                     });

@@ -56,7 +56,7 @@ var allowedDocumentTypes = map[int]bool{
 const (
 	eventPlaceOrder        = "placeOrder"
 	eventUpdateOrder       = "updateOrder"
-	eventGuarenteeOrder    = "guarenteeOrder"
+	eventGuaranteeOrder    = "guaranteeOrder"
 	eventCancelOrder       = "cancelOrder"
 	eventAcceptOrder       = "acceptOrder"
 	eventRequestShipment   = "requestShipment"

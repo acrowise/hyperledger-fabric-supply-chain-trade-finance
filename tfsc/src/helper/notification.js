@@ -27,7 +27,7 @@ const notifications = (state = [], message, tab) => {
       case 'verifyProof':
       case 'updateProof':
       case 'updateReport':
-      case 'guarenteeOrder':
+      case 'guaranteeOrder':
       case 'contractUpdated': {
         const newState = state.concat([]);
         const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);

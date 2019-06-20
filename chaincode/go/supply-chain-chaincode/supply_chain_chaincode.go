@@ -76,8 +76,8 @@ func (cc *SupplyChainChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Resp
 		return cc.confirmShipment(stub, args)
 	} else if function == "confirmDelivery" {
 		return cc.confirmDelivery(stub, args)
-	} else if function == "guarenteeOrder" {
-		return cc.guarenteeOrder(stub, args)
+	} else if function == "guaranteeOrder" {
+		return cc.guaranteeOrder(stub, args)
 	} else if function == "uploadDocument" {
 		return cc.uploadDocument(stub, args)
 	} else if function == "generateProof" {
@@ -409,7 +409,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 //0		1	2	3	4	5	6
 //ID	0	0	0	0	0	0
-func (cc *SupplyChainChaincode) guarenteeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+func (cc *SupplyChainChaincode) guaranteeOrder(stub shim.ChaincodeStubInterface, args []string) pb.Response {
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
@@ -457,7 +457,7 @@ func (cc *SupplyChainChaincode) guarenteeOrder(stub shim.ChaincodeStubInterface,
 	Logger.Debug("OrganizationalUnit: " + creator)
 
 	if orderToUpdate.Value.Guarantor != "" {
-		message := fmt.Sprintf("this order already has guarentee from : %s", orderToUpdate.Value.Guarantor)
+		message := fmt.Sprintf("this order already has guarantee from : %s", orderToUpdate.Value.Guarantor)
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -492,7 +492,7 @@ func (cc *SupplyChainChaincode) guarenteeOrder(stub shim.ChaincodeStubInterface,
 	eventValue.EntityType = orderIndex
 	eventValue.EntityID = orderToUpdate.Key.ID
 	eventValue.Other = orderToUpdate.Value
-	eventValue.Action = eventGuarenteeOrder
+	eventValue.Action = eventGuaranteeOrder
 
 	events.Values = append(events.Values, eventValue)
 
