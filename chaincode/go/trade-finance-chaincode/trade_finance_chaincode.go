@@ -621,6 +621,15 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
+	//setting automatic values
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
 	//filling from arguments
 	bid := Bid{}
 	if err := bid.FillFromArguments(stub, args); err != nil {
@@ -634,14 +643,20 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(fmt.Sprintf("bid with the key %s already exist", compositeKey))
 	}
 
-	//setting automatic values
-	creator, err := GetCreatorOrganizationalUnit(stub)
+	//additional checking
+	//find Bids of this invoice from current factor
+	bids, err := findBidsByFactorAndInvoice(stub, creator, bid.Value.InvoiceID)
 	if err != nil {
-		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		message := fmt.Sprintf("cannot find bids by factor: %s", err.Error())
 		Logger.Error(message)
 		return shim.Error(message)
 	}
-	Logger.Debug("OrganizationalUnit: " + creator)
+
+	if bids != nil {
+		message := fmt.Sprintf("current factor already has bids for this invoice")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
 
 	//getting transaction Timestamp
 	timestamp, err := stub.GetTxTimestamp()
@@ -796,7 +811,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	Notifier(stub, NoticeRuningType)
 
 	//checking role
-	if err, result := checkAccessForUnit([][]string{Supplier}, stub); err != nil || !result {
+	if err, result := checkAccessForUnit([][]string{Factor}, stub); err != nil || !result {
 		message := fmt.Sprintf("this organizational unit is not allowed to place a bid")
 		Logger.Error(message)
 		return shim.Error(message)
@@ -827,6 +842,20 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	//additional checking
 	if bidToUpdate.Value.State != stateBidIssued {
 		message := fmt.Sprintf("unable cancel bid with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	creator, err := GetCreatorOrganizationalUnit(stub)
+	if err != nil {
+		message := fmt.Sprintf("cannot obtain creator's OrganizationalUnit from the certificate: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+	Logger.Debug("OrganizationalUnit: " + creator)
+
+	if bidToUpdate.Value.FactorID != creator {
+		message := fmt.Sprintf("factor can cancel bid only his own")
 		Logger.Error(message)
 		return shim.Error(message)
 	}
@@ -1187,6 +1216,33 @@ func (cc *TradeFinanceChaincode) listInvoicesByGuarantor(stub shim.ChaincodeStub
 
 	Notifier(stub, NoticeSuccessType)
 	return shim.Success(resultBytes)
+}
+
+func findBidsByFactorAndInvoice(stub shim.ChaincodeStubInterface, factorID string, invoiceID string) ([]Bid, error) {
+
+	filterByFactorID := func(data LedgerData) bool {
+		entity, ok := data.(*Bid)
+		if ok && entity.Value.FactorID == factorID && entity.Value.InvoiceID == invoiceID {
+			return true
+		}
+		return false
+	}
+
+	bids := []Bid{}
+	bidsBytes, err := Query(stub, bidIndex, []string{}, CreateBid, filterByFactorID)
+	if err != nil {
+		message := fmt.Sprintf("unable to perform method: %s", err.Error())
+		Logger.Error(message)
+		return bids, errors.New(message)
+	}
+
+	if err := json.Unmarshal(bidsBytes, &bids); err != nil {
+		message := fmt.Sprintf("unable to unmarshal bids query result: %s", err.Error())
+		Logger.Error(message)
+		return bids, errors.New(message)
+	}
+
+	return bids, nil
 }
 
 func joinByBidsAndInvoices(stub shim.ChaincodeStubInterface, bids []Bid) ([]byte, error) {

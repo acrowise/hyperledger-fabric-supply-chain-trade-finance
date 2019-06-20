@@ -725,7 +725,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 
 	//setting automatic values
 	shipment.Value.State = stateShipmentRequested
-	shipment.Value.Description = creator + ": " + args[5] + ". "
+	shipment.Value.Description = fmt.Sprintf("<span style=\"font-weight: bold\">%s: </span>%s<br>", creator, args[5])
 	shipment.Value.Consignor = contract.Value.ConsignorName
 	shipment.Value.DeliveryDate = contract.Value.DueDate
 	shipment.Value.UpdatedDate = shipment.Value.Timestamp
@@ -877,7 +877,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
-		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + creator + ": " + shippmentDesription + ". "
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + fmt.Sprintf("<span style=\"font-weight: bold\">%s: </span>%s<br>", creator, shippmentDesription)
 	}
 
 	//updating state in ledger
@@ -1054,7 +1054,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 	shipmentToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	if shippmentDesription := args[5]; shippmentDesription != "" && shippmentDesription != "0" {
-		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + creator + ": " + shippmentDesription + ". "
+		shipmentToUpdate.Value.Description = shipmentToUpdate.Value.Description + fmt.Sprintf("<span style=\"font-weight: bold\">%s: </span>%s<br>", creator, shippmentDesription)
 	}
 
 	//updating state in ledger
