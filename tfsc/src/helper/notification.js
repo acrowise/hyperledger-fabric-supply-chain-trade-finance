@@ -27,6 +27,7 @@ const notifications = (state = [], message, tab) => {
       case 'verifyProof':
       case 'updateProof':
       case 'updateReport':
+      case 'guarenteeOrder':
       case 'contractUpdated': {
         const newState = state.concat([]);
         const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
@@ -57,7 +58,7 @@ const notifications = (state = [], message, tab) => {
         itemToUpdate.value.timeline.documentsUploaded.push({
           key: { id: notification.data.key.id },
           value: {
-            action: 'uploadDocument',
+            action: notification.type,
             creator: notification.data.value.creator,
             entityID: notification.data.key.id,
             entityType: 'Shipment',
@@ -91,7 +92,7 @@ const notifications = (state = [], message, tab) => {
                     {
                       key: { id: notification.data.value.eventId },
                       value: {
-                        action: 'requestShipment',
+                        action: notification.type,
                         creator: notification.data.value.creator,
                         entityID: notification.data.key.id,
                         entityType: 'Shipment',
@@ -137,7 +138,7 @@ const notifications = (state = [], message, tab) => {
         //   key: { id: notification.data.key.id },
         //   value: {
         //     action: notification.type,
-        //     creator: notification.data.value.consignor,
+        //     creator: notification.data.value.creator,
         //     entityID: notification.data.key.id,
         //     entityType: 'Shipment',
         //     other: notification.data.value,

@@ -19,7 +19,7 @@ const Invoices = ({
 }) => {
   const [bidDialog, setBidDialog] = useState({ isOpen: false });
 
-  const [invoices, invoicesLoading, setData] = get('listInvoices');
+  const [invoices, invoicesLoading, setData] = get(actor.role === 'bank' ? 'listInvoicesByGuarantor' : 'listInvoices');
   const [bids, bidsLoading, setBids] = get('listBids');
 
   const [reqPlace, placeForTradeInvoice] = post('placeInvoice')();

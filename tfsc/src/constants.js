@@ -368,6 +368,10 @@ const METHODS_MAP = [
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },
   {
+    ccMethod: 'listInvoicesByGuarantor',
+    chaincode: SUPPLY_CHAIN_CHAINCODE
+  },
+  {
     ccMethod: 'getDocument',
     chaincode: SUPPLY_CHAIN_CHAINCODE
   },
@@ -385,7 +389,7 @@ const METHODS_MAP = [
     actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
-    ccMethod: 'guaranteeOrder',
+    ccMethod: 'guarenteeOrder',
     chaincode: SUPPLY_CHAIN_CHAINCODE,
     actors: ['Buyer', 'Supplier', 'Factor-1', 'Factor-2', 'Bank']
   },
@@ -453,7 +457,7 @@ const NOTIFICATIONS_TAB = {
   acceptOrder: 'orders',
   cancelOrder: 'orders',
   updateOrder: 'orders',
-  guaranteeOrder: 'orders',
+  guarenteeOrder: 'orders',
 
   requestShipment: 'shipments',
   confirmShipment: 'shipments',
@@ -509,7 +513,7 @@ const EVENTS_MAP = {
   registerInvoice: 'Invoice Registered',
   updateProof: 'Proof Updated',
   updateReport: 'Report Updated',
-  guaranteeOrder: 'Order Guaranteed'
+  guarenteeOrder: 'Order Guaranteed'
 };
 
 const FILTERS = {
