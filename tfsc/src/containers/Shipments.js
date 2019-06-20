@@ -64,7 +64,8 @@ const Shipments = ({
       id: i.key.id,
       contractID: i.value.contract.key.id,
       state: STATUSES.SHIPMENT[i.value.state],
-      documents: i.value.contract.value.documents
+      documents: i.value.contract.value.documents,
+      productName: i.value.contract.value.productName
     }));
 
     if (dataForFilter.length === 0) {

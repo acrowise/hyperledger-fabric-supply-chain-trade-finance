@@ -193,6 +193,7 @@ const ShipmentDetailPage = ({
             <table className="table shipment-info-table">
               <thead>
                 <tr style={{ backgroundColor: '#F8F9FA' }}>
+                  <th>Product</th>
                   <th>Ship From</th>
                   <th>Ship To</th>
                   <th>Delivery Date</th>
@@ -202,6 +203,7 @@ const ShipmentDetailPage = ({
               </thead>
               <tbody>
                 <tr>
+                  <td>{shipment.productName}</td>
                   <td>{shipment.shipFrom}</td>
                   <td>{shipment.shipTo}</td>
                   <td>{format(shipment.deliveryDate, 'DD MMM YYYY')}</td>

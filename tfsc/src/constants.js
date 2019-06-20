@@ -191,6 +191,7 @@ const TABLE_MAP = {
   SHIPMENTS: {
     id: 'Shipment Id',
     contractID: 'Contract ID',
+    productName: 'Product',
     shipFrom: 'From',
     shipTo: 'To',
     transport: 'Transport',
@@ -219,6 +220,7 @@ const TABLE_MAP = {
     destination: 'Destination',
     dueDate: 'Delivery Date',
     paymentDate: 'Payment Date',
+    guarantor: 'Guarantor',
     state: 'Status'
   },
   PROOFS: {
@@ -245,6 +247,7 @@ const TABLE_MAP = {
     totalDue: 'Amount, $',
     paymentDate: 'Payment Date',
     owner: 'Owner',
+    guarantor: 'Guarantor',
     state: 'Status'
   },
   REPORTS: {
@@ -382,6 +385,11 @@ const METHODS_MAP = [
     actors: ['Buyer', 'Supplier', 'Transporter', 'Auditor-1', 'Auditor-2']
   },
   {
+    ccMethod: 'guaranteeOrder',
+    chaincode: SUPPLY_CHAIN_CHAINCODE,
+    actors: ['Buyer', 'Supplier', 'Factor-1', 'Factor-2', 'Bank']
+  },
+  {
     ccMethod: 'registerInvoice',
     chaincode: TRADE_FINANCE_CHAINCODE,
     actors: ['Buyer', 'Supplier', 'Transporter', 'Factor-1', 'Factor-2', 'Bank']
@@ -445,6 +453,7 @@ const NOTIFICATIONS_TAB = {
   acceptOrder: 'orders',
   cancelOrder: 'orders',
   updateOrder: 'orders',
+  guaranteeOrder: 'orders',
 
   requestShipment: 'shipments',
   confirmShipment: 'shipments',
@@ -499,7 +508,8 @@ const EVENTS_MAP = {
   contractUpdated: 'Contract Updated',
   registerInvoice: 'Invoice Registered',
   updateProof: 'Proof Updated',
-  updateReport: 'Report Updated'
+  updateReport: 'Report Updated',
+  guaranteeOrder: 'Order Guaranteed'
 };
 
 const FILTERS = {
