@@ -2389,7 +2389,7 @@ func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInt
 			}
 		}
 
-		//find ReportsSubmited
+		//find Reports
 		reports, err := findReportsByShipment(stub, entry.Key.ID)
 		if err != nil {
 			message := fmt.Sprintf("cannot find reports by shipment: %s", err.Error())
@@ -2397,6 +2397,7 @@ func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInt
 			return nil, errors.New(message)
 		}
 
+		//find ReportsSubmited
 		for _, report := range reports {
 			events, err = findEventByActionAndEntity(stub, eventSubmitReport, report.Key.ID)
 			if err != nil {
@@ -2406,6 +2407,19 @@ func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInt
 			}
 			for _, event := range events {
 				entry.Value.Timeline.ReportsSubmited = append(entry.Value.Timeline.ReportsSubmited, event)
+			}
+		}
+
+		//find ReportsUpdated
+		for _, report := range reports {
+			events, err = findEventByActionAndEntity(stub, eventUpdateReport, report.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find ReportsUpdated: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.ReportsUpdated = append(entry.Value.Timeline.ReportsUpdated, event)
 			}
 		}
 
@@ -2439,6 +2453,19 @@ func joinByShipmentsAndContractsAndDocumentsAndEvents(stub shim.ChaincodeStubInt
 			}
 			for _, event := range events {
 				entry.Value.Timeline.ProofsValidated = append(entry.Value.Timeline.ProofsValidated, event)
+			}
+		}
+
+		//find ProofsUpdated
+		for _, proof := range proofs {
+			events, err = findEventByActionAndEntity(stub, eventUpdateProof, proof.Key.ID)
+			if err != nil {
+				message := fmt.Sprintf("cannot find ProofsUpdated: %s", err.Error())
+				Logger.Error(message)
+				return nil, errors.New(message)
+			}
+			for _, event := range events {
+				entry.Value.Timeline.ProofsUpdated = append(entry.Value.Timeline.ProofsUpdated, event)
 			}
 		}
 

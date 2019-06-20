@@ -76,7 +76,9 @@ type ShipmentTimeline struct {
 	ShipmentDelivered []Event `json:"shipmentDelivered"`
 	ProofsGenerated   []Event `json:"proofsGenerated"`
 	ProofsValidated   []Event `json:"proofsValidated"`
+	ProofsUpdated     []Event `json:"proofsUpdated"`
 	ReportsSubmited   []Event `json:"reportsSubmited"`
+	ReportsUpdated    []Event `json:"reportsUpdated"`
 	DocumentsUploaded []Event `json:"documentsUploaded"`
 }
 
