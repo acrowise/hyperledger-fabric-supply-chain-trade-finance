@@ -86,15 +86,6 @@ func (entity *Document) FillFromArguments(stub shim.ChaincodeStubInterface, args
 	entity.Value.DocumentHash = documentHash
 
 	//checking documentType
-	allowedDocumentTypes := map[int]bool{
-		DocTypeJPG: true,
-		DocTypePNG: true,
-		DocTypeXLS: true,
-		DocTypePDF: true,
-		DocTypeCSV: true,
-		DocTypeGIF: true,
-	}
-
 	documentType, err := strconv.Atoi(args[5])
 	if err != nil {
 		return errors.New(fmt.Sprintf("documentType is invalid: %s (must be int)", args[5]))

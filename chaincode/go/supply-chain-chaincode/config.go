@@ -42,6 +42,15 @@ const (
 	DocTypeGIF
 )
 
+var allowedDocumentTypes = map[int]bool{
+	DocTypeJPG: true,
+	DocTypePNG: true,
+	DocTypeXLS: true,
+	DocTypePDF: true,
+	DocTypeCSV: true,
+	DocTypeGIF: true,
+}
+
 // Type of events
 const (
 	eventPlaceOrder       = "placeOrder"

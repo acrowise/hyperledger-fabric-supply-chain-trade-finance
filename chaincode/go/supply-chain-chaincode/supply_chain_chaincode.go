@@ -1379,7 +1379,9 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	events := Events{}
 	eventValue := EventValue{}
 
-	reports := []Report{}
+	documentHash := args[3]
+	documentType := args[4]
+	documentMeta := args[5]
 
 	if proof.Value.State == stateProofGenerated {
 		// making new report
@@ -1404,13 +1406,43 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		report.Value.Timestamp = timestamp.Seconds
 		report.Value.UpdatedDate = report.Value.Timestamp
 
-		reports = append(reports, report)
-
 		//updating state in ledger
 		if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
 			message := fmt.Sprintf("persistence error: %s", err.Error())
 			Logger.Error(message)
 			return pb.Response{Status: 500, Message: message}
+		}
+
+		// uploading new document
+		if documentHash != "" && documentType != "" {
+			// find contractID
+			err, contractID := findContractIDByEntity(stub, TypeShipment, proof.Value.ShipmentID)
+			if err != nil {
+				message := fmt.Sprintf("persistence error: %s", err.Error())
+				Logger.Error(message)
+				return shim.Error(message)
+			}
+
+			documentID, err := UUIDv4FromTXTimestamp(stub, 1)
+			if err != nil {
+				message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
+				Logger.Error(message)
+				return pb.Response{Status: 500, Message: message}
+			}
+			documentFields := []string{documentID, strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
+			err, document := processingUploadDocument(stub, documentFields, Contract{})
+			if err != nil {
+				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
+				Logger.Error(message)
+				return shim.Error(message)
+			}
+
+			//event = uploadDocument
+			eventValue.EntityType = documentIndex
+			eventValue.EntityID = document.Key.ID
+			eventValue.Other = document.Value
+			eventValue.Action = eventUploadDocument
+			events.Values = append(events.Values, eventValue)
 		}
 
 		//event = submitReport
@@ -1422,7 +1454,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 
 	} else {
 		// update exist report
-		reports, err = findReportByProofID(stub, proof.Key.ID)
+		reports, err := findReportByProofID(stub, proof.Key.ID)
 		if err != nil {
 			message := fmt.Sprintf("cannot find existing report: %s", err.Error())
 			Logger.Error(message)
@@ -1433,20 +1465,75 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 			report.Value.Description = args[2]
 			report.Value.UpdatedDate = timestamp.Seconds
 
-			//event = updateReport
-			eventValue.EntityType = reportIndex
-			eventValue.EntityID = report.Key.ID
-			eventValue.Other = report.Value
-			eventValue.Action = eventUpdateReport
-			events.Values = append(events.Values, eventValue)
-
 			//updating state in ledger
 			if err := UpdateOrInsertIn(stub, &report, reportIndex, []string{""}, ""); err != nil {
 				message := fmt.Sprintf("persistence error: %s", err.Error())
 				Logger.Error(message)
 				return pb.Response{Status: 500, Message: message}
 			}
-			Logger.Debug("Processed report")
+
+			//updating exist document
+			if documentHash != "" && documentType != "" {
+				filterByReport := func(data LedgerData) bool {
+					entity, ok := data.(*Document)
+					if ok && entity.Value.EntityType == TypeReport && entity.Value.EntityID == report.Key.ID {
+						return true
+					}
+					return false
+				}
+
+				documents := []Document{}
+				documentsBytes, err := Query(stub, documentIndex, []string{}, CreateDocument, filterByReport)
+				if err != nil {
+					message := fmt.Sprintf("unable to perform method: %s", err.Error())
+					Logger.Error(message)
+					return shim.Error(message)
+				}
+
+				if err := json.Unmarshal(documentsBytes, &documents); err != nil {
+					message := fmt.Sprintf("unable to unmarshal documents query result: %s", err.Error())
+					Logger.Error(message)
+					return shim.Error(message)
+				}
+
+				for _, document := range documents {
+
+					//setting new values
+					document.Value.UpdatedDate = timestamp.Seconds
+					//checking type of document
+					convertedDocumentType, err := strconv.Atoi(documentType)
+					if err != nil {
+						return shim.Error(fmt.Sprintf("documentType is invalid: %s (must be int)", documentType))
+					}
+					if !allowedDocumentTypes[convertedDocumentType] {
+						return shim.Error(fmt.Sprintf("unacceptable type of document"))
+					}
+
+					document.Value.DocumentType = convertedDocumentType
+					document.Value.DocumentHash = documentHash
+					document.Value.DocumentMeta = documentMeta
+
+					if err := UpdateOrInsertIn(stub, &document, documentIndex, []string{""}, ""); err != nil {
+						message := fmt.Sprintf("persistence error: %s", err.Error())
+						Logger.Error(message)
+						return shim.Error(message)
+					}
+
+					//event = uploadDocument
+					eventValue.EntityType = documentIndex
+					eventValue.EntityID = document.Key.ID
+					eventValue.Other = document.Value
+					eventValue.Action = eventUploadDocument
+					events.Values = append(events.Values, eventValue)
+				}
+			}
+
+			//event = updateReport
+			eventValue.EntityType = reportIndex
+			eventValue.EntityID = report.Key.ID
+			eventValue.Other = report.Value
+			eventValue.Action = eventUpdateReport
+			events.Values = append(events.Values, eventValue)
 		}
 	}
 
@@ -1465,54 +1552,13 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 		return pb.Response{Status: 500, Message: message}
 	}
 
-	// uploading document
-	documentHash := args[3]
-	documentType := args[4]
-	documentMeta := args[5]
-	document := Document{}
-	if documentHash != "" && documentType != "" {
-		// find contractID
-		err, contractID := findContractIDByEntity(stub, TypeShipment, proof.Value.ShipmentID)
-		if err != nil {
-			message := fmt.Sprintf("persistence error: %s", err.Error())
-			Logger.Error(message)
-			return shim.Error(message)
-		}
-
-		for _, report := range reports {
-			documentID, err := UUIDv4FromTXTimestamp(stub, 1)
-			if err != nil {
-				message := fmt.Sprintf("cannot generate new uuid from tx timestamp: %s", err.Error())
-				Logger.Error(message)
-				return pb.Response{Status: 500, Message: message}
-			}
-			documentFields := []string{documentID, strconv.Itoa(TypeReport), report.Key.ID, documentHash, documentMeta, documentType, contractID}
-			err, document = processingUploadDocument(stub, documentFields, Contract{})
-			if err != nil {
-				message := fmt.Sprintf("Error during processing upload document: %s", err.Error())
-				Logger.Error(message)
-				return shim.Error(message)
-			}
-		}
-	}
-
 	//emitting Event
-
 	//event = verifyProof
 	eventValue.EntityType = proofIndex
 	eventValue.EntityID = proof.Key.ID
 	eventValue.Other = proof.Value
 	eventValue.Action = eventVerifyProof
 	events.Values = append(events.Values, eventValue)
-
-	if documentHash != "" && documentType != "" {
-		//event = uploadDocument
-		eventValue.EntityType = documentIndex
-		eventValue.EntityID = document.Key.ID
-		eventValue.Other = document.Value
-		eventValue.Action = eventUploadDocument
-		events.Values = append(events.Values, eventValue)
-	}
 
 	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
