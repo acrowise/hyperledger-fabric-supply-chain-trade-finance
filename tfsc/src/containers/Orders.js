@@ -62,7 +62,7 @@ const Orders = ({
         data={filteredData}
         actions={item => (
           <>
-            {actor.role === 'bank' && item.state === 'New' ? (
+            {actor.role === 'bank' && item.state === 'New' && item.guarantor === '' ? (
               <div className="nowrap">
                 <Button
                   onClick={() => {
