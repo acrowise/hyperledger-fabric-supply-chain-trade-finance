@@ -37,11 +37,11 @@ const prepareEvent = (data, type) => {
   }
 
   if (value.action === 'uploadDocument' || type === 'uploadDocument') {
-    if (value.documentMeat) {
-      action = `${value.documentMeat} Uploaded`;
+    if (value.documentMeta) {
+      action = `${value.documentMeta} Uploaded`;
     }
-    if (value.other && value.other.documentMeat) {
-      action = `${value.other.documentMeat} Uploaded`;
+    if (value.other && value.other.documentMeta) {
+      action = `${value.other.documentMeta} Uploaded`;
     }
   }
 
@@ -330,7 +330,7 @@ const ShipmentDetailPage = ({
                         href={`/getDocument?hash=${doc.value.documentHash}&type=${doc.value.documentType}`}
                         target="_blank"
                       >
-                        {doc.value.documentMeat}
+                        {doc.value.documentMeta}
                       </a>
                       {doc.new ? <div className="new-dot-notification" /> : <></>}
                     </div>

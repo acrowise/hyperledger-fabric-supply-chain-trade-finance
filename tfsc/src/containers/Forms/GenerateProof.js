@@ -48,7 +48,7 @@ const GenerateProof = ({
   };
 
   if (docs.length > 0) {
-    docs.forEach(doc => (initialState[doc.value.documentMeat] = false));
+    docs.forEach(doc => (initialState[doc.value.documentMeta] = false));
   }
 
   const [formState, dispatch] = useReducer(formReducer, initialState);
@@ -143,13 +143,13 @@ const GenerateProof = ({
                           >
                             <Checkbox
                               style={{ marginBottom: 3 }}
-                              value={formState[doc.value.documentMeat]}
-                              checked={formState[doc.value.documentMeat]}
+                              value={formState[doc.value.documentMeta]}
+                              checked={formState[doc.value.documentMeta]}
                               onChange={() => dispatch({
                                 type: 'change',
                                 payload: {
-                                  field: doc.value.documentMeat,
-                                  value: !formState[doc.value.documentMeat]
+                                  field: doc.value.documentMeta,
+                                  value: !formState[doc.value.documentMeta]
                                 }
                               })
                               }
@@ -166,8 +166,8 @@ const GenerateProof = ({
                                 dispatch({
                                   type: 'change',
                                   payload: {
-                                    field: doc.value.documentMeat,
-                                    value: !formState[doc.value.documentMeat]
+                                    field: doc.value.documentMeta,
+                                    value: !formState[doc.value.documentMeta]
                                   }
                                 });
                               }}
@@ -175,7 +175,7 @@ const GenerateProof = ({
                               <div style={{ marginRight: 5 }}>
                                 <Icons name="proof-document" />
                               </div>
-                              {doc.value.documentMeat}
+                              {doc.value.documentMeta}
                             </div>
                           </div>
                         ))}
@@ -253,9 +253,9 @@ const GenerateProof = ({
                         });
                       }
                       docs.forEach((document) => {
-                        if (formState[document.value.documentMeat]) {
+                        if (formState[document.value.documentMeta]) {
                           attributes.push({
-                            AttributeName: document.value.documentMeat,
+                            AttributeName: document.value.documentMeta,
                             AttributeValue: document.value.documentHash,
                             AttributeDisclosure: 1
                           });

@@ -27,7 +27,7 @@ type DocumentValue struct {
 	EntityID     string `json:"entityID"`
 	ContractID   string `json:"contractID"`
 	DocumentHash string `json:"documentHash"`
-	DocumentMeta string `json:"documentMeat"`
+	DocumentMeta string `json:"documentMeta"`
 	DocumentType int    `json:"documentType"`
 	Timestamp    int64  `json:"timestamp"`
 	UpdatedDate  int64  `json:"updatedDate"`
