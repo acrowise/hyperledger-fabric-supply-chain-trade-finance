@@ -2614,6 +2614,7 @@ func joinByContractsAndDocuments(stub shim.ChaincodeStubInterface, arrayContract
 		entry := ContractAdditional{
 			Key: contract.Key,
 			Value: ContractValueAdditional{
+				Price:         contract.Value.Price,
 				ProductName:   contract.Value.ProductName,
 				ConsignorName: contract.Value.ConsignorName,
 				ConsigneeName: contract.Value.ConsigneeName,
