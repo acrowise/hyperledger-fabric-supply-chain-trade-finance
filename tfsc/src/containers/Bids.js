@@ -95,6 +95,10 @@ const Bids = ({
                       state: {
                         id: item.id,
                         rate: item.rate,
+                        amount: item.amount,
+                        beneficiary: item.beneficiary,
+                        debtor: item.debtor,
+                        paymentDate: item.paymentDate,
                         action: 'update',
                         actorId: item.factorID,
                         invoiceId: item.invoiceID

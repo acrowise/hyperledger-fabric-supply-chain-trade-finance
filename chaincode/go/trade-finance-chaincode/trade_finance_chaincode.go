@@ -343,6 +343,12 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 	Logger.Debug("OrganizationalUnit: " + creator)
 
+	if invoice.Value.State != stateInvoiceForSale {
+		message := fmt.Sprintf("cannot remove invoice with current state")
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	if invoice.Value.Owner != creator {
 		message := fmt.Sprintf("only invoice owner can remove an invoice")
 		Logger.Error(message)
@@ -358,7 +364,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 	}
 
 	//setting automatic values
-	invoice.Value.State = stateInvoiceRemoved
+	invoice.Value.State = stateInvoiceIssued
 	invoice.Value.UpdatedDate = timestamp.Seconds
 
 	if bytes, err := json.Marshal(invoice); err == nil {
