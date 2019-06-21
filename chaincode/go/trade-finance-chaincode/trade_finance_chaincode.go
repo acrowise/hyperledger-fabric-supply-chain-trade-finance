@@ -652,7 +652,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 		return shim.Error(message)
 	}
 
-	if bids != nil {
+	if len(bids) != 0 {
 		message := fmt.Sprintf("current factor already has bids for this invoice")
 		Logger.Error(message)
 		return shim.Error(message)
