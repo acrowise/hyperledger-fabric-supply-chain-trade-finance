@@ -227,7 +227,9 @@ const ShipmentDetailPage = ({
                   >
                     Description:
                   </p>
-                  <p style={{ marginLeft: 10 }}>{shipment.description}</p>
+                  <div style={{ marginLeft: 10 }}>
+                    <p dangerouslySetInnerHTML={{ __html: shipment.description }}></p>
+                  </div>
                 </div>
               ) : (
                 <></>

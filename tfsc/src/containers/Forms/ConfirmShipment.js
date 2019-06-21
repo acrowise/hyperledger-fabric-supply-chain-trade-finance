@@ -65,11 +65,22 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                   ))}
                   <Label className="col-6">
                     Description
-                    <TextArea
+                    <div
+                      style={{
+                        backgroundColor: '#F8F9FA',
+                        marginTop: '5px',
+                        paddingLeft: '10px',
+                        paddingRight: '5px',
+                        paddingBottom: '5px'
+                      }}
+                    >
+                      <p dangerouslySetInnerHTML={{ __html: shipment.description }}></p>
+                    </div>
+                    {/* <TextArea
                       large={true}
-                      value={shipment.description}
+                      value={<p dangerouslySetInnerHTML={{ __html: shipment.description }}></p>}
                       disabled
-                    />
+                    /> */}
                   </Label>
                   <Label className="col-6 margin-right-auto">
                     Upload Bill of Lading
@@ -107,7 +118,17 @@ const ConfirmShipmentForm = ({ dialogIsOpen, setDialogOpenState, shipment }) => 
                     } else {
                       confirmShipment({
                         fcn: 'confirmShipment',
-                        args: [shipment.id, '0', '0', '0', '0', '0', hash.hash, hash.type, 'Bill of Lading']
+                        args: [
+                          shipment.id,
+                          '0',
+                          '0',
+                          '0',
+                          '0',
+                          '0',
+                          hash.hash,
+                          hash.type,
+                          'Bill of Lading'
+                        ]
                       });
                       setFileRequired(false);
                       setFiles([]);

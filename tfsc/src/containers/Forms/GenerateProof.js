@@ -292,7 +292,7 @@ const GenerateProof = ({
 };
 
 GenerateProof.propTypes = {
-  dialogIsOpen: PropTypes.bool,
+  dialogIsOpen: PropTypes.object,
   setDialogOpenState: PropTypes.func,
   shipment: PropTypes.object,
   docs: PropTypes.array
