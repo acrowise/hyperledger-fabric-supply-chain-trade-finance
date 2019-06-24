@@ -271,6 +271,7 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 	orderToUpdate.Value.Price = order.Value.Price
 	orderToUpdate.Value.DueDate = order.Value.DueDate
 	orderToUpdate.Value.PaymentDate = order.Value.PaymentDate
+	orderToUpdate.Value.Amount = order.Value.Amount
 	orderToUpdate.Value.UpdatedDate = timestamp.Seconds
 
 	//setting optional values
