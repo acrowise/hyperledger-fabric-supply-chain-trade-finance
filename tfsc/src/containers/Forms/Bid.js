@@ -11,6 +11,8 @@ import { INPUTS } from '../../constants';
 
 import ActionCompleted from '../../components/ActionCompleted/ActionCompleted';
 
+import { capitalize } from '../../helper/utils';
+
 const PlaceBidForm = ({ dialog, setDialog }) => {
   const defaultFormState = Object.assign(
     {},
@@ -26,6 +28,7 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
 
   const [formState, setFormState] = useState(defaultFormState);
   const [postRes, postAction, resetPost] = post(`${formState.action}Bid`)();
+  const [actionText, setActionText] = useState('Placed');
 
   useEffect(() => {
     setFormState(defaultFormState);
@@ -70,10 +73,10 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
       >
         <Card className="modal" style={{ width: '400px' }}>
           {postRes.pending || postRes.complete || postRes.data ? (
-            <ActionCompleted res={postRes} action="Bid" result="Placed" />
+            <ActionCompleted res={postRes} action="Bid" result={actionText} />
           ) : (
             <>
-              <div className="modal-header">Place Bid</div>
+              <div className="modal-header">{capitalize(formState.action)} Bid</div>
               <div className="modal-body">
                 {INPUTS.PLACE_BID.map(({
                   label, type, placeholder, field
@@ -102,6 +105,7 @@ const PlaceBidForm = ({ dialog, setDialog }) => {
                       const hasErrors = Object.keys(errors).find(i => errors[i] === true);
 
                       if (!hasErrors) {
+                        setActionText(dialog.state.action === 'update' ? 'Updated' : 'Placed');
                         postAction({
                           fcn: `${dialog.state.action}Bid`,
                           args: [

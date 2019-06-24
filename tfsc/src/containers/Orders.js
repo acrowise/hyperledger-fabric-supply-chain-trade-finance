@@ -141,7 +141,7 @@ const Orders = ({
 Orders.propTypes = {
   actor: PropTypes.object,
   filter: PropTypes.string,
-  search: PropTypes.search,
+  search: PropTypes.string,
   dataForFilter: PropTypes.array,
   setDataForFilter: PropTypes.func,
   filterOptions: PropTypes.object
