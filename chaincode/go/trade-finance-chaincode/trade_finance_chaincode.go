@@ -723,10 +723,26 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 	//emitting Event
 	events := Events{}
 
+	// getting additional fields for bids
+	bidsBytes, err := joinByBidsAndInvoices(stub, []Bid{bid})
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	bidsAdditional := []BidAdditional{}
+
+	if err := json.Unmarshal(bidsBytes, &bidsAdditional); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	eventValue := EventValue{}
 	eventValue.EntityType = bidIndex
 	eventValue.EntityID = bid.Key.ID
-	eventValue.Other = bid.Value
+	eventValue.Other = bidsAdditional[0].Value
 	eventValue.Action = eventPlaceBid
 
 	events.Values = append(events.Values, eventValue)
@@ -822,10 +838,26 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 	//emitting Event
 	events := Events{}
 
+	// getting additional fields for bids
+	bidsBytes, err := joinByBidsAndInvoices(stub, []Bid{bidToUpdate})
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	bidsAdditional := []BidAdditional{}
+
+	if err := json.Unmarshal(bidsBytes, &bidsAdditional); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	eventValue := EventValue{}
 	eventValue.EntityType = bidIndex
 	eventValue.EntityID = bidToUpdate.Key.ID
-	eventValue.Other = bidToUpdate.Value
+	eventValue.Other = bidsAdditional[0].Value
 	eventValue.Action = eventUpdateBid
 
 	events.Values = append(events.Values, eventValue)
@@ -924,10 +956,26 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 	//emitting Event
 	events := Events{}
 
+	// getting additional fields for bids
+	bidsBytes, err := joinByBidsAndInvoices(stub, []Bid{bidToUpdate})
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	bidsAdditional := []BidAdditional{}
+
+	if err := json.Unmarshal(bidsBytes, &bidsAdditional); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	eventValue := EventValue{}
 	eventValue.EntityType = bidIndex
 	eventValue.EntityID = bidToUpdate.Key.ID
-	eventValue.Other = bidToUpdate.Value
+	eventValue.Other = bidsAdditional[0].Value
 	eventValue.Action = eventCancelBid
 
 	events.Values = append(events.Values, eventValue)
@@ -1046,7 +1094,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	//setting state canceled for another bids for current invoice
 	filterByInvoice := func(data LedgerData) bool {
 		entity, ok := data.(*Bid)
-		if ok && entity.Value.InvoiceID == invoice.Key.ID {
+		if ok && entity.Value.InvoiceID == invoice.Key.ID && entity.Value.FactorID != bidToUpdate.Value.FactorID {
 			return true
 		}
 
@@ -1087,9 +1135,26 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	events.Values = append(events.Values, eventValue)
 
 	//event2 = acceptBid
+
+	// getting additional fields for bids
+	bidsAdditionalBytes, err := joinByBidsAndInvoices(stub, []Bid{bidToUpdate})
+	if err != nil {
+		message := fmt.Sprintf("cannot join by bid and invoice: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
+	bidsAdditional := []BidAdditional{}
+
+	if err := json.Unmarshal(bidsAdditionalBytes, &bidsAdditional); err != nil {
+		message := fmt.Sprintf("unable to unmarshal query result: %s", err.Error())
+		Logger.Error(message)
+		return shim.Error(message)
+	}
+
 	eventValue.EntityType = bidIndex
 	eventValue.EntityID = bidToUpdate.Key.ID
-	eventValue.Other = bidToUpdate.Value
+	eventValue.Other = bidsAdditional[0].Value
 	eventValue.Action = eventAcceptBid
 	events.Values = append(events.Values, eventValue)
 

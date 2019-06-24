@@ -21,6 +21,7 @@ const notifications = (state = [], message, tab) => {
       case 'cancelOrder':
       case 'updateOrder':
       case 'cancelBid':
+      case 'updateBid':
       case 'acceptInvoice':
       case 'removeInvoice':
       case 'verifyProof':
@@ -144,12 +145,6 @@ const notifications = (state = [], message, tab) => {
         //     timestamp: notification.data.value.timestamp
         //   }
         // });
-        return { result: newState };
-      }
-      case 'updateBid': {
-        const newState = state.concat([]);
-        const itemToUpdateIndex = newState.findIndex(i => i.key.id === notification.data.key.id);
-        newState[itemToUpdateIndex].value.rate = notification.data.value.rate;
         return { result: newState };
       }
       default:
