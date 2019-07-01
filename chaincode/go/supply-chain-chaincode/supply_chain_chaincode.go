@@ -192,7 +192,7 @@ func (cc *SupplyChainChaincode) placeOrder(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, order.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -300,7 +300,7 @@ func (cc *SupplyChainChaincode) updateOrder(stub shim.ChaincodeStubInterface, ar
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -398,7 +398,7 @@ func (cc *SupplyChainChaincode) cancelOrder(stub shim.ChaincodeStubInterface, ar
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -497,7 +497,7 @@ func (cc *SupplyChainChaincode) guaranteeOrder(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -656,7 +656,7 @@ func (cc *SupplyChainChaincode) acceptOrder(stub shim.ChaincodeStubInterface, ar
 	eventValue.Action = eventAcceptOrder
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, orderToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -802,7 +802,7 @@ func (cc *SupplyChainChaincode) requestShipment(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.EmitEvent(stub, shipment.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -933,7 +933,7 @@ func (cc *SupplyChainChaincode) confirmShipment(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.EmitEvent(stub, shipmentToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1150,7 +1150,7 @@ func (cc *SupplyChainChaincode) confirmDelivery(stub shim.ChaincodeStubInterface
 		events.Values = append(events.Values, eventValue)
 	}
 
-	if err := events.EmitEvent(stub, shipmentToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1190,7 +1190,7 @@ func (cc *SupplyChainChaincode) uploadDocument(stub shim.ChaincodeStubInterface,
 	eventValue.Action = eventUploadDocument
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, document.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1219,19 +1219,18 @@ func processingUploadDocument(stub shim.ChaincodeStubInterface, args []string, c
 		return errors.New(message), Document{}
 	}
 
-	//TODO: uncomment after testing
 	//additional checking
-	//findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
-	//if err != nil {
-	//	message := fmt.Sprintf("persistence error: %s", err.Error())
-	//	Logger.Error(message)
-	//	return errors.New(message), Document{}
-	//}
-	//if len(findedDocuments) != 0 {
-	//	message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
-	//	Logger.Error(message)
-	//	return errors.New(message), Document{}
-	//}
+	findedDocuments, err := findDocumentByHash(stub, document.Value.DocumentHash)
+	if err != nil {
+		message := fmt.Sprintf("persistence error: %s", err.Error())
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
+	if len(findedDocuments) != 0 {
+		message := fmt.Sprintf("document with hash %s already exists", document.Value.DocumentHash)
+		Logger.Error(message)
+		return errors.New(message), Document{}
+	}
 
 	//getting transaction Timestamp
 	timestamp, err := stub.GetTxTimestamp()
@@ -1385,7 +1384,7 @@ func (cc *SupplyChainChaincode) generateProof(stub shim.ChaincodeStubInterface, 
 	eventValue.Action = eventGenerateProof
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1672,7 +1671,7 @@ func (cc *SupplyChainChaincode) verifyProof(stub shim.ChaincodeStubInterface, ar
 	eventValue.Action = eventVerifyProof
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1766,7 +1765,7 @@ func (cc *SupplyChainChaincode) updateProof(stub shim.ChaincodeStubInterface, ar
 	eventValue.Action = eventUpdateProof
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, proof.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}

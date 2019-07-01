@@ -596,7 +596,7 @@ func UUIDv4FromTXTimestamp(stub shim.ChaincodeStubInterface, delta int) (string,
 	return u.String(), nil
 }
 
-func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string) error {
+func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface) error {
 
 	Logger.Debug("### emitEvent started ###")
 
@@ -604,14 +604,14 @@ func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string)
 		eventAction := value.Action
 		var err error
 
-		baseID, err = UUIDv4FromTXTimestamp(stub, i+1)
+		newID, err := UUIDv4FromTXTimestamp(stub, i+1)
 		if err != nil {
 			message := fmt.Sprintf(err.Error())
 			return errors.New(message)
 		}
 
 		event := Event{}
-		if err := event.FillFromCompositeKeyParts([]string{baseID}); err != nil {
+		if err := event.FillFromCompositeKeyParts([]string{newID}); err != nil {
 			message := fmt.Sprintf(err.Error())
 			return errors.New(message)
 		}
@@ -648,7 +648,7 @@ func (events *Events) EmitEvent(stub shim.ChaincodeStubInterface, baseID string)
 			message := fmt.Sprintf("Error marshaling: %s", err.Error())
 			return errors.New(message)
 		}
-		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + baseID
+		eventName := eventIndex + "." + config.Value.ChaincodeName + "." + eventAction + "." + newID
 		events.Keys = append(events.Keys, EventKey{ID: eventName})
 
 		if err := UpdateOrInsertIn(stub, &event, eventIndex, []string{""}, ""); err != nil {

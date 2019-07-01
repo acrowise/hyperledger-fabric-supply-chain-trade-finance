@@ -177,7 +177,7 @@ func (cc *TradeFinanceChaincode) registerInvoice(stub shim.ChaincodeStubInterfac
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -286,7 +286,7 @@ func (cc *TradeFinanceChaincode) placeInvoice(stub shim.ChaincodeStubInterface, 
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -421,7 +421,7 @@ func (cc *TradeFinanceChaincode) removeInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -525,7 +525,7 @@ func (cc *TradeFinanceChaincode) acceptInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -628,7 +628,7 @@ func (cc *TradeFinanceChaincode) rejectInvoice(stub shim.ChaincodeStubInterface,
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, invoice.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -747,7 +747,7 @@ func (cc *TradeFinanceChaincode) placeBid(stub shim.ChaincodeStubInterface, args
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, bid.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -862,7 +862,7 @@ func (cc *TradeFinanceChaincode) updateBid(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -980,7 +980,7 @@ func (cc *TradeFinanceChaincode) cancelBid(stub shim.ChaincodeStubInterface, arg
 
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
@@ -1158,7 +1158,7 @@ func (cc *TradeFinanceChaincode) acceptBid(stub shim.ChaincodeStubInterface, arg
 	eventValue.Action = eventAcceptBid
 	events.Values = append(events.Values, eventValue)
 
-	if err := events.EmitEvent(stub, bidToUpdate.Key.ID); err != nil {
+	if err := events.EmitEvent(stub); err != nil {
 		message := fmt.Sprintf("Cannot emite event: %s", err.Error())
 		Logger.Error(message)
 		return pb.Response{Status: 500, Message: message}
